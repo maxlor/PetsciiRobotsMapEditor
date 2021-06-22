@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ObjectEditWidget</class>
+ <widget class="QGroupBox" name="ObjectEditWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>364</width>
+    <height>361</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="pagePlayer">
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editPlayerX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editPlayerY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelPlayerHealth">
+         <property name="text">
+          <string>Health:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="editPlayerHealth">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageRobot">
+      <layout class="QFormLayout" name="formLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelRobotPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editRobotX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editRobotY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelRobotHealth">
+         <property name="text">
+          <string>Health:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="editRobotHealth">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelRobotType">
+         <property name="text">
+          <string>Type:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="comboRobotType"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageWeapon">
+      <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelWeaponPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editWeaponX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editWeaponY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelWeaponType">
+         <property name="text">
+          <string>Type:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="comboWeaponType"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelWeaponAmount">
+         <property name="text">
+          <string>Amount:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="editWeaponAmount"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelWeaponContainerSize">
+         <property name="text">
+          <string>Container Size:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QSpinBox" name="editWeaponContainerWidth">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>128</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editWeaponContainerHeight">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>64</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageDoor">
+      <layout class="QFormLayout" name="formLayout_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelDoorPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editDoorX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editDoorY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelDoorOrientation">
+         <property name="text">
+          <string>Orientation:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="comboDoorOrientation">
+         <item>
+          <property name="text">
+           <string>Horizontal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Vertical</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelDoorState">
+         <property name="text">
+          <string>State:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="comboDoorState">
+         <item>
+          <property name="text">
+           <string>Opening (A)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Opening (B)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Open</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closing (A)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closing (B)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelDoorLock">
+         <property name="text">
+          <string>Lock:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="comboDoorLock">
+         <item>
+          <property name="text">
+           <string>Unlocked</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Locked, ♠</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Locked, ♥</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Locked, ✷</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageKey">
+      <layout class="QFormLayout" name="formLayout_5">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelKeyPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editKeyX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editKeyY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Unlocks:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0,0">
+         <item>
+          <widget class="QRadioButton" name="radioKeySpade">
+           <property name="text">
+            <string>♠</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioKeyHeart">
+           <property name="text">
+            <string>♥</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioKeyStar">
+           <property name="text">
+            <string>✷</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageTrashCompactor">
+      <layout class="QFormLayout" name="formLayout_6">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelTrashCompactorPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editTrashCompactorX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editTrashCompactorY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageElevator">
+      <layout class="QFormLayout" name="formLayout_7">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelElevatorPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editElevatorX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editElevatorY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelElevatorState">
+         <property name="text">
+          <string>State:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="comboElevatorState">
+         <item>
+          <property name="text">
+           <string>Opening (A)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Opening (B)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Open</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closing (A)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closing (B)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Closed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelElevatorFloor">
+         <property name="text">
+          <string>Floor:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="editElevatorFloor">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>5</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="editElevatorTotalFloors">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>5</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelElevatorTotalFloors">
+         <property name="text">
+          <string>Total Floors:</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageRaft">
+      <layout class="QFormLayout" name="formLayout_8">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelRaftPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editRaftX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editRaftY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelRaftDirection">
+         <property name="text">
+          <string>Direction:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="0,0">
+         <item>
+          <widget class="QRadioButton" name="radioRaftDirectionLeft">
+           <property name="text">
+            <string>Left</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioRaftDirectionRight">
+           <property name="text">
+            <string>Right</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelRaftLeftTurnaround">
+         <property name="text">
+          <string>Left Turnaround Coord.:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="editRaftLeftTurnaround">
+         <property name="maximum">
+          <number>127</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelRaftRightTurnaround">
+         <property name="text">
+          <string>Right Turnaround Coord.:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="editRaftRightTurnaround">
+         <property name="maximum">
+          <number>127</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageTransporter">
+      <layout class="QFormLayout" name="formLayout_9">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelTransporterPosition">
+         <property name="text">
+          <string>Position:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editTransporterX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editTransporterY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelTransporterMode">
+         <property name="text">
+          <string>Disable:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="checkTransporterDisable">
+         <property name="text">
+          <string>While robots live</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelTransporterTarget">
+         <property name="text">
+          <string>Destination:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QRadioButton" name="radioTransporterEOL">
+         <property name="text">
+          <string>End of map</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QRadioButton" name="radioTransporterCoordinates">
+         <property name="text">
+          <string>Coordinates</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="LabelTransporterCoordinates">
+         <property name="text">
+          <string>Coordinates:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,0">
+         <item>
+          <widget class="QSpinBox" name="editTransporterDestX">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editTransporterDestY">
+           <property name="maximum">
+            <number>63</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

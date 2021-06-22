@@ -1,0 +1,22 @@
+tileset.pet Format
+------------------
+
+Offset 0x102–0x201: Flags for each tile
+- 0x01: can walk on it
+- 0x02: can hover on it
+- 0x04: can be moved
+- 0x08: can be destroyed
+- 0x10: can shoot through
+- 0x20: can push onto
+- 0x40: can search
+- 0x80: reserved
+
+Offset 0x202-0x301: upper left character of each tile
+Offset 0x302-0x401: upper middle character of each tile
+Offset 0x402-0x501: upper right character of each tile
+Offset 0x502-0x601: middle left character of each tile
+Offset 0x602-0x701: middle character of each tile
+Offset 0x702-0x801: middle right character of each tile
+Offset 0x802-0x901: lower left character of each tile
+Offset 0x902-0xA01: lower middle character of each tile
+Offset 0xA02-0xB01: lower right character of each tile
