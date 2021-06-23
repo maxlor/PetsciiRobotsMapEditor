@@ -197,7 +197,7 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	    { ROBOT_HOVERBOT_UD,      {  98, robotColor }},
 	    { ROBOT_HOVERBOT_ATTACK,  {  99, robotColor }},
 	    { ROBOT_EVILBOT,          { 100, robotColor }},
-	    { ROBOT_ROLLERBOT_LR,     { 164, robotColor }},
+	    { ROBOT_ROLLERBOT_LR,     { 165, robotColor }},
 	    { ROBOT_ROLLERBOT_UD,     { 164, robotColor }},
 	};
 	
@@ -216,6 +216,15 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 		painter.setCompositionMode(QPainter::CompositionMode_Darken);
 		painter.setBrush(color);
 		painter.drawRect(r);
+		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+		painter.setPen(QPen(Qt::white, 2));
+		if (object.unitType == ROBOT_HOVERBOT_LR or object.unitType == ROBOT_ROLLERBOT_LR) {
+			int y = r.top() + 3 * GLYPH_WIDTH / 2;
+			painter.drawLine(r.left() + GLYPH_WIDTH + 1, y, r.left() + 2 * GLYPH_WIDTH - 1, y);
+		} else if (object.unitType == ROBOT_HOVERBOT_UD or object.unitType == ROBOT_ROLLERBOT_UD) {
+			int x = r.left() + 3 * GLYPH_WIDTH / 2;
+			painter.drawLine(x, r.top() + GLYPH_WIDTH + 1, x, r.top() + 2 * GLYPH_HEIGHT - 1);
+		}
 	}  catch (std::out_of_range) {
 		try {
 			drawSpecialObject(painter, r, object.unitType);
@@ -227,16 +236,16 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 
 
 void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, int unitType) {
-	static const QColor weaponColor(255, 255, 100);
-	static const QColor toolColor(255, 128, 0);
+	static const QColor toolColor(255, 255, 100);
+	static const QColor weaponColor(255, 150, 0);
 	static const std::unordered_map<int, std::pair<QString, QColor>> textAndColor {
-		{ OBJECT_TRANSPORTER, { "Pad", { 150, 200, 255 }}},
-		{ OBJECT_DOOR, { "Door", { 150, 200, 255 }}},
+		{ OBJECT_TRANSPORTER, { "Pad", { 150, 255, 255 }}},
+		{ OBJECT_DOOR, { "Door", { 140, 190, 255 }}},
 		{ OBJECT_TRASH_COMPACTOR, { "TC", { 255, 64, 0 }}},
 		{ OBJECT_ELEVATOR, { "Lift", { 150, 200, 255 }}},
 		{ OBJECT_WATER_RAFT, { "Raft", { 150, 200, 255 }}},
 		{ OBJECT_KEY, { "Key", { 80, 130, 255 }}},
-		{ OBJECT_TIME_BOMB, { "Bmb", weaponColor }},
+		{ OBJECT_TIME_BOMB, { "Bom", weaponColor }},
 		{ OBJECT_EMP, { "EMP", toolColor }},
 		{ OBJECT_PISTOL, { "Gun", weaponColor }},
 		{ OBJECT_PLASMA_GUN, { "Plas", weaponColor }},
