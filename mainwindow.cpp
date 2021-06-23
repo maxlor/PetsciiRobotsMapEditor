@@ -13,6 +13,8 @@
 
 static constexpr char SETTINGS_TILESET_DIRECTORY[] = "General/TilesetDirectory";
 static constexpr char SETTINGS_TILESET_PATH[] = "General/TilesetPath";
+static constexpr char SETTINGS_WINDOW_GEOMETRY[] = "General/WindowGeometry";
+static constexpr char SETTINGS_WINDOW_MAXIMIZED[] = "General/WindowMaximized";
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -82,10 +84,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.mapWidget, &MapWidget::tileDragged, this, &MainWindow::onTileClicked);
 	connect(_ui.mapWidget, &MapWidget::objectClicked, this, &MainWindow::onObjectClicked);
 	connect(_ui.tileWidget, &TileWidget::tileSelected, this, &MainWindow::onTileWidgetTileSelected);
+	
+	const QSettings settings;
+	const QRect geometry = settings.value(SETTINGS_WINDOW_GEOMETRY).toRect();
+	if (geometry.isValid()) { setGeometry(geometry); }
+	const bool maximized = settings.value(SETTINGS_WINDOW_MAXIMIZED).toBool();
+	if (maximized) { showMaximized(); }
 }
 
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+	QSettings settings;
+	settings.setValue(SETTINGS_WINDOW_GEOMETRY, geometry());
+	settings.setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
+}
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
