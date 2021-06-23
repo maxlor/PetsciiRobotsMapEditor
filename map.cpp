@@ -20,7 +20,7 @@ int Map::tileNo(int x, int y) const {
 }
 
 
-const Map::Object &Map::object(int no) {
+const Map::Object &Map::object(int no) const {
 	Q_ASSERT_X(0 <= no and no <= 63, Q_FUNC_INFO,
 	           QString("Can't get object no %1").arg(no).toUtf8().constData());
 	return _objects[no];

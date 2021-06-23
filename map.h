@@ -37,7 +37,7 @@ public:
 	static constexpr int height() { return MAP_HEIGHT; }
 	
 	int tileNo(int x, int y) const;
-	const Object &object(int no);
+	const Object &object(int no) const;
 	
 	void setTile(int x, int y, int tileNo);
 	void setObject(int objectNo, const Object &object);

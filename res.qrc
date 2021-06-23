@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>res/characters.png</file>
-        <file>res/tileset.pet</file>
         <file>res/level-a</file>
         <file>res/level-b</file>
         <file>res/level-c</file>

@@ -187,6 +187,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionLoadTileset"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -402,6 +403,11 @@
    </property>
    <property name="shortcut">
     <string>G</string>
+   </property>
+  </action>
+  <action name="actionLoadTileset">
+   <property name="text">
+    <string>Load &amp;Tileset...</string>
    </property>
   </action>
  </widget>

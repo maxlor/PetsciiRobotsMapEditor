@@ -1,11 +1,18 @@
 #include "mainwindow.h"
+#include <QDir>
+#include <QFileDialog>
 #include <QFontMetrics>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QSettings>
 #include "map.h"
 #include "multisignalblocker.h"
 #include "tileset.h"
 #include <QtDebug>
+
+
+static constexpr char SETTINGS_TILESET_DIRECTORY[] = "General/TilesetDirectory";
+static constexpr char SETTINGS_TILESET_PATH[] = "General/TilesetPath";
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -24,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.statusbar->addPermanentWidget(_labelStatusTile);
 	
 	_tileset = new Tileset();
+	autoLoadTileset();
 	_ui.mapWidget->setTileset(_tileset);
 	_ui.tileWidget->setTileset(_tileset);
 	
@@ -39,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_viewFilterActions.push_front(_ui.actionShowHoverable);
 	_viewFilterActions.push_front(_ui.actionShowWalkable);
 	
+	connect(_ui.actionLoadTileset, &QAction::triggered, this, &MainWindow::onLoadTileset);
 	connect(_ui.actionQuit, &QAction::triggered, this, &MainWindow::onQuit);
 	for (QAction *action : _viewFilterActions) {
 		connect(action, &QAction::triggered, this, &MainWindow::onViewFilterChanged);
@@ -123,6 +132,31 @@ void MainWindow::onActionDrawTilesTriggered() {
 }
 
 
+void MainWindow::onLoadTileset() {
+	QSettings settings;
+	QString directory = settings.value(SETTINGS_TILESET_DIRECTORY, QDir::homePath()).toString();
+	QFileDialog *d = new QFileDialog(this, "Load Tileset...", directory);
+	d->setAcceptMode(QFileDialog::AcceptOpen);
+	d->setFileMode(QFileDialog::ExistingFile);
+	d->setNameFilters({ "tileset.pet", "Any file (*)"});
+	int result = d->exec();
+	if (result == QFileDialog::Accepted) {
+		if (d->selectedFiles().size() > 0) {
+			const QString path = d->selectedFiles().at(0);
+			settings.setValue(SETTINGS_TILESET_DIRECTORY, d->directory().canonicalPath());
+			QString error = _tileset->load(path);
+			if (error.isNull()) {
+				settings.setValue(SETTINGS_TILESET_PATH, path);
+			} else {
+				QMessageBox::critical(this, "Error Loading Tileset",
+				                      QString("Cannot load tileset: %1").arg(error));
+			}
+		}
+	}
+	delete d;
+}
+
+
 void MainWindow::onMouseOverTile(int x, int y) {
 	_labelStatusCoords->setText(QString("Map Tile: %1/%2").arg(x).arg(y));
 }
@@ -140,7 +174,6 @@ void MainWindow::onTileClicked(int x, int y) {
 		int tileNo = _ui.tileWidget->selectedTile();
 		if (0 <= tileNo and tileNo < TILE_COUNT) {
 			_map->setTile(x, y, tileNo);
-			_ui.mapWidget->update();
 		}
 	}
 }
@@ -165,6 +198,30 @@ void MainWindow::onViewFilterChanged() {
 		if (action == sender()) { continue; }
 		action->setChecked(false);
 	}
+}
+
+
+void MainWindow::autoLoadTileset() {
+	QSettings settings;
+	const QString path = settings.value(SETTINGS_TILESET_PATH).toString();
+	if (not path.isNull()) {
+		QString error = _tileset->load(path);
+		if (error.isNull()) {
+			return;
+		}
+	}
+	
+	QMetaObject::invokeMethod(this, [&]() {
+		static const QString text = QString(
+					"<html><p>To use this map editor, you need to load the tileset. It is shipped "
+					"with the game <i>Attack of the PETSCII Robots</i>, the file you need is "
+					"called <b>tileset.pet</b>.<p><p>Load the tileset now?</p>");
+		
+		QMessageBox::StandardButton button = QMessageBox::question(this, "Load Tileset?", text);
+		if (button == QMessageBox::Yes) {
+			onLoadTileset();
+		}
+		}, Qt::QueuedConnection);
 }
 
 

@@ -2,22 +2,79 @@
 
 #include <QByteArray>
 #include <QFile>
-#include <QLoggingCategory>
 #include <QPainter>
 #include <cstring>
 #include "constants.h"
 #include "tile.h"
 
-Q_LOGGING_CATEGORY(lcTileset, "tileset");
+
+static constexpr char TILESET_PET_MAGIC[2] = { 0x00, 0x49 };
 
 
-Tileset::Tileset() {
+Tileset::Tileset(QObject *parent) : QObject(parent), _tiles(TILE_COUNT) {
 	readCharacters();
-	readTileset();
+	memset(_tileset, '#', sizeof(_tileset));
+	createTileImage(0);
+}
+
+
+Tileset::~Tileset() {
+	for (size_t i = 0; i < _tiles.size(); ++i) {
+		delete _tiles.at(i);
+		_tiles.at(i) = nullptr;
+	}
+}
+
+
+QString Tileset::load(const QString &path) {
+	QFile file(path);
+	if (not file.exists()) {
+		return QString("file \"%1\" does not exist").arg(path);
+	}
+	if (file.size() != sizeof(_tileset)) {
+		return QString("file %1 has size %2 but was expected to be size %3")
+		        .arg(path).arg(file.size()).arg(sizeof(_tileset));
+	}
 	
-	for (int i = 0; i < 256; ++i) {
+	if (not file.open(QFile::ReadOnly)) {
+		return QString("can't read file \"%1\": %2").arg(path, file.errorString());
+	}
+	
+	char magicBuffer[sizeof(TILESET_PET_MAGIC)];
+	qint64 bytesRead = file.read(magicBuffer, sizeof(magicBuffer));
+	if (bytesRead != sizeof(magicBuffer)) {
+		return QString("can't read magic of file \"%1\": got only %2 bytes but had requested %3")
+		        .arg(path).arg(bytesRead).arg(sizeof(magicBuffer));
+	}
+	
+	for (size_t i = 0; i < sizeof(TILESET_PET_MAGIC); ++i) {
+		if (magicBuffer[i] != TILESET_PET_MAGIC[i]) {
+			return QString("file \"%1\" is invalid because its magic (0x%2%3) is wrong "
+                           "(it should be 0x%4%5)")
+			        .arg(path)
+			        .arg(static_cast<unsigned int>(magicBuffer[0]) & 0xFF, 2, 16, QChar('0'))
+			        .arg(static_cast<unsigned int>(magicBuffer[1]) & 0xFF, 2, 16, QChar('0'))
+			        .arg(static_cast<unsigned int>(TILESET_PET_MAGIC[0]) & 0xFF, 2, 16, QChar('0'))
+			        .arg(static_cast<unsigned int>(TILESET_PET_MAGIC[1]) & 0xFF, 2, 16, QChar('0'));
+		}
+	}
+	
+	char restBuffer[sizeof(_tileset) - sizeof(TILESET_PET_MAGIC)];
+	bytesRead = file.read(restBuffer, sizeof(restBuffer));
+	if (bytesRead != sizeof(restBuffer)) {
+		return QString("can't read rest of file \"%1\": got only %2 bytes but had requested %3")
+		        .arg(path).arg(bytesRead).arg(sizeof(restBuffer));
+	}
+	
+	memcpy(_tileset, magicBuffer, sizeof(magicBuffer));
+	memcpy(&_tileset[sizeof(magicBuffer)], restBuffer, sizeof(restBuffer));
+	
+	for (int i = 0; i < TILE_COUNT; ++i) {
 		createTileImage(i);
 	}
+	
+	emit changed();
+	return QString();
 }
 
 
@@ -25,6 +82,11 @@ Tile Tileset::tile(int tileNo) const {
 	Q_ASSERT(0 <= tileNo and tileNo <= 255);
 	const uint8_t flags = _tileset[0x102 + tileNo];
 	return Tile(flags, tileImage(tileNo));
+}
+
+
+bool Tileset::isValid() const {
+	return _tileset[0] == 0x00 and _tileset[1] == 0x49;
 }
 
 
@@ -52,53 +114,27 @@ void Tileset::readCharacters() {
 	
 	QFile file(filename);
 	if (not file.exists()) {
-		qCWarning(lcTileset) << "file" << filename << "is missing";
+		qWarning("file \"%s\" does not exist", filename.toUtf8().constData());
 		return;
 	}
 
 	if (_characters.load(&file, nullptr)) {
 		_characters = _characters.convertToFormat(IMAGE_FORMAT);
 	} else {
-		qCWarning(lcTileset) << "cannot load file" << filename;
+		qWarning("cannot load file \"%s\"", filename.toUtf8().constData());
 	}
-}
-
-
-void Tileset::readTileset() {
-	static const QString filename = ":/res/tileset.pet";
-	
-	QFile file(filename);
-	if (not file.exists()) {
-		qCWarning(lcTileset) << "file" << filename << "is missing";
-		return;
-	}
-	if (file.size() != sizeof(_tileset)) {
-		qCWarning(lcTileset) << "file" << filename << "has size" << file.size() << "but it was"
-		                     << "expected to be size" << sizeof(_tileset);
-		return;
-	}
-	
-	if (not file.open(QFile::ReadOnly)) {
-		qCWarning(lcTileset()).nospace() << "Can't read file " << filename << ": "
-		                                 << file.errorString();
-		return;
-	}
-		
-	qint64 bytesRead = file.read(reinterpret_cast<char*>(_tileset), sizeof(_tileset));
-	Q_ASSERT(bytesRead = sizeof(_tileset));
 }
 
 
 void Tileset::createTileImage(int tileNo) {
+	Q_ASSERT(0 <= tileNo and tileNo < TILE_COUNT);
 	static constexpr int width = TILE_WIDTH * GLYPH_WIDTH;
 	static constexpr int height = TILE_HEIGHT * GLYPH_HEIGHT;
 	
-	auto pair = _tiles.try_emplace(tileNo, width, height, IMAGE_FORMAT);
-	Q_ASSERT(pair.second); // image did not exist before emplace() call
+	QImage *image = new QImage(width, height, IMAGE_FORMAT);
+	_tiles.at(tileNo) = image;
 	
-	const auto it = pair.first;
-	QImage &image = it->second;
-	QPainter painter(&image);
+	QPainter painter(image);
 	for (int row = 0; row < TILE_HEIGHT; ++row) {
 		for (int col = 0; col < TILE_WIDTH; ++col) {
 			Q_ASSERT(TILE_WIDTH == 3 and TILE_HEIGHT == 3);
@@ -112,16 +148,9 @@ void Tileset::createTileImage(int tileNo) {
 
 
 const QImage &Tileset::tileImage(int tileNo) const {
-	return _tiles.at(tileNo);
-}
-
-
-void Tileset::debugImage(const QImage &image) {
-	for (int row = 0; row < image.height(); ++row) {
-		QString t;
-		for (int col = 0; col < image.width(); ++col) {
-			t += image.pixel(col, row) == 0xFFFFFFFF ? "@" : " ";
-		}
-		qDebug() << Q_FUNC_INFO << t;
+	const QImage *pImage = _tiles.at(tileNo);
+	if (pImage) {
+		return *pImage;
 	}
+	return *_tiles.at(0); // first image is created in the constructor and always exists
 }

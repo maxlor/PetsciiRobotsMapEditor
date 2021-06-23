@@ -18,7 +18,7 @@ public:
 	explicit MapWidget(QWidget *parent = nullptr);
 	virtual ~MapWidget();
 	
-	void setMap(Map *map);
+	void setMap(const Map *map);
 	
 public slots:
 	void clearSelection();
@@ -59,7 +59,7 @@ private:
 	QPoint pixelToTile(QPoint pos);
 	
 	bool _objectsVisible = true;
-	Map *_map = nullptr;
+	const Map *_map = nullptr;
 	QImage *_tilesImage = nullptr;
 	QImage *_image = nullptr;
 	bool _redrawTiles = false;

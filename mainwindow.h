@@ -24,6 +24,7 @@ private slots:
 	void onAbout();
 	void onActionSelectTriggered();
 	void onActionDrawTilesTriggered();
+	void onLoadTileset();
 	void onMouseOverTile(int x, int y);
 	void onObjectClicked(int objectNo);
 	void onTileClicked(int x, int y);
@@ -32,6 +33,7 @@ private slots:
 	void onViewFilterChanged();
 	
 private:
+	void autoLoadTileset();
 	void activateTool(QAction *const action);
 	void updateLabelStatusTile();
 	

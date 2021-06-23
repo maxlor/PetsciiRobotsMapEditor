@@ -3,7 +3,7 @@
 #include <QRect>
 #include <cmath>
 #include "constants.h"
-#include <QtDebug>
+#include "tileset.h"
 
 
 AbstractTileWidget::AbstractTileWidget(QWidget *parent) : QWidget(parent) {}
@@ -13,7 +13,9 @@ AbstractTileWidget::~AbstractTileWidget() {}
 
 
 void AbstractTileWidget::setTileset(const Tileset *tileset) {
+	if (_tileset) { disconnect(_tileset); }
 	_tileset = tileset;
+	connect(_tileset, &Tileset::changed, [&]() { tilesetChanged(); });
 	tilesetChanged();
 }
 

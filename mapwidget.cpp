@@ -23,7 +23,7 @@ MapWidget::~MapWidget() {
 }
 
 
-void MapWidget::setMap(Map *map) {
+void MapWidget::setMap(const Map *map) {
 	disconnect(_map);
 	_map = map;
 	connect(_map, &Map::tilesChanged, this, &MapWidget::onMapTilesChanged);
