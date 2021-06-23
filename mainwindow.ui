@@ -13,7 +13,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
     <item>
-     <widget class="QScrollArea" name="scrollArea_2">
+     <widget class="ScrollArea" name="scrollAreaMap">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -96,7 +96,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QScrollArea" name="scrollArea">
+          <widget class="QScrollArea" name="scrollAreaTileSet">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -422,6 +422,12 @@
    <class>ObjectEditWidget</class>
    <extends>QGroupBox</extends>
    <header>objecteditwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ScrollArea</class>
+   <extends>QScrollArea</extends>
+   <header>scrollarea.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

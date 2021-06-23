@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.actionSelect->setChecked(true);
 	_ui.toolBar->toggleViewAction()->setEnabled(false);
 	_ui.actionShowObjects->setChecked(true);
+	_ui.scrollAreaMap->setPanButton(Qt::RightButton);
 	_ui.objectEditor->setVisible(false);
 	QFontMetrics fm(QApplication::font());
 	_labelStatusCoords = new QLabel(this);

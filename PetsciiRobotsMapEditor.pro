@@ -13,6 +13,7 @@ SOURCES += \
     mapwidget.cpp \
     multisignalblocker.cpp \
     objecteditwidget.cpp \
+    scrollarea.cpp \
     tile.cpp \
     tileset.cpp \
     tilewidget.cpp
@@ -25,6 +26,7 @@ HEADERS += \
     mapwidget.h \
     multisignalblocker.h \
     objecteditwidget.h \
+    scrollarea.h \
     tile.h \
     tileset.h \
     tilewidget.h
