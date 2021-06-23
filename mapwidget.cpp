@@ -40,6 +40,14 @@ void MapWidget::clearSelection() {
 }
 
 
+void MapWidget::setShowGridLines(bool enable) {
+	if (_showGridLines != enable) {
+		_showGridLines = enable;
+		update();
+	}
+}
+
+
 void MapWidget::setObjectsVisible(bool visible) {
 	_objectsVisible = visible;
 	update();
@@ -93,6 +101,19 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 				painter.setBrush(t.flags() & highlightFlags() ? highlightColor() : noHighlightColor());
 				painter.drawRect(r);
 			}
+		}
+	}
+	
+	painter.resetTransform();
+	painter.setPen(QPen(C::colorGrid, 1));
+	if (_showGridLines) {
+		for (int i = 1; i < MAP_WIDTH; ++i) {
+			const int x = i * TILE_WIDTH * GLYPH_WIDTH * scale();
+			painter.drawLine(x, 0, x, imageSize().height());
+		}
+		for (int i = 1; i < MAP_HEIGHT; ++i) {
+			const int y = i * TILE_HEIGHT * GLYPH_HEIGHT * scale();
+			painter.drawLine(0, y, imageSize().width(), y);
 		}
 	}
 }

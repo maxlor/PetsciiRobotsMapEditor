@@ -12,4 +12,5 @@ const QColor colorShootThrough(255, 128, 0, 128);
 const QColor colorPushOnto(0, 255, 255, 128);
 const QColor colorSearchable(255, 0, 255, 128);
 const QColor colorDarken(128, 128, 128, 128);
+const QColor colorGrid(150, 170, 0);
 }

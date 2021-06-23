@@ -22,6 +22,7 @@ public:
 	
 public slots:
 	void clearSelection();
+	void setShowGridLines(bool enable);
 	void setObjectsVisible(bool visible);
 	void clickEveryTile(); // TODO: remove
 	
@@ -64,6 +65,7 @@ private:
 	bool _redrawTiles = false;
 	bool _redrawImage = false;
 	bool _drag = false;
+	bool _showGridLines = false;
 };
 
 #endif // MAPWIDGET_H

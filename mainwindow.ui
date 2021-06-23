@@ -173,6 +173,7 @@
     <addaction name="actionZoomOut"/>
     <addaction name="separator"/>
     <addaction name="actionShowObjects"/>
+    <addaction name="actionShowGrid"/>
     <addaction name="separator"/>
     <addaction name="actionShowWalkable"/>
     <addaction name="actionShowHoverable"/>
@@ -390,6 +391,17 @@
    </property>
    <property name="toolTip">
     <string>Draw map tiles. Use this to draw the map background.</string>
+   </property>
+  </action>
+  <action name="actionShowGrid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;Grid</string>
+   </property>
+   <property name="shortcut">
+    <string>G</string>
    </property>
   </action>
  </widget>

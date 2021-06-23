@@ -49,6 +49,7 @@ extern const QColor colorShootThrough;
 extern const QColor colorPushOnto;
 extern const QColor colorSearchable;
 extern const QColor colorDarken;
+extern const QColor colorGrid;
 }
 
 #endif // CONSTANTS_H
