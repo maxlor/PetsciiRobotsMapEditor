@@ -2,6 +2,7 @@
 #define OBJECTEDITWIDGET_H
 
 #include "ui_objecteditwidget.h"
+#include "forward_list"
 
 class Map;
 
@@ -13,6 +14,9 @@ public:
 	
 	void loadObject(int objectNo);
 	void setMap(Map *map);
+	
+private slots:
+	void store();
 	
 private:
 	void loadDoor(int objectNo);

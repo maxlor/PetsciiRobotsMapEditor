@@ -14,8 +14,8 @@ class Map : public QObject {
 public:
 	struct Object {
 		enum class Kind {
-			Robot, TransporterPad, Door, TrashCompator, Elevator, WaterRaft, Key, HiddenObject,
-			Invalid
+			Player, Robot, TransporterPad, Door, TrashCompator, Elevator, WaterRaft, Key,
+			HiddenObject, Invalid
 		};
 		
 		uint8_t unitType;
@@ -37,7 +37,7 @@ public:
 	static constexpr int height() { return MAP_HEIGHT; }
 	
 	int tileNo(int x, int y) const;
-	Object &object(int no);
+	const Object &object(int no);
 	
 	void setTile(int x, int y, int tileNo);
 	void setObject(int objectNo, const Object &object);

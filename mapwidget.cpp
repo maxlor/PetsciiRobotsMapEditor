@@ -27,6 +27,8 @@ void MapWidget::setMap(Map *map) {
 	disconnect(_map);
 	_map = map;
 	connect(_map, &Map::tilesChanged, this, &MapWidget::onMapTilesChanged);
+	connect(_map, &Map::objectsChanged, this,
+	        static_cast<void(MapWidget::*)()>(&MapWidget::update));
 	_redrawImage = _redrawTiles = true;
 	update();
 }
@@ -50,7 +52,7 @@ void MapWidget::clickEveryTile() {
 			emit tileClicked(x, y);
 			if (_objectsVisible) {
 				for (int i = 0; i <= OBJECT_MAX; ++i) {
-					Map::Object &object = _map->object(i);
+					const Map::Object &object = _map->object(i);
 					if (object.x == x and object.y == y) {
 						emit objectClicked(i);
 						break;
@@ -135,7 +137,7 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 	_drag = true;
 	if (_objectsVisible) {
 		for (int i = 0; i <= OBJECT_MAX; ++i) {
-			Map::Object &object = _map->object(i);
+			const Map::Object &object = _map->object(i);
 			if (object.x == tilePos.x() and object.y == tilePos.y()) {
 				emit objectClicked(i);
 				return;

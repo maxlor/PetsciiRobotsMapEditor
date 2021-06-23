@@ -20,8 +20,9 @@ int Map::tileNo(int x, int y) const {
 }
 
 
-Map::Object &Map::object(int no) {
-	Q_ASSERT(0 <= no and no <= 63);
+const Map::Object &Map::object(int no) {
+	Q_ASSERT_X(0 <= no and no <= 63, Q_FUNC_INFO,
+	           QString("Can't get object no %1").arg(no).toUtf8().constData());
 	return _objects[no];
 }
 
@@ -36,7 +37,8 @@ void Map::setTile(int x, int y, int tileNo) {
 
 
 void Map::setObject(int objectNo, const Map::Object &object) {
-	Q_ASSERT(OBJECT_MIN <= objectNo and objectNo < OBJECT_MAX);
+	Q_ASSERT_X(OBJECT_MIN <= objectNo and objectNo <= OBJECT_MAX, Q_FUNC_INFO,
+	           QString("can't load objectNo %1").arg(objectNo).toUtf8().constData());
 	_objects[objectNo] = object;
 	emit objectsChanged();
 }
@@ -110,6 +112,7 @@ Map::Object::Kind Map::Object::kind() const {
 
 Map::Object::Kind Map::Object::kind(uint8_t unitType) {
 	switch (unitType) {
+	case 1: return Kind::Player;
 	case 2:
 	case 3:
 	case 4:
