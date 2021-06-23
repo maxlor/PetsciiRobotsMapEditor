@@ -2,13 +2,15 @@
 #define MAP_H
 
 #include <cstdint>
+#include <QObject>
 #include <QString>
 #include <list>
 #include <utility>
 #include "constants.h"
 
 
-class Map {
+class Map : public QObject {
+	Q_OBJECT
 public:
 	struct Object {
 		enum class Kind {
@@ -29,7 +31,7 @@ public:
 		static Kind kind(uint8_t unitType);
 	};
 	
-	Map();
+	Map(QObject *parent = nullptr);
 	
 	static constexpr int width() { return MAP_WIDTH; };
 	static constexpr int height() { return MAP_HEIGHT; }
@@ -37,7 +39,14 @@ public:
 	int tileNo(int x, int y) const;
 	Object &object(int no);
 	
+	void setTile(int x, int y, int tileNo);
+	void setObject(int objectNo, const Object &object);
+	
 	static const std::list<std::pair<uint8_t, QString> > &unitTypes();
+	
+signals:
+	void tilesChanged();
+	void objectsChanged();
 	
 private:
 	void readMap(const QString &filename);

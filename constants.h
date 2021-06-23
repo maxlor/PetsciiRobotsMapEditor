@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 
 #include <QColor>
+#include <QImage>
 
 #define MAP_WIDTH (128)
 #define MAP_HEIGHT (64)
@@ -9,11 +10,12 @@
 #define TILE_HEIGHT (3)
 #define GLYPH_WIDTH (8)
 #define GLYPH_HEIGHT (8)
-
-#define OBJECTS_MAX (63)
+#define TILE_COUNT (256)
 
 #define PLAYER_OBJ (0)
-#define OBJECT_MIN (1)
+#define UNITTYPE_NONE (0)
+#define UNITTYPE_PLAYER (1)
+#define OBJECT_MIN (0)
 #define OBJECT_MAX (63)
 #define ROBOT_MIN (1)
 #define ROBOT_MAX (28)
@@ -35,6 +37,8 @@
 #define OBJECT_PLASMA_GUN (132)
 #define OBJECT_MEDKIT (133)
 #define OBJECT_MAGNET (134)
+
+extern const QImage::Format IMAGE_FORMAT;
 
 namespace C {
 extern const QColor colorWalkable;

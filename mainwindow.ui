@@ -32,7 +32,7 @@
          <x>0</x>
          <y>0</y>
          <width>917</width>
-         <height>639</height>
+         <height>611</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -118,7 +118,7 @@
               <x>0</x>
               <y>0</y>
               <width>83</width>
-              <height>577</height>
+              <height>549</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -182,24 +182,61 @@
     <addaction name="actionShowPushOnto"/>
     <addaction name="actionShowSearchable"/>
    </widget>
-   <widget class="QMenu" name="menu_File">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menu_Help">
+   <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
     <addaction name="actionClickEveryTile"/>
    </widget>
-   <addaction name="menu_File"/>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="actionSelect"/>
+    <addaction name="actionDrawTiles"/>
+   </widget>
+   <addaction name="menuFile"/>
    <addaction name="menuView"/>
-   <addaction name="menu_Help"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="sizeGripEnabled">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>Main Toolbar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSelect"/>
+   <addaction name="actionDrawTiles"/>
+  </widget>
   <action name="actionShowWalkable">
    <property name="checkable">
     <bool>true</bool>
@@ -208,7 +245,7 @@
     <string>Show &amp;Walkable</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+1</string>
+    <string>1</string>
    </property>
   </action>
   <action name="actionShowHoverable">
@@ -219,7 +256,7 @@
     <string>Show &amp;Hoverable</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+2</string>
+    <string>2</string>
    </property>
   </action>
   <action name="actionShowMoveable">
@@ -230,7 +267,7 @@
     <string>Show &amp;Movable</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+3</string>
+    <string>3</string>
    </property>
   </action>
   <action name="actionShowDestructible">
@@ -241,7 +278,7 @@
     <string>Show &amp;Destructible</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+4</string>
+    <string>4</string>
    </property>
   </action>
   <action name="actionShowShootThrough">
@@ -252,7 +289,7 @@
     <string>Show Shoot &amp;Through</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+5</string>
+    <string>5</string>
    </property>
   </action>
   <action name="actionShowPushOnto">
@@ -263,7 +300,7 @@
     <string>Show &amp;Push Onto</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+6</string>
+    <string>6</string>
    </property>
   </action>
   <action name="actionShowSearchable">
@@ -274,7 +311,7 @@
     <string>Show &amp;Searchable</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+7</string>
+    <string>7</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -312,7 +349,7 @@
     <string>&amp;Show Objects</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Space</string>
+    <string>Space</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -323,6 +360,36 @@
   <action name="actionClickEveryTile">
    <property name="text">
     <string>Click Every Tile</string>
+   </property>
+  </action>
+  <action name="actionSelect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/pointer.svg</normaloff>:/res/pointer.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Select</string>
+   </property>
+   <property name="toolTip">
+    <string>Select objects on the map. Click on them to display and edit their properties.</string>
+   </property>
+  </action>
+  <action name="actionDrawTiles">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/paintbrush.svg</normaloff>:/res/paintbrush.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Draw Tiles</string>
+   </property>
+   <property name="toolTip">
+    <string>Draw map tiles. Use this to draw the map background.</string>
    </property>
   </action>
  </widget>
@@ -346,6 +413,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

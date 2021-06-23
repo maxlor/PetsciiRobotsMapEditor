@@ -1,5 +1,8 @@
 tileset.pet Format
 ------------------
+Offset 0x000-0x01: Magic (0x00, 0x49)
+
+Offset 0x002-0x101: Replacement tile when tile is destroyed
 
 Offset 0x102–0x201: Flags for each tile
 - 0x01: can walk on it

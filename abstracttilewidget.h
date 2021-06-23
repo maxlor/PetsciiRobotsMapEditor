@@ -28,11 +28,14 @@ public slots:
 	void setShowShootThrough(bool show);
 	void setShowPushOnto(bool show);
 	void setShowSearchable(bool show);
+	void setShowSelected(bool show);
 	
 protected:
-	virtual void flagsChanged() = 0;
+	virtual void highlightFlagsChanged() = 0;
 	virtual void scaleChanged() = 0;
 	virtual void tilesetChanged() = 0;
+	bool showSelected() const;
+	static void drawMargin(QPainter &painter, const QRect &rect, int margin);
 	
 	QColor highlightColor() const;
 	QColor noHighlightColor() const;
@@ -46,6 +49,7 @@ private:
 	uint8_t _highlightFlags = 0;
 	QColor _highlightColor;
 	double _scale = 1.0;
+	bool _showSelected = false;
 };
 
 #endif // ABSTRACTTILEWIDGET_H

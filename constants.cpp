@@ -1,5 +1,8 @@
 #include "constants.h"
 
+
+const QImage::Format IMAGE_FORMAT = QImage::Format_ARGB32_Premultiplied;
+
 namespace C {
 const QColor colorWalkable(0, 255, 0, 128);
 const QColor colorHoverable(255, 255, 0, 128);

@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include <QFontMetrics>
+#include <QKeyEvent>
 #include <QMessageBox>
 #include "map.h"
 #include "multisignalblocker.h"
@@ -8,10 +10,17 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.setupUi(this);
+	_ui.actionSelect->setChecked(true);
+	_ui.toolBar->toggleViewAction()->setEnabled(false);
 	_ui.actionShowObjects->setChecked(true);
 	_ui.objectEditor->setVisible(false);
+	QFontMetrics fm(QApplication::font());
 	_labelStatusCoords = new QLabel(this);
+	_labelStatusCoords->setMinimumWidth(fm.width("Map Tile: 000/00"));
+	_labelStatusCoords->setAlignment(Qt::AlignLeading | Qt::AlignBaseline);
+	_labelStatusTile = new QLabel(this);
 	_ui.statusbar->addPermanentWidget(_labelStatusCoords);
+	_ui.statusbar->addPermanentWidget(_labelStatusTile);
 	
 	_tileset = new Tileset();
 	_ui.mapWidget->setTileset(_tileset);
@@ -52,15 +61,30 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionShowShootThrough, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowShootThrough);
 	connect(_ui.actionShowPushOnto, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowPushOnto);
 	connect(_ui.actionShowSearchable, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowSearchable);
-	
-	connect(_ui.mapWidget, &MapWidget::mouseOverTile, this, &MainWindow::onMouseOverTile);
-	connect(_ui.mapWidget, &MapWidget::objectClicked, _ui.objectEditor, &ObjectEditWidget::loadObject);
+	connect(_ui.actionSelect, &QAction::triggered, this, &MainWindow::onActionSelectTriggered);
+	connect(_ui.actionDrawTiles, &QAction::triggered, this, &MainWindow::onActionDrawTilesTriggered);
 	connect(_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAbout);
 	connect(_ui.actionClickEveryTile, &QAction::triggered, _ui.mapWidget, &MapWidget::clickEveryTile);
+	
+	connect(_ui.mapWidget, &MapWidget::mouseOverTile, this, &MainWindow::onMouseOverTile);
+	connect(_ui.mapWidget, &MapWidget::tileClicked, this, &MainWindow::onTileClicked);
+	connect(_ui.mapWidget, &MapWidget::tileDragged, this, &MainWindow::onTileClicked);
+	connect(_ui.mapWidget, &MapWidget::objectClicked, this, &MainWindow::onObjectClicked);
+	connect(_ui.tileWidget, &TileWidget::tileSelected, this, &MainWindow::onTileWidgetTileSelected);
 }
 
 
 MainWindow::~MainWindow() {}
+
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+	if (event->key() == Qt::Key_Escape and event->modifiers() == Qt::NoModifier) {
+		event->accept();
+		if (not _ui.actionSelect->isChecked()) {
+			_ui.actionSelect->trigger();
+		}
+	}
+}
 
 
 void MainWindow::onAbout() {
@@ -86,8 +110,46 @@ void MainWindow::onAbout() {
 }
 
 
+void MainWindow::onActionSelectTriggered() {
+	activateTool(_ui.actionSelect);
+}
+
+
+void MainWindow::onActionDrawTilesTriggered() {
+	activateTool(_ui.actionDrawTiles);
+	updateLabelStatusTile();
+}
+
+
 void MainWindow::onMouseOverTile(int x, int y) {
-	_labelStatusCoords->setText(QString("%1/%2").arg(x).arg(y));
+	_labelStatusCoords->setText(QString("Map Tile: %1/%2").arg(x).arg(y));
+}
+
+
+void MainWindow::onObjectClicked(int objectNo) {
+	if (_ui.actionSelect->isChecked()) {
+		_ui.objectEditor->loadObject(objectNo);
+	}
+}
+
+
+void MainWindow::onTileClicked(int x, int y) {
+	if (_ui.actionDrawTiles->isChecked()) {
+		int tileNo = _ui.tileWidget->selectedTile();
+		if (0 <= tileNo and tileNo < TILE_COUNT) {
+			_map->setTile(x, y, tileNo);
+			_ui.mapWidget->update();
+		}
+	}
+}
+
+
+void MainWindow::onTileWidgetTileSelected(int tileNo) {
+	Q_UNUSED(tileNo);
+	if (not _ui.actionDrawTiles->isChecked()) {
+		_ui.actionDrawTiles->trigger();
+	}
+	updateLabelStatusTile();
 }
 
 
@@ -101,4 +163,21 @@ void MainWindow::onViewFilterChanged() {
 		if (action == sender()) { continue; }
 		action->setChecked(false);
 	}
+}
+
+
+void MainWindow::activateTool(QAction *const action) {
+	_ui.actionSelect->setChecked(action == _ui.actionSelect);
+	_ui.actionDrawTiles->setChecked(action == _ui.actionDrawTiles);
+	_ui.mapWidget->setShowSelected(action == _ui.actionSelect);
+	_ui.tileWidget->setShowSelected(action == _ui.actionDrawTiles);
+	_labelStatusTile->setVisible(action == _ui.actionDrawTiles);
+	
+	if (not _ui.actionSelect->isChecked()) { _ui.objectEditor->loadObject(-1); }
+}
+
+
+void MainWindow::updateLabelStatusTile() {
+	_labelStatusTile->setText(QString("Selected Tile: 0x%1")
+	                          .arg(_ui.tileWidget->selectedTile(), 2, 16, QChar('0')));
 }

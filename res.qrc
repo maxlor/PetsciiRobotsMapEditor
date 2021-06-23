@@ -11,5 +11,7 @@
         <file>res/level-g</file>
         <file>res/level-h</file>
         <file>res/level-i</file>
+        <file>res/paintbrush.svg</file>
+        <file>res/pointer.svg</file>
     </qresource>
 </RCC>

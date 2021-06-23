@@ -1,4 +1,6 @@
 #include "abstracttilewidget.h"
+#include <QPainter>
+#include <QRect>
 #include <cmath>
 #include "constants.h"
 #include <QtDebug>
@@ -25,7 +27,6 @@ void AbstractTileWidget::zoomIn() {
 	_scale = fmin(2.0, _scale * 2.0);
 	updateGeometry();
 	scaleChanged();
-	qDebug() << Q_FUNC_INFO << _scale;
 }
 
 
@@ -85,6 +86,28 @@ void AbstractTileWidget::setShowSearchable(bool show) {
 }
 
 
+void AbstractTileWidget::setShowSelected(bool show) {
+	_showSelected = show;
+	update();
+}
+
+
+bool AbstractTileWidget::showSelected() const {
+	return _showSelected;
+}
+
+
+void AbstractTileWidget::drawMargin(QPainter &painter, const QRect &rect, int margin) {
+	Q_ASSERT(painter.pen().style() == Qt::NoPen);
+	QRect oRect = rect.adjusted(-margin, -margin, margin, margin);
+	QRect iRect = rect.adjusted(-1, -1, 1, 1);	
+	painter.drawRect(QRect(oRect.topLeft(), QPoint(oRect.right(), iRect.top()))); // top
+	painter.drawRect(QRect(QPoint(oRect.left(), iRect.bottom()), oRect.bottomRight())); // bottom
+	painter.drawRect(QRect(QPoint(oRect.left(), rect.top()), QPoint(iRect.left(), rect.bottom()))); // left
+	painter.drawRect(QRect(QPoint(iRect.right(), rect.top()), QPoint(oRect.right(), rect.bottom()))); // right
+}
+
+
 QColor AbstractTileWidget::highlightColor() const {
 	return _highlightColor;
 }
@@ -111,5 +134,5 @@ void AbstractTileWidget::setHighlightFlag(int bit, bool set) {
 	} else {
 		_highlightFlags &= ~(1 << bit);
 	}
-	flagsChanged();
+	highlightFlagsChanged();
 }

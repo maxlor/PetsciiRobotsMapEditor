@@ -6,7 +6,7 @@
 Q_LOGGING_CATEGORY(lcMap, "map");
 
 
-Map::Map() {
+Map::Map(QObject *parent) : QObject(parent) {
 	memset(_tiles, 0, sizeof(_tiles));
 	memset(_objects, 0, sizeof(_objects));
 	readMap(":/res/level-d"); // TODO make configurable
@@ -23,6 +23,22 @@ int Map::tileNo(int x, int y) const {
 Map::Object &Map::object(int no) {
 	Q_ASSERT(0 <= no and no <= 63);
 	return _objects[no];
+}
+
+
+void Map::setTile(int x, int y, int tileNo) {
+	int oldTileNo = this->tileNo(x, y);
+	if (oldTileNo != tileNo) {
+		_tiles[x + MAP_WIDTH * y] = tileNo;
+		emit tilesChanged();
+	}
+}
+
+
+void Map::setObject(int objectNo, const Map::Object &object) {
+	Q_ASSERT(OBJECT_MIN <= objectNo and objectNo < OBJECT_MAX);
+	_objects[objectNo] = object;
+	emit objectsChanged();
 }
 
 
@@ -73,8 +89,8 @@ void Map::readMap(const QString &filename) {
 		return;
 	}
 	
-	file.seek(3);
-	for (int i = 1; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].unitType)); }
+	file.seek(2);
+	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].unitType)); }
 	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].x)); }
 	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].y)); }
 	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].a)); }

@@ -17,15 +17,27 @@ public:
 	MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 	
+protected:
+	void keyPressEvent(QKeyEvent *event) override;
+	
 private slots:
 	void onAbout();
+	void onActionSelectTriggered();
+	void onActionDrawTilesTriggered();
 	void onMouseOverTile(int x, int y);
+	void onObjectClicked(int objectNo);
+	void onTileClicked(int x, int y);
+	void onTileWidgetTileSelected(int tileNo);
 	void onQuit();
 	void onViewFilterChanged();
 	
 private:
+	void activateTool(QAction *const action);
+	void updateLabelStatusTile();
+	
 	Ui::MainWindow _ui;
 	QLabel *_labelStatusCoords;
+	QLabel *_labelStatusTile;
 	Map *_map = nullptr;
 	Tileset *_tileset = nullptr;
 	std::forward_list<QAction*> _viewFilterActions;

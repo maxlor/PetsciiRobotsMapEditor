@@ -11,27 +11,35 @@
 
 MapWidget::MapWidget(QWidget *parent) : AbstractTileWidget(parent) {
 	setMouseTracking(true);
+	
+	_image = new QImage(imageSize(), IMAGE_FORMAT);
+	_tilesImage = new QImage(imageSize(), IMAGE_FORMAT);
 }
 
 
 MapWidget::~MapWidget() {
-	delete _tilesImage;
 	delete _image;
+	delete _tilesImage;
 }
 
 
 void MapWidget::setMap(Map *map) {
+	disconnect(_map);
 	_map = map;
-	makeTilesImage();
-	makeObjectsImage();
-	makeImage();
+	connect(_map, &Map::tilesChanged, this, &MapWidget::onMapTilesChanged);
+	_redrawImage = _redrawTiles = true;
+	update();
+}
+
+
+void MapWidget::clearSelection() {
+	// TODO
 	update();
 }
 
 
 void MapWidget::setObjectsVisible(bool visible) {
 	_objectsVisible = visible;
-	makeImage();
 	update();
 }
 
@@ -41,7 +49,7 @@ void MapWidget::clickEveryTile() {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
 			emit tileClicked(x, y);
 			if (_objectsVisible) {
-				for (int i = 0; i <= OBJECTS_MAX; ++i) {
+				for (int i = 0; i <= OBJECT_MAX; ++i) {
 					Map::Object &object = _map->object(i);
 					if (object.x == x and object.y == y) {
 						emit objectClicked(i);
@@ -59,10 +67,32 @@ void MapWidget::clickEveryTile() {
 
 void MapWidget::paintEvent(QPaintEvent *event) {
 	Q_UNUSED(event);
-	if (_image == nullptr) { return; }
+	
+	if (_redrawImage) { makeImage(); }
+	
 	QPainter painter(this);
 	painter.scale(scale(), scale());
 	painter.drawImage(0, 0, *_image);
+	
+	if (_objectsVisible) {
+		painter.save();
+		for (int i = 0; i <= OBJECT_MAX; ++i) {
+			drawObject(painter, i);
+		}
+		painter.restore();
+	}
+	
+	if (highlightFlags()) {
+		for (int y = 0; y < MAP_HEIGHT; ++y) {
+			for (int x = 0; x < MAP_WIDTH; ++x) {
+				Tile t = tile(x, y);
+				QRect r = tileRect(x, y);
+				painter.setPen(Qt::NoPen);
+				painter.setBrush(t.flags() & highlightFlags() ? highlightColor() : noHighlightColor());
+				painter.drawRect(r);
+			}
+		}
+	}
 }
 
 
@@ -73,18 +103,22 @@ QSize MapWidget::sizeHint() const {
 }
 
 
-void MapWidget::flagsChanged() {
-	makeImage();
+void MapWidget::highlightFlagsChanged() {
+	_redrawImage = true;
 	update();
 }
 
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
-	const QPoint p = event->pos();
-	const int x = p.x() / scale() / GLYPH_WIDTH / TILE_WIDTH;
-	const int y = p.y() / scale() / GLYPH_HEIGHT / TILE_HEIGHT;
-	emit mouseOverTile(x, y);
-	QWidget::mouseMoveEvent(event);
+	QPoint tilePos = pixelToTile(event->pos());
+	emit mouseOverTile(tilePos.x(), tilePos.y());
+	
+	if (_drag) {
+		event->accept();
+		emit tileDragged(tilePos.x(), tilePos.y());
+	} else {
+		QWidget::mouseMoveEvent(event);
+	}
 }
 
 
@@ -94,14 +128,15 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 		return;
 	}
 	
-	const QPoint p = event->pos();
-	const int x = p.x() / scale() / GLYPH_WIDTH / TILE_WIDTH;
-	const int y = p.y() / scale() / GLYPH_HEIGHT / TILE_HEIGHT;
-	emit tileClicked(x, y);
+	event->accept();
+	QPoint tilePos = pixelToTile(event->pos());
+	emit mouseOverTile(tilePos.x(), tilePos.y());
+	emit tileClicked(tilePos.x(), tilePos.y());
+	_drag = true;
 	if (_objectsVisible) {
-		for (int i = 0; i <= OBJECTS_MAX; ++i) {
+		for (int i = 0; i <= OBJECT_MAX; ++i) {
 			Map::Object &object = _map->object(i);
-			if (object.x == x and object.y == y) {
+			if (object.x == tilePos.x() and object.y == tilePos.y()) {
 				emit objectClicked(i);
 				return;
 			}
@@ -112,14 +147,37 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 }
 
 
+void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
+	if (event->button() == Qt::LeftButton) {
+		event->accept();
+		_drag = false;
+		emit mouseReleased();
+	} else {
+		QWidget::mouseReleaseEvent(event);
+	}
+}
+
+
 void MapWidget::scaleChanged() {
-	makeImage();
 	update();
 }
 
 
 void MapWidget::tilesetChanged() {
-	makeImage();
+	_redrawImage = _redrawTiles = true;
+	update();
+}
+
+
+void MapWidget::onMapObjectsChanged() {
+	if (_objectsVisible) {
+		update();
+	}
+}
+
+
+void MapWidget::onMapTilesChanged() {
+	_redrawImage = _redrawTiles = true;
 	update();
 }
 
@@ -134,7 +192,7 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	static const QColor playerColor(128, 255, 128);
 	static const QColor robotColor(255, 128, 128);
 	static const std::unordered_map<uint8_t, std::pair<int, QColor>> objectTiles = {
-	    { PLAYER_OBJ,             {  97, playerColor }},
+	    { UNITTYPE_PLAYER,        {  97, playerColor }},
 	    { ROBOT_HOVERBOT_LR,      {  98, robotColor }},
 	    { ROBOT_HOVERBOT_UD,      {  98, robotColor }},
 	    { ROBOT_HOVERBOT_ATTACK,  {  99, robotColor }},
@@ -144,99 +202,107 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	};
 	
 	const Map::Object &object = _map->object(objectNo);
+	if (object.unitType == UNITTYPE_NONE) { return; }
+	const QRect r = tileRect(object.x, object.y);
 	std::pair<int, QColor> pair;
 	try {
 		pair = objectTiles.at(object.unitType);
-	}  catch (std::out_of_range) {
-		pair = { -object.unitType, QColor() };
-	}
-	const int &tileNo = pair.first;
-	const QColor &color = pair.second;
-	
-	const QRect r = tileRect(object.x, object.y);
-	painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-	painter.drawImage(r, tileset()->tile(tileNo).image());
-	if (tileNo >= 0) { // special tiles are already colorized because this doesn't work with transparency
+		
+		const int &tileNo = pair.first;
+		const QColor &color = pair.second;
+		
+		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+		painter.drawImage(r, tileset()->tile(tileNo).image());
 		painter.setCompositionMode(QPainter::CompositionMode_Darken);
 		painter.setBrush(color);
 		painter.drawRect(r);
-	}
+	}  catch (std::out_of_range) {
+		try {
+			drawSpecialObject(painter, r, object.unitType);
+		} catch (std::out_of_range) {
+			// draw nothing
+		}
+	}	
+}
+
+
+void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, int unitType) {
+	static const QColor weaponColor(255, 255, 100);
+	static const QColor toolColor(255, 128, 0);
+	static const std::unordered_map<int, std::pair<QString, QColor>> textAndColor {
+		{ OBJECT_TRANSPORTER, { "Pad", { 150, 200, 255 }}},
+		{ OBJECT_DOOR, { "Door", { 150, 200, 255 }}},
+		{ OBJECT_TRASH_COMPACTOR, { "TC", { 255, 64, 0 }}},
+		{ OBJECT_ELEVATOR, { "Lift", { 150, 200, 255 }}},
+		{ OBJECT_WATER_RAFT, { "Raft", { 150, 200, 255 }}},
+		{ OBJECT_KEY, { "Key", { 80, 130, 255 }}},
+		{ OBJECT_TIME_BOMB, { "Bmb", weaponColor }},
+		{ OBJECT_EMP, { "EMP", toolColor }},
+		{ OBJECT_PISTOL, { "Gun", weaponColor }},
+		{ OBJECT_PLASMA_GUN, { "Plas", weaponColor }},
+		{ OBJECT_MEDKIT, { "Med", { 100, 255, 100 }}},
+		{ OBJECT_MAGNET, { "Mag", toolColor }},
+	};
+	static const QColor objectBgColor(0, 0, 0, 180);
+	const std::pair<QString, QColor> textAndColorPair = textAndColor.at(unitType);
+	painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+	painter.setPen(QPen(textAndColorPair.second, 2));
+	painter.setBrush(objectBgColor);
+	QFont font("Sans-Serif");
+	font.setPixelSize(8);
+	painter.setFont(font);
+	painter.drawEllipse(rect.adjusted(1, 1, -1, -1));
+	painter.setPen(textAndColorPair.second);
+	painter.drawText(rect, Qt::AlignCenter, textAndColorPair.first);
 }
 
 
 void MapWidget::makeTilesImage() {
-	delete _tilesImage;
-	_tilesImage = nullptr;
 	if (_map == nullptr or tileset() == nullptr) { return; }
-	_tilesImage = new QImage(imageSize(), QImage::Format_ARGB32_Premultiplied);
 	QPainter painter(_tilesImage);
 	painter.setPen(Qt::NoPen);
 	
-	for (int y = 0; y < 64; ++y) {
-		for (int x = 0; x < 128; ++x) {
-			Tile t = tile(x, y);
-			QRect r = tileRect(x, y);
+	for (int y = 0; y < MAP_HEIGHT; ++y) {
+		for (int x = 0; x < MAP_WIDTH; ++x) {
+			const Tile t = tile(x, y);
+			const QRect r = tileRect(x, y);
 			painter.drawImage(r, t.image());
 		}
 	}
-}
-
-
-void MapWidget::makeObjectsImage() {
-	
-	
-	if (_map == nullptr or tileset() == nullptr) { return; }
-	if (not _objectsImage) {
-		_objectsImage = new QImage(imageSize(), QImage::Format_ARGB32_Premultiplied);
-	}
-	_objectsImage->fill(Qt::transparent);
-	
-	QPainter painter(_objectsImage);
-	painter.setPen(Qt::NoPen);
-	
-	drawObject(painter, PLAYER_OBJ);
-	
-	for (int i = OBJECT_MIN; i <= OBJECT_MAX; ++i) {
-		Map::Object &object = _map->object(i);
-		if (object.kind() != Map::Object::Kind::Invalid) {
-			drawObject(painter, i);
-		}
-	}
+	_redrawTiles = false;
+	_redrawImage = true;
 }
 
 
 void MapWidget::makeImage() {
-	delete _image;
-	if (_map == nullptr or tileset() == nullptr) { return; }
-	_image = new QImage(imageSize(), QImage::Format_ARGB32_Premultiplied);
+	if (_map == nullptr or tileset() == nullptr) {
+		_image->fill(Qt::black);
+		return;
+	}
+	
+	if (_redrawTiles) { makeTilesImage(); }
+//	if (_redrawObjects and _objectsVisible) { makeObjectsImage(); }
+	
 	QPainter painter(_image);
 	painter.setPen(Qt::NoPen);
 	painter.drawImage(0, 0, *_tilesImage);
-	
-	if (_objectsImage and _objectsVisible) {
-		painter.drawImage(QPoint(0, 0), *_objectsImage, _objectsImage->rect(), Qt::NoOpaqueDetection);
-	}
-	
-	if (highlightFlags()) {
-		for (int y = 0; y < 64; ++y) {
-			for (int x = 0; x < 128; ++x) {
-				Tile t = tile(x, y);
-				QRect r = tileRect(x, y);
-				painter.setBrush(t.flags() & highlightFlags() ? highlightColor() : noHighlightColor());
-				painter.drawRect(r);
-			}
-		}
-	}
 }
 
 
-Tile MapWidget::tile(int x, int y) {
+Tile MapWidget::tile(int x, int y) const {
 	int tileNo = _map->tileNo(x, y);
 	return tileset()->tile(tileNo);
 }
 
 
-QRect MapWidget::tileRect(int x, int y) {
+QRect MapWidget::tileRect(int x, int y) const {
 	return QRect(x * TILE_WIDTH * GLYPH_WIDTH, y * TILE_HEIGHT * GLYPH_HEIGHT,
 	             TILE_WIDTH * GLYPH_WIDTH, TILE_HEIGHT * GLYPH_HEIGHT);
+}
+
+
+QPoint MapWidget::pixelToTile(QPoint pos) {
+	const int x = pos.x() / scale() / GLYPH_WIDTH / TILE_WIDTH;
+	const int y = pos.y() / scale() / GLYPH_HEIGHT / TILE_HEIGHT;
+	return QPoint(x, y);
 }

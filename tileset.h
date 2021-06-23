@@ -1,8 +1,8 @@
 #ifndef TILESET_H
 #define TILESET_H
 
-#include <QString>
 #include <QImage>
+#include <QString>
 #include <unordered_map>
 
 class Tile;
@@ -19,8 +19,8 @@ private:
 	QImage characterImage(uint8_t c) const;
 	void readCharacters();
 	void readTileset();
-	const QImage &standardTile(int tileNo);
-	const QImage &specialTile(int tileNo);
+	void createTileImage(int tileNo);
+	const QImage &tileImage(int tileNo) const;
 	
 	QImage _characters;
 	uint8_t _tileset[0xB01];

@@ -1,19 +1,24 @@
 #include "tilewidget.h"
 #include <QImage>
+#include <QMouseEvent>
 #include <QPainter>
+#include <QPoint>
+#include <QPointF>
 #include <QRect>
 #include "constants.h"
 #include "tile.h"
 #include "tileset.h"
 #include <QtDebug>
 
-
 static const int TILES_PER_ROW = 4;
-static const int MARGIN = 2;
+static const int OUTER_MARGIN = 1;
+static const int TILE_MARGIN = 1;
+static const QColor MARGIN_COLOR = Qt::red;
+static const QColor SELECTED_COLOR = QColor(66, 255, 0);
 
 
 TileWidget::TileWidget(QWidget *parent) : AbstractTileWidget(parent) {
-	
+	setShowSelected(true); // TODO remove
 }
 
 
@@ -22,18 +27,41 @@ TileWidget::~TileWidget() {
 }
 
 
+int TileWidget::selectedTile() const {
+	return _selectedTile;
+}
+
+
+void TileWidget::mousePressEvent(QMouseEvent *event) {
+	const QPoint p = (event->pos() - QPoint(OUTER_MARGIN, OUTER_MARGIN));
+	if (p.x() < 0 or p.y() < 0) { return; }
+	int col = p.x() / (tileSize().width() * scale());
+	int row = p.y() / (tileSize().height() * scale());
+	const int outerCol = col / TILES_PER_ROW;
+	col -= outerCol * TILES_PER_ROW;
+	row += outerCol * rowsPerColumn();
+	_selectedTile = row * TILES_PER_ROW + col;
+	update();
+	emit tileSelected(_selectedTile);
+}
+
+
 void TileWidget::paintEvent(QPaintEvent *event) {
 	Q_UNUSED(event);
 	if (tileset() == nullptr) { return; }
 	QPainter painter(this);
-	painter.scale(scale(), scale());
-	if (scale() == 2) {
-		painter.translate(-MARGIN * 0.25, 0);
-	}
-	painter.drawImage(0, 0, *_image);
+	
+	// draw outer margin
+	painter.setBrush(MARGIN_COLOR);
 	painter.setPen(Qt::NoPen);
+	drawMargin(painter, QRect(QPoint(0, 0), sizeHint()), OUTER_MARGIN);
 	
+	// draw tiles
+	painter.translate(OUTER_MARGIN, OUTER_MARGIN);
+	painter.scale(scale(), scale());
+	painter.drawImage(0, 0, *_image);
 	
+	// draw highlight overlay
 	if (highlightFlags()) {
 		for (int tileNo = 0; tileNo < 256; ++tileNo) {
 			const Tile tile = tileset()->tile(tileNo);
@@ -41,19 +69,21 @@ void TileWidget::paintEvent(QPaintEvent *event) {
 			painter.drawRect(tileRect(tileNo));
 		}
 	}
+	
+	// draw active border
+	if (showSelected() and _selectedTile != -1) {
+		painter.setBrush(SELECTED_COLOR);
+		drawMargin(painter, tileRect(_selectedTile, false), TILE_MARGIN * 2);
+	}
 }
 
 
 QSize TileWidget::sizeHint() const {
-	QSize result = imageSize() * scale() ;
-	if (scale() == 2) {
-		result -= QSize(MARGIN, 0);
-	}
-	return result;
+	return imageSize() * scale() + QSize(OUTER_MARGIN * 2, OUTER_MARGIN * 2);
 }
 
 
-void TileWidget::flagsChanged() {
+void TileWidget::highlightFlagsChanged() {
 	makeImage();
 	update();
 }
@@ -71,23 +101,31 @@ void TileWidget::tilesetChanged() {
 }
 
 
+QSize TileWidget::tileSize() const {
+	return QSize(TILE_WIDTH * GLYPH_WIDTH + 2 * TILE_MARGIN,
+	             TILE_HEIGHT * GLYPH_HEIGHT + 2 * TILE_MARGIN);
+}
+
+
 QSize TileWidget::imageSize() const {
 	const int horiTiles = tileColumns() * TILES_PER_ROW;
-	const int vertTiles = 256 / horiTiles;
-	return QSize(horiTiles * (TILE_WIDTH * GLYPH_WIDTH + MARGIN) + MARGIN,
-	             vertTiles * (TILE_HEIGHT * GLYPH_HEIGHT + MARGIN) + MARGIN);
+	const int vertTiles = (TILE_COUNT + (TILES_PER_ROW - 1)) / horiTiles;
+	return QSize(horiTiles * tileSize().width(), vertTiles * tileSize().height());
 }
 
 
 void TileWidget::makeImage() {
 	delete _image;
-	_image = new QImage(imageSize(), QImage::Format_ARGB32_Premultiplied);
+	_image = new QImage(imageSize(), IMAGE_FORMAT);
 	QPainter painter(_image);
-	painter.fillRect(_image->rect(), Qt::darkGray);
+	painter.setPen(Qt::NoPen);
+	painter.setBrush(Qt::darkGray);
 	
 	for (int tileNo = 0; tileNo < 256; ++tileNo) {
 		const Tile tile = tileset()->tile(tileNo);
-		painter.drawImage(tileRect(tileNo), tile.image());
+		const QRect r = tileRect(tileNo, false);
+		drawMargin(painter, r, TILE_MARGIN);
+		painter.drawImage(r.topLeft(), tile.image());
 	}
 }
 
@@ -97,13 +135,23 @@ int TileWidget::tileColumns() const {
 }
 
 
-QRect TileWidget::tileRect(int tileNo) const {
-	int tileCol = tileNo / (256 / tileColumns());
-	tileNo -= tileCol * (256 / tileColumns());
-	int row = tileNo / TILES_PER_ROW;
+int TileWidget::rowsPerColumn() const {
+	static constexpr int rows = (TILE_COUNT + TILES_PER_ROW - 1) / TILES_PER_ROW;
+	return (rows + tileColumns() - 1) / tileColumns();
+}
+
+
+QRect TileWidget::tileRect(int tileNo, bool withMargin) const {
+	const int tilesPerColumn = rowsPerColumn() * TILES_PER_ROW;
+	const int outerCol = tileNo / tilesPerColumn;
+	tileNo -= outerCol * tilesPerColumn;
+	const int row = tileNo / TILES_PER_ROW;
 	tileNo -= row * TILES_PER_ROW;
-	int col = tileNo;
-	return QRect((tileCol * TILES_PER_ROW + col) * (TILE_WIDTH * GLYPH_WIDTH + MARGIN) + MARGIN,
-	             row * TILE_HEIGHT * GLYPH_HEIGHT + (row + 1) * MARGIN,
-	             TILE_WIDTH * GLYPH_WIDTH, TILE_HEIGHT * GLYPH_HEIGHT);
+	const int col = tileNo;
+	QRect result((outerCol * TILES_PER_ROW + col) * tileSize().width(), row * tileSize().height(),
+	             tileSize().width(), tileSize().height());
+	if (not withMargin) {
+		result.adjust(TILE_MARGIN, TILE_MARGIN, -TILE_MARGIN, -TILE_MARGIN);
+	}
+	return result;
 }

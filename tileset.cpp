@@ -14,17 +14,17 @@ Q_LOGGING_CATEGORY(lcTileset, "tileset");
 Tileset::Tileset() {
 	readCharacters();
 	readTileset();
+	
+	for (int i = 0; i < 256; ++i) {
+		createTileImage(i);
+	}
 }
 
 
 Tile Tileset::tile(int tileNo) const {
-	if (0 <= tileNo) {
-		Q_ASSERT(tileNo <= 255);
-		const uint8_t flags = _tileset[0x102 + tileNo];
-		return Tile(flags, const_cast<Tileset*>(this)->standardTile(tileNo));
-	} else {
-		return Tile(0, const_cast<Tileset*>(this)->specialTile(tileNo));
-	}
+	Q_ASSERT(0 <= tileNo and tileNo <= 255);
+	const uint8_t flags = _tileset[0x102 + tileNo];
+	return Tile(flags, tileImage(tileNo));
 }
 
 
@@ -57,7 +57,7 @@ void Tileset::readCharacters() {
 	}
 
 	if (_characters.load(&file, nullptr)) {
-		_characters = _characters.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+		_characters = _characters.convertToFormat(IMAGE_FORMAT);
 	} else {
 		qCWarning(lcTileset) << "cannot load file" << filename;
 	}
@@ -66,7 +66,6 @@ void Tileset::readCharacters() {
 
 void Tileset::readTileset() {
 	static const QString filename = ":/res/tileset.pet";
-	memset(_tileset, 0, sizeof(_tileset));
 	
 	QFile file(filename);
 	if (not file.exists()) {
@@ -85,72 +84,35 @@ void Tileset::readTileset() {
 		return;
 	}
 		
-	file.read(reinterpret_cast<char*>(_tileset), sizeof(_tileset));
+	qint64 bytesRead = file.read(reinterpret_cast<char*>(_tileset), sizeof(_tileset));
+	Q_ASSERT(bytesRead = sizeof(_tileset));
 }
 
 
-const QImage &Tileset::standardTile(int tileNo) {
-	auto pair = _tiles.try_emplace(tileNo, QImage(TILE_WIDTH * GLYPH_WIDTH,
-	                                              TILE_HEIGHT * GLYPH_HEIGHT,
-	                                              _characters.format()));
+void Tileset::createTileImage(int tileNo) {
+	static constexpr int width = TILE_WIDTH * GLYPH_WIDTH;
+	static constexpr int height = TILE_HEIGHT * GLYPH_HEIGHT;
+	
+	auto pair = _tiles.try_emplace(tileNo, width, height, IMAGE_FORMAT);
+	Q_ASSERT(pair.second); // image did not exist before emplace() call
+	
 	const auto it = pair.first;
-	bool isNew = pair.second;
-	if (isNew) {
-		QImage &image = it->second;
-		QPainter painter(&image);
-		for (int row = 0; row < TILE_HEIGHT; ++row) {
-			for (int col = 0; col < TILE_WIDTH; ++col) {
-				Q_ASSERT(TILE_WIDTH == 3 and TILE_HEIGHT == 3);
-				const size_t index = 0x202 + col * 0x100 + row * 0x300 + tileNo;
-				const uint8_t c = index < sizeof(_tileset) ? _tileset[index] : ' ';
-				const QImage image = characterImage(c);
-				painter.drawImage(col * GLYPH_WIDTH, row * GLYPH_HEIGHT, image);
-			}
+	QImage &image = it->second;
+	QPainter painter(&image);
+	for (int row = 0; row < TILE_HEIGHT; ++row) {
+		for (int col = 0; col < TILE_WIDTH; ++col) {
+			Q_ASSERT(TILE_WIDTH == 3 and TILE_HEIGHT == 3);
+			const size_t index = 0x202 + col * 0x100 + row * 0x300 + tileNo;
+			const uint8_t c = index < sizeof(_tileset) ? _tileset[index] : ' ';
+			const QImage image = characterImage(c);
+			painter.drawImage(col * GLYPH_WIDTH, row * GLYPH_HEIGHT, image);
 		}
 	}
-	return it->second;
 }
 
 
-const QImage &Tileset::specialTile(int tileNo) {
-	static const QColor weaponColor(255, 255, 100);
-	static const QColor toolColor(255, 128, 0);
-	static const std::unordered_map<int, std::pair<QString, QColor>> textAndColor {
-		{ OBJECT_TRANSPORTER, { "Trns", { 150, 200, 255 }}},
-		{ OBJECT_DOOR, { "Door", { 150, 200, 255 }}},
-		{ OBJECT_TRASH_COMPACTOR, { "TC", { 255, 64, 0 }}},
-		{ OBJECT_ELEVATOR, { "Lift", { 150, 200, 255 }}},
-		{ OBJECT_WATER_RAFT, { "Raft", { 150, 200, 255 }}},
-		{ OBJECT_KEY, { "Key", { 80, 130, 255 }}},
-		{ OBJECT_TIME_BOMB, { "Bmb", weaponColor }},
-		{ OBJECT_EMP, { "EMP", toolColor }},
-		{ OBJECT_PISTOL, { "Gun", weaponColor }},
-		{ OBJECT_PLASMA_GUN, { "Plas", weaponColor }},
-		{ OBJECT_MEDKIT, { "Med", { 100, 255, 100 }}},
-		{ OBJECT_MAGNET, { "Mag", toolColor }},
-	};
-	static const QColor objectBgColor(0, 0, 0, 180);
-	auto pair = _tiles.try_emplace(tileNo, QImage(TILE_WIDTH * GLYPH_WIDTH,
-	                                              TILE_HEIGHT * GLYPH_HEIGHT,
-	                                              _characters.format()));
-	const auto it = pair.first;
-	bool isNew = pair.second;
-	if (isNew) {
-		QImage &image = it->second;
-		std::pair<QString, QColor> textAndColorPair = textAndColor.at(-tileNo);
-		QPainter painter(&image);
-		image.fill(Qt::transparent);
-		painter.setRenderHint(QPainter::Antialiasing);
-		painter.setPen(QPen(textAndColorPair.second, 2, Qt::DotLine));
-		painter.setBrush(objectBgColor);
-		QFont font("Sans-Serif");
-		font.setPixelSize(8);
-		painter.setFont(font);
-		painter.drawEllipse(QRect(1, 1, image.width() - 2, image.height() - 2));
-		QString text = textAndColorPair.first;
-		painter.drawText(image.rect(), Qt::AlignCenter, text);
-	}
-	return it->second;
+const QImage &Tileset::tileImage(int tileNo) const {
+	return _tiles.at(tileNo);
 }
 
 
