@@ -13,5 +13,7 @@
         <file>res/level-i</file>
         <file>res/paintbrush.svg</file>
         <file>res/pointer.svg</file>
+        <file>res/robot-32.png</file>
+        <file>res/robot-16.png</file>
     </qresource>
 </RCC>
