@@ -14,5 +14,6 @@
         <file>res/pointer.svg</file>
         <file>res/robot-32.png</file>
         <file>res/robot-16.png</file>
+        <file>res/target.svg</file>
     </qresource>
 </RCC>

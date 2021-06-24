@@ -153,8 +153,6 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 	
 	event->accept();
 	QPoint tilePos = pixelToTile(event->pos());
-	emit mouseOverTile(tilePos.x(), tilePos.y());
-	emit tileClicked(tilePos.x(), tilePos.y());
 	_drag = true;
 	if (_objectsVisible) {
 		for (int i = 0; i <= OBJECT_MAX; ++i) {
@@ -167,6 +165,9 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 		
 		emit objectClicked(-1);
 	}
+	
+	emit tileClicked(tilePos.x(), tilePos.y());
+	emit mouseOverTile(tilePos.x(), tilePos.y());
 }
 
 

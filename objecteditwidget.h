@@ -15,7 +15,15 @@ public:
 	void loadObject(int objectNo);
 	void setMap(Map *map);
 	
+public slots:
+	void mapClick(int x, int y);
+	void mapClickCancelled();
+	
+signals:
+	void mapClickRequested(const QString &label);
+	
 private slots:
+	void onCoordinateMapClickRequested(const QString &label);
 	void store();
 	
 private:
@@ -32,6 +40,7 @@ private:
 	Ui::ObjectEditWidget _ui;
 	Map *_map = nullptr;
 	int _objectNo = -1;
+	CoordinateWidget *_mapClickRequester = nullptr;
 };
 
 #endif // OBJECTEDITWIDGET_H

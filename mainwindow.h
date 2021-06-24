@@ -27,6 +27,7 @@ private slots:
 	void onLoadTileset();
 	void onMouseOverTile(int x, int y);
 	void onObjectClicked(int objectNo);
+	void onObjectEditMapClickRequested(const QString &label);
 	void onTileClicked(int x, int y);
 	void onTileWidgetTileSelected(int tileNo);
 	void onQuit();
@@ -44,5 +45,6 @@ private:
 	Tileset *_tileset = nullptr;
 	std::forward_list<QAction*> _viewFilterActions;
 	int _currentObject = -1;
+	bool _objectEditMapClickRequested = false;
 };
 #endif // MAINWINDOW_H

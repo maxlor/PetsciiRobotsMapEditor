@@ -84,6 +84,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.mapWidget, &MapWidget::tileDragged, this, &MainWindow::onTileClicked);
 	connect(_ui.mapWidget, &MapWidget::objectClicked, this, &MainWindow::onObjectClicked);
 	connect(_ui.tileWidget, &TileWidget::tileSelected, this, &MainWindow::onTileWidgetTileSelected);
+	connect(_ui.objectEditor, &ObjectEditWidget::mapClickRequested, this, &MainWindow::onObjectEditMapClickRequested);
 	
 	const QSettings settings;
 	const QRect geometry = settings.value(SETTINGS_WINDOW_GEOMETRY).toRect();
@@ -105,6 +106,11 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 		event->accept();
 		if (not _ui.actionSelect->isChecked()) {
 			_ui.actionSelect->trigger();
+		}
+		if (_objectEditMapClickRequested) {
+			_ui.statusbar->clearMessage();
+			_ui.objectEditor->mapClickCancelled();
+			_objectEditMapClickRequested = false;
 		}
 	}
 }
@@ -175,14 +181,24 @@ void MainWindow::onMouseOverTile(int x, int y) {
 
 
 void MainWindow::onObjectClicked(int objectNo) {
-	if (_ui.actionSelect->isChecked()) {
+	if (_ui.actionSelect->isChecked() and not _objectEditMapClickRequested) {
 		_ui.objectEditor->loadObject(objectNo);
 	}
 }
 
 
+void MainWindow::onObjectEditMapClickRequested(const QString &label) {
+	_ui.statusbar->showMessage(QString("click on map to set %1").arg(label));
+	_objectEditMapClickRequested = true;
+}
+
+
 void MainWindow::onTileClicked(int x, int y) {
-	if (_ui.actionDrawTiles->isChecked()) {
+	if (_objectEditMapClickRequested) {
+		_ui.statusbar->clearMessage();
+		_ui.objectEditor->mapClick(x, y);
+		_objectEditMapClickRequested = false;
+	} else if (_ui.actionDrawTiles->isChecked()) {
 		int tileNo = _ui.tileWidget->selectedTile();
 		if (0 <= tileNo and tileNo < TILE_COUNT) {
 			_map->setTile(x, y, tileNo);

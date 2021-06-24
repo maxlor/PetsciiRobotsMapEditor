@@ -7,6 +7,7 @@ DEFINES += APP_VERSION=$${APP_VERSION}
 SOURCES += \
     abstracttilewidget.cpp \
     constants.cpp \
+    coordinatewidget.cpp \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 HEADERS += \
     abstracttilewidget.h \
     constants.h \
+    coordinatewidget.h \
     mainwindow.h \
     map.h \
     mapwidget.h \

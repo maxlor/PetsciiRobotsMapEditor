@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>364</width>
-    <height>361</height>
+    <width>276</width>
+    <height>231</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -26,7 +26,7 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>7</number>
      </property>
      <widget class="QWidget" name="pagePlayer">
       <layout class="QFormLayout" name="formLayout">
@@ -35,39 +35,33 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesPlayer</cstring>
+         </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editPlayerX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editPlayerY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelPlayerHealth">
          <property name="text">
           <string>Health:</string>
          </property>
+         <property name="buddy">
+          <cstring>editPlayerHealth</cstring>
+         </property>
         </widget>
        </item>
        <item row="1" column="1">
         <widget class="QSpinBox" name="editPlayerHealth">
+         <property name="toolTip">
+          <string>The player's starting health. Normally this is set to full health, 12.</string>
+         </property>
          <property name="maximum">
           <number>255</number>
          </property>
         </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesPlayer" native="true"/>
        </item>
       </layout>
      </widget>
@@ -78,35 +72,31 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesRobot</cstring>
+         </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editRobotX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editRobotY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelRobotHealth">
          <property name="text">
           <string>Health:</string>
          </property>
+         <property name="buddy">
+          <cstring>editRobotHealth</cstring>
+         </property>
         </widget>
        </item>
        <item row="1" column="1">
         <widget class="QSpinBox" name="editRobotHealth">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The robot's health. Standard values are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;10 for hoverbots&lt;/li&gt;
+&lt;li&gt;20 for rollerbots&lt;/li&gt;
+&lt;li&gt;75 for evilbots&lt;/li&gt;
+&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="maximum">
           <number>255</number>
          </property>
@@ -117,10 +107,16 @@
          <property name="text">
           <string>Type:</string>
          </property>
+         <property name="buddy">
+          <cstring>comboRobotType</cstring>
+         </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QComboBox" name="comboRobotType"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesRobot" native="true"/>
        </item>
       </layout>
      </widget>
@@ -131,30 +127,18 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesWeapon</cstring>
+         </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editWeaponX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editWeaponY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelWeaponType">
          <property name="text">
           <string>Type:</string>
+         </property>
+         <property name="buddy">
+          <cstring>comboWeaponType</cstring>
          </property>
         </widget>
        </item>
@@ -166,6 +150,9 @@
          <property name="text">
           <string>Amount:</string>
          </property>
+         <property name="buddy">
+          <cstring>editWeaponAmount</cstring>
+         </property>
         </widget>
        </item>
        <item row="2" column="1">
@@ -176,12 +163,18 @@
          <property name="text">
           <string>Container Size:</string>
          </property>
+         <property name="buddy">
+          <cstring>editWeaponContainerWidth</cstring>
+         </property>
         </widget>
        </item>
        <item row="3" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
           <widget class="QSpinBox" name="editWeaponContainerWidth">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Making the container size larger than 1/1 means that searching &amp;lt;i&amp;gt;any&amp;lt;/i&amp;gt; of several tiles let's the player find the item. Use this when placing an item in large objects like desks or beds, so that th player doesn't have to search every single tile of the object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -192,6 +185,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="editWeaponContainerHeight">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Making the container size larger than 1/1 means that searching &amp;lt;i&amp;gt;any&amp;lt;/i&amp;gt; of several tiles let's the player find the item. Use this when placing an item in large objects like desks or beds, so that th player doesn't have to search every single tile of the object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -202,6 +198,9 @@
          </item>
         </layout>
        </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesWeapon" native="true"/>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="pageDoor">
@@ -211,30 +210,18 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesDoor</cstring>
+         </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editDoorX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editDoorY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelDoorOrientation">
          <property name="text">
           <string>Orientation:</string>
+         </property>
+         <property name="buddy">
+          <cstring>comboDoorOrientation</cstring>
          </property>
         </widget>
        </item>
@@ -256,6 +243,9 @@
         <widget class="QLabel" name="labelDoorState">
          <property name="text">
           <string>State:</string>
+         </property>
+         <property name="buddy">
+          <cstring>comboDoorState</cstring>
          </property>
         </widget>
        </item>
@@ -298,6 +288,9 @@
          <property name="text">
           <string>Lock:</string>
          </property>
+         <property name="buddy">
+          <cstring>comboDoorLock</cstring>
+         </property>
         </widget>
        </item>
        <item row="3" column="1">
@@ -309,20 +302,23 @@
          </item>
          <item>
           <property name="text">
-           <string>Locked, ♠</string>
+           <string>Locked, ♠ (Spade)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Locked, ♥</string>
+           <string>Locked, ♥ (Heart)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Locked, ✷</string>
+           <string>Locked, ✷ (Star)</string>
           </property>
          </item>
         </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesDoor" native="true"/>
        </item>
       </layout>
      </widget>
@@ -333,25 +329,10 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesKey</cstring>
+         </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editKeyX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editKeyY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label">
@@ -364,6 +345,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0,0">
          <item>
           <widget class="QRadioButton" name="radioKeySpade">
+           <property name="toolTip">
+            <string>Spade</string>
+           </property>
            <property name="text">
             <string>♠</string>
            </property>
@@ -371,6 +355,9 @@
          </item>
          <item>
           <widget class="QRadioButton" name="radioKeyHeart">
+           <property name="toolTip">
+            <string>Heart</string>
+           </property>
            <property name="text">
             <string>♥</string>
            </property>
@@ -378,12 +365,18 @@
          </item>
          <item>
           <widget class="QRadioButton" name="radioKeyStar">
+           <property name="toolTip">
+            <string>Heart</string>
+           </property>
            <property name="text">
             <string>✷</string>
            </property>
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesKey" native="true"/>
        </item>
       </layout>
      </widget>
@@ -394,25 +387,13 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesTrashCompactor</cstring>
+         </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editTrashCompactorX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editTrashCompactorY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="CoordinateWidget" name="coordinatesTrashCompactor" native="true"/>
        </item>
       </layout>
      </widget>
@@ -423,30 +404,18 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesElevator</cstring>
+         </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editElevatorX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editElevatorY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelElevatorState">
          <property name="text">
           <string>State:</string>
+         </property>
+         <property name="buddy">
+          <cstring>comboElevatorState</cstring>
          </property>
         </widget>
        </item>
@@ -489,6 +458,9 @@
          <property name="text">
           <string>Floor:</string>
          </property>
+         <property name="buddy">
+          <cstring>editElevatorFloor</cstring>
+         </property>
         </widget>
        </item>
        <item row="2" column="1">
@@ -516,7 +488,13 @@
          <property name="text">
           <string>Total Floors:</string>
          </property>
+         <property name="buddy">
+          <cstring>editElevatorTotalFloors</cstring>
+         </property>
         </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesElevator" native="true"/>
        </item>
       </layout>
      </widget>
@@ -527,25 +505,13 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesRaft</cstring>
+         </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editRaftX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editRaftY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="CoordinateWidget" name="coordinatesRaft" native="true"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelRaftDirection">
@@ -575,12 +541,18 @@
        <item row="2" column="0">
         <widget class="QLabel" name="labelRaftLeftTurnaround">
          <property name="text">
-          <string>Left Turnaround Coord.:</string>
+          <string>Left Stop</string>
+         </property>
+         <property name="buddy">
+          <cstring>editRaftLeftTurnaround</cstring>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QSpinBox" name="editRaftLeftTurnaround">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The left-most x-coordinate of the raft, at which point it turns around.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="maximum">
           <number>127</number>
          </property>
@@ -589,12 +561,18 @@
        <item row="3" column="0">
         <widget class="QLabel" name="labelRaftRightTurnaround">
          <property name="text">
-          <string>Right Turnaround Coord.:</string>
+          <string>Right Stop:</string>
+         </property>
+         <property name="buddy">
+          <cstring>editRaftRightTurnaround</cstring>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QSpinBox" name="editRaftRightTurnaround">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The right-most x-coordinate of the raft, at which point it turns around.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="maximum">
           <number>127</number>
          </property>
@@ -609,25 +587,10 @@
          <property name="text">
           <string>Position:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesTransporter</cstring>
+         </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editTransporterX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editTransporterY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="labelTransporterMode">
@@ -669,25 +632,16 @@
          <property name="text">
           <string>Coordinates:</string>
          </property>
+         <property name="buddy">
+          <cstring>coordinatesTransporterDest</cstring>
+         </property>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesTransporter" native="true"/>
+       </item>
        <item row="4" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,0">
-         <item>
-          <widget class="QSpinBox" name="editTransporterDestX">
-           <property name="maximum">
-            <number>127</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="editTransporterDestY">
-           <property name="maximum">
-            <number>63</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="CoordinateWidget" name="coordinatesTransporterDest" native="true"/>
        </item>
       </layout>
      </widget>
@@ -695,6 +649,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CoordinateWidget</class>
+   <extends>QWidget</extends>
+   <header>coordinatewidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
