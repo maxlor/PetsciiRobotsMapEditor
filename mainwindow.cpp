@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_labelRobotCount = new QLabel(this);
 	updateMapCountLabels();
 	_labelStatusCoords = new QLabel(this);
-	_labelStatusCoords->setMinimumWidth(fm.width("Map Tile: 000/00"));
+	_labelStatusCoords->setMinimumWidth(fm.width("Map Tile: 000, 00"));
 	_labelStatusCoords->setAlignment(Qt::AlignLeading | Qt::AlignBaseline);
 	_labelStatusTile = new QLabel(this);
 	_ui.statusbar->addPermanentWidget(_labelRobotCount);
@@ -226,7 +226,7 @@ void MainWindow::onMapObjectChanged() {
 
 
 void MainWindow::onMouseOverTile(int x, int y) {
-	_labelStatusCoords->setText(QString("Map Tile: %1/%2").arg(x).arg(y));
+	_labelStatusCoords->setText(QString("Map Tile: %1, %2").arg(x).arg(y));
 }
 
 

@@ -104,7 +104,7 @@ void ObjectEditWidget::loadObject(int objectNo) {
 	try {
 		setTitle(groupNames.at(kind));
 	} catch (std::out_of_range) {
-		qCWarning(lcObjEd, "can't edit object %d of kind %d", objectNo, (int)object.kind());
+		qCWarning(lcObjEd, "can't edit object %d of unit type %d", objectNo, object.unitType);
 		setVisible(false);
 		return;
 	}

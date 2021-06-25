@@ -61,7 +61,7 @@ void MapWidget::clickEveryTile() {
 			if (_objectsVisible) {
 				for (int i = 0; i <= OBJECT_MAX; ++i) {
 					const Map::Object &object = _map->object(i);
-					if (object.x == x and object.y == y) {
+					if (object.unitType != UNITTYPE_NONE and object.x == x and object.y == y) {
 						emit objectClicked(i);
 						break;
 					}
@@ -158,7 +158,7 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 		bool foundObject = false;
 		for (int i = 0; i <= OBJECT_MAX; ++i) {
 			const Map::Object &object = _map->object(i);
-			if (object.x == tilePos.x() and object.y == tilePos.y()) {
+			if (object.unitType != UNITTYPE_NONE and object.x == tilePos.x() and object.y == tilePos.y()) {
 				emit objectClicked(i);
 				foundObject = true;
 				break;

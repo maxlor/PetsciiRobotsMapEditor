@@ -141,6 +141,7 @@ void Map::compact() {
 				if (_objects[j].unitType != UNITTYPE_NONE) {
 					_objects[i] = _objects[j];
 					_objects[j] = Object();
+					++i;
 					moved = true;
 					changed = true;
 				}
