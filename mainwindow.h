@@ -33,6 +33,8 @@ private slots:
 	void onMouseOverTile(int x, int y);
 	void onObjectClicked(int objectNo);
 	void onObjectEditMapClickRequested(const QString &label);
+	void onSaveTriggered();
+	void onSaveAsTriggered();
 	void onTileClicked(int x, int y);
 	void onTileDragged(int x, int y);
 	void onTileWidgetTileSelected(int tileNo);
@@ -44,6 +46,7 @@ private:
 	void activateTool(QAction *const action);
 	void placeObject(int x, int y, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
 	void placeRobot(int x, int y);
+	bool save(const QString &path);
 	void updateLabelStatusTile();
 	void updateMapCountLabels();
 	
@@ -59,5 +62,7 @@ private:
 	int _currentObject = -1;
 	bool _objectEditMapClickRequested = false;
 	IconFactory _iconFactory;
+	bool _changed = false;
+	QString _path;
 };
 #endif // MAINWINDOW_H

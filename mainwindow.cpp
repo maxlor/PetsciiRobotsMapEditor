@@ -16,6 +16,8 @@ static constexpr char SETTINGS_TILESET_DIRECTORY[] = "General/TilesetDirectory";
 static constexpr char SETTINGS_TILESET_PATH[] = "General/TilesetPath";
 static constexpr char SETTINGS_WINDOW_GEOMETRY[] = "General/WindowGeometry";
 static constexpr char SETTINGS_WINDOW_MAXIMIZED[] = "General/WindowMaximized";
+static constexpr char SETTINGS_MAP_DIRECTORY[] = "General/MapDirectory";
+static constexpr char SETTINGS_MAP_PATH[] = "General/MapPath";
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -58,6 +60,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.objectEditor->setMap(_map);
 	updateMapCountLabels();
 	
+	_ui.actionNew->setEnabled(false); // TODO
+	_ui.actionOpen->setEnabled(false); // TODO
+	
 	_viewFilterActions.push_front(_ui.actionShowSearchable);
 	_viewFilterActions.push_front(_ui.actionShowPushOnto);
 	_viewFilterActions.push_front(_ui.actionShowShootThrough);
@@ -66,6 +71,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_viewFilterActions.push_front(_ui.actionShowHoverable);
 	_viewFilterActions.push_front(_ui.actionShowWalkable);
 	
+	connect(_ui.actionSave, &QAction::triggered, this, &MainWindow::onSaveTriggered);
+	connect(_ui.actionSaveAs, &QAction::triggered, this, &MainWindow::onSaveAsTriggered);
 	connect(_ui.actionLoadTileset, &QAction::triggered, this, &MainWindow::onLoadTileset);
 	connect(_ui.actionQuit, &QAction::triggered, this, &MainWindow::onQuit);
 	for (QAction *action : _viewFilterActions) {
@@ -246,6 +253,34 @@ void MainWindow::onObjectEditMapClickRequested(const QString &label) {
 }
 
 
+void MainWindow::onSaveTriggered() {
+	if (_path.isNull()) {
+		onSaveAsTriggered();
+		return;
+	}
+	
+	save(_path);
+}
+
+
+void MainWindow::onSaveAsTriggered() {
+	QSettings settings;
+	QFileDialog dialog(this);
+	
+	dialog.setAcceptMode(QFileDialog::AcceptSave);
+	dialog.setDirectory(settings.value(SETTINGS_MAP_DIRECTORY).toString());
+	dialog.setNameFilters({"PETSCII Robot Maps (*.petmap)", "All Files (*)"});
+	if (dialog.exec() == QFileDialog::Accepted and dialog.selectedFiles().count() > 0) {
+		settings.setValue(SETTINGS_MAP_DIRECTORY, dialog.directory().canonicalPath());
+		const QString path = dialog.selectedFiles().at(0);
+		if (save(path)) {
+			_path = path;
+			settings.setValue(SETTINGS_MAP_PATH, path);
+		}
+	}
+}
+
+
 void MainWindow::onTileClicked(int x, int y) {
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
@@ -391,6 +426,33 @@ void MainWindow::placeRobot(int x, int y) {
 	object.y = y;
 	object.health = 10;
 	_map->setObject(objectNo, object);
+}
+
+
+bool MainWindow::save(const QString &path) {
+	QFile file(path);
+	if (not file.open(QFile::WriteOnly)) {
+		QMessageBox::critical(this, "Cannot Save", QString("Cannot open \"%1\" for writing: %2")
+		                      .arg(path, file.errorString()));
+		return false;
+	}
+	
+	qint64 bytesWritten = file.write(_map->data());
+	if (bytesWritten == -1) {
+		QMessageBox::critical(this, "Cannot Save", QString("Cannot write to \"%1\": %2")
+		                      .arg(path, file.errorString()));
+		return false;
+	} else if (bytesWritten != MAP_BYTES) {
+		QMessageBox::critical(this, "Cannot Save", QString("Cannot write to \"%1\": short "
+		                      "write, only %2 out of %3 bytes were written")
+		                      .arg(path).arg(bytesWritten).arg(MAP_BYTES));
+		return false;
+	}
+	
+	file.close();
+	_changed = false;
+	_ui.statusbar->showMessage(QString("Saved to %1").arg(path), 5000);
+	return true;
 }
 
 

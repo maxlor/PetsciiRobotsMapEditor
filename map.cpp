@@ -7,6 +7,8 @@
 
 Q_LOGGING_CATEGORY(lcMap, "map");
 
+static constexpr char MAP_MAGIC[2] = { 0x00, 0x5d };
+
 
 Map::Map(QObject *parent) : QObject(parent) {
 	memset(_tiles, 0, sizeof(_tiles));
@@ -156,29 +158,66 @@ void Map::compact() {
 }
 
 
-void Map::readMap(const QString &filename) {
-	qCInfo(lcMap) << "opening" << filename;
+QByteArray Map::data() {
+	QByteArray ba(MAP_BYTES, 0);
 	
+	memcpy(ba.data(), MAP_MAGIC, sizeof(MAP_MAGIC));
+	for (int i = OBJECT_MIN; i <= OBJECT_MAX; ++i) {
+		ba[0x002 + i] = _objects[i].unitType;
+		ba[0x042 + i] = _objects[i].x;
+		ba[0x082 + i] = _objects[i].y;
+		ba[0x0c2 + i] = _objects[i].a;
+		ba[0x102 + i] = _objects[i].b;
+		ba[0x142 + i] = _objects[i].c;
+		ba[0x182 + i] = _objects[i].d;
+		ba[0x1c2 + i] = _objects[i].health;
+	}
+	
+	// I don't know what the range 0x202-0x301 is for, in the original maps
+	// those bytes are all set to either 0x00 or 0xAA.
+	
+	Q_ASSERT(0x302 + sizeof(_tiles) == MAP_BYTES);
+	memcpy(ba.data() + 0x302, _tiles, sizeof(_tiles));
+	
+	return ba;
+}
+
+
+QString Map::readMap(const QString &path) {
 	memset(_tiles, 0, sizeof(_tiles));
 	
-	QFile file(filename);
+	QFile file(path);
 	if (not file.exists()) {
-		qCWarning(lcMap) << "file" << filename << "is missing";
-		return;
+		return QString("file \"%1\" does not exist").arg(path);
 	}
-	if (file.size() != 8962) {
-		qCWarning(lcMap) << "file" << filename << "has size" << file.size() << "but it was"
-		                     << "expected to be size 8962";
-		return;
+	if (file.size() != MAP_BYTES) {
+		return QString("file %1 has size %2 but was expected to be size %3")
+		        .arg(path).arg(file.size()).arg(MAP_BYTES);
 	}
 	
 	if (not file.open(QFile::ReadOnly)) {
-		qCWarning(lcMap()).nospace() << "Can't read file " << filename << ": "
-		                                 << file.errorString();
-		return;
+		return QString("can't read file \"%1\": %2").arg(path, file.errorString());
 	}
 	
-	file.seek(2);
+	char magicBuffer[sizeof(MAP_MAGIC)];
+	qint64 bytesRead = file.read(magicBuffer, sizeof(magicBuffer));
+	if (bytesRead != sizeof(magicBuffer)) {
+		return QString("can't read magic of file \"%1\": got only %2 bytes but had requested %3")
+		        .arg(path).arg(bytesRead).arg(sizeof(magicBuffer));
+	}
+	
+	for (size_t i = 0; i < sizeof(MAP_MAGIC); ++i) {
+		if (magicBuffer[i] != MAP_MAGIC[i]) {
+			return QString("file \"%1\" is invalid because its magic (0x%2%3) is wrong "
+                           "(it should be 0x%4%5)")
+			        .arg(path)
+			        .arg(static_cast<unsigned int>(magicBuffer[0]) & 0xFF, 2, 16, QChar('0'))
+			        .arg(static_cast<unsigned int>(magicBuffer[1]) & 0xFF, 2, 16, QChar('0'))
+			        .arg(static_cast<unsigned int>(MAP_MAGIC[0]) & 0xFF, 2, 16, QChar('0'))
+			        .arg(static_cast<unsigned int>(MAP_MAGIC[1]) & 0xFF, 2, 16, QChar('0'));
+		}
+	}
+	
 	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].unitType)); }
 	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].x)); }
 	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].y)); }
@@ -189,6 +228,7 @@ void Map::readMap(const QString &filename) {
 	for (int i = 0; i < 64; ++i) { file.getChar(reinterpret_cast<char*>(&_objects[i].health)); }
 	file.seek(0x302);
 	file.read(reinterpret_cast<char*>(_tiles), 0x2000);
+	return QString();
 }
 
 

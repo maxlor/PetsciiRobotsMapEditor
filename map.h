@@ -57,12 +57,14 @@ public:
 	
 	void compact();
 	
+	QByteArray data();
+	
 signals:
 	void tilesChanged();
 	void objectsChanged();
 	
 private:
-	void readMap(const QString &filename);
+	QString readMap(const QString &path);
 	
 	uint8_t _tiles[MAP_WIDTH * MAP_HEIGHT];
 	Object _objects[64];

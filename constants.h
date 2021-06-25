@@ -4,6 +4,7 @@
 #include <QColor>
 #include <QImage>
 
+#define MAP_BYTES (8962)
 #define MAP_WIDTH (128)
 #define MAP_HEIGHT (64)
 #define TILE_WIDTH (3)
