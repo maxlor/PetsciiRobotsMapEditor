@@ -203,6 +203,16 @@
     </property>
     <addaction name="actionSelect"/>
     <addaction name="actionDrawTiles"/>
+    <addaction name="actionPlacePlayer"/>
+    <addaction name="actionPlaceRobot"/>
+    <addaction name="actionPlaceKey"/>
+    <addaction name="actionPlaceHiddenItem"/>
+    <addaction name="actionPlaceTransporterPad"/>
+    <addaction name="actionPlaceDoor"/>
+    <addaction name="actionPlaceElevator"/>
+    <addaction name="actionPlaceTrashCompactor"/>
+    <addaction name="actionPlaceWaterRaft"/>
+    <addaction name="actionDeleteObject"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -238,6 +248,16 @@
    </attribute>
    <addaction name="actionSelect"/>
    <addaction name="actionDrawTiles"/>
+   <addaction name="actionPlacePlayer"/>
+   <addaction name="actionPlaceRobot"/>
+   <addaction name="actionPlaceKey"/>
+   <addaction name="actionPlaceHiddenItem"/>
+   <addaction name="actionPlaceTransporterPad"/>
+   <addaction name="actionPlaceDoor"/>
+   <addaction name="actionPlaceElevator"/>
+   <addaction name="actionPlaceTrashCompactor"/>
+   <addaction name="actionPlaceWaterRaft"/>
+   <addaction name="actionDeleteObject"/>
   </widget>
   <action name="actionShowWalkable">
    <property name="checkable">
@@ -373,10 +393,13 @@
      <normaloff>:/res/pointer.svg</normaloff>:/res/pointer.svg</iconset>
    </property>
    <property name="text">
-    <string>Select</string>
+    <string>&amp;Select</string>
    </property>
    <property name="toolTip">
     <string>Select objects on the map. Click on them to display and edit their properties.</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
   </action>
   <action name="actionDrawTiles">
@@ -388,10 +411,13 @@
      <normaloff>:/res/paintbrush.svg</normaloff>:/res/paintbrush.svg</iconset>
    </property>
    <property name="text">
-    <string>Draw Tiles</string>
+    <string>Draw &amp;Tiles</string>
    </property>
    <property name="toolTip">
     <string>Draw map tiles. Use this to draw the map background.</string>
+   </property>
+   <property name="shortcut">
+    <string>T</string>
    </property>
   </action>
   <action name="actionShowGrid">
@@ -408,6 +434,155 @@
   <action name="actionLoadTileset">
    <property name="text">
     <string>Load &amp;Tileset...</string>
+   </property>
+  </action>
+  <action name="actionPlacePlayer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/stickfigure.svg</normaloff>:/res/stickfigure.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Place &amp;Player</string>
+   </property>
+   <property name="toolTip">
+    <string>Place player</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
+  </action>
+  <action name="actionPlaceRobot">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/hoverbot.svg</normaloff>:/res/hoverbot.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Place &amp;Robot</string>
+   </property>
+   <property name="toolTip">
+    <string>Place robot</string>
+   </property>
+   <property name="shortcut">
+    <string>R</string>
+   </property>
+  </action>
+  <action name="actionDeleteObject">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/cross.svg</normaloff>:/res/cross.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete &amp;Object</string>
+   </property>
+   <property name="shortcut">
+    <string>X</string>
+   </property>
+  </action>
+  <action name="actionPlaceDoor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Place &amp;Door</string>
+   </property>
+   <property name="toolTip">
+    <string>Place door</string>
+   </property>
+   <property name="shortcut">
+    <string>D</string>
+   </property>
+  </action>
+  <action name="actionPlaceTransporterPad">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Place Transporter P&amp;ad</string>
+   </property>
+   <property name="toolTip">
+    <string>Place transporter pad</string>
+   </property>
+   <property name="shortcut">
+    <string>A</string>
+   </property>
+  </action>
+  <action name="actionPlaceTrashCompactor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Place Trash &amp;Compactor</string>
+   </property>
+   <property name="toolTip">
+    <string>Place trash compactor</string>
+   </property>
+   <property name="shortcut">
+    <string>C</string>
+   </property>
+  </action>
+  <action name="actionPlaceElevator">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Place &amp;Elevator</string>
+   </property>
+   <property name="toolTip">
+    <string>Place elevator</string>
+   </property>
+   <property name="shortcut">
+    <string>E</string>
+   </property>
+  </action>
+  <action name="actionPlaceWaterRaft">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Place &amp;Water Raft</string>
+   </property>
+   <property name="toolTip">
+    <string>Place water raft</string>
+   </property>
+   <property name="shortcut">
+    <string>W</string>
+   </property>
+  </action>
+  <action name="actionPlaceKey">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Place &amp;Key</string>
+   </property>
+   <property name="toolTip">
+    <string>Place key</string>
+   </property>
+   <property name="shortcut">
+    <string>K</string>
+   </property>
+  </action>
+  <action name="actionPlaceHiddenItem">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Place Hidden &amp;Item</string>
+   </property>
+   <property name="toolTip">
+    <string>Place hidden item</string>
+   </property>
+   <property name="shortcut">
+    <string>I</string>
    </property>
   </action>
  </widget>

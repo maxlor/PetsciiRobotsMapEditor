@@ -2,6 +2,8 @@
 #include <QFile>
 #include <QLoggingCategory>
 #include <cstring>
+#include <forward_list>
+#include <unordered_map>
 
 Q_LOGGING_CATEGORY(lcMap, "map");
 
@@ -10,6 +12,61 @@ Map::Map(QObject *parent) : QObject(parent) {
 	memset(_tiles, 0, sizeof(_tiles));
 	memset(_objects, 0, sizeof(_objects));
 	readMap(":/res/level-d"); // TODO make configurable
+}
+
+
+int Map::hiddenItemCount() const {
+	int count = 0;
+	for (int i = HIDDEN_OBJECT_MIN; i <= HIDDEN_OBJECT_MAX; ++i) {
+		if (_objects[i].unitType != UNITTYPE_NONE) { ++count; }
+	}
+	return count;
+}
+
+
+int Map::mapFeatureCount() const {
+	int count = 0;
+	for (int i = MAP_FEATURE_MIN; i <= MAP_FEATURE_MAX; ++i) {
+		if (_objects[i].unitType != UNITTYPE_NONE) { ++count; }
+	}
+	return count;
+}
+
+
+int Map::robotCount() const {
+	int count = 0;
+	for (int i = ROBOT_MIN; i <= ROBOT_MAX; ++i) {
+		if (_objects[i].unitType != UNITTYPE_NONE) { ++count; }
+	}
+	return count;
+}
+
+
+int Map::nextAvailableObjectId(Object::Kind kind) const {
+	switch (kind) {
+	case Object::Kind::Player: return PLAYER_OBJ;
+	case Object::Kind::Robot:
+		for (int i = ROBOT_MIN; i <= ROBOT_MAX; ++i) {
+			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
+		}
+		return -1;
+	case Object::Kind::TransporterPad:
+	case Object::Kind::Door:
+	case Object::Kind::TrashCompator:
+	case Object::Kind::Elevator:
+	case Object::Kind::WaterRaft:
+		for (int i = MAP_FEATURE_MIN; i <= MAP_FEATURE_MAX; ++i) {
+			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
+		}
+		return -1;
+	case Object::Kind::Key:
+	case Object::Kind::HiddenObject:
+		for (int i = HIDDEN_OBJECT_MIN; i <= HIDDEN_OBJECT_MAX; ++i) {
+			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
+		}
+		return -1;
+	case Object::Kind::Invalid: return -1;
+	}
 }
 
 
@@ -69,6 +126,35 @@ const std::list<std::pair<uint8_t, QString> > &Map::unitTypes() {
 }
 
 
+void Map::compact() {
+	static const std::forward_list<std::pair<int, int>> ranges = {
+	    { ROBOT_MIN, ROBOT_MAX }, { MAP_FEATURE_MIN, MAP_FEATURE_MAX },
+	    { HIDDEN_OBJECT_MIN, HIDDEN_OBJECT_MAX }};
+	
+	bool changed = false;
+	
+	for (const std::pair<int, int> &range : ranges) {
+		for (int i = range.first; i <= range.second - 1; ++i) {
+			if (_objects[i].unitType != UNITTYPE_NONE) { continue; }
+			bool moved = false;
+			for (int j = i + 1; j < range.second; ++j) {
+				if (_objects[j].unitType != UNITTYPE_NONE) {
+					_objects[i] = _objects[j];
+					_objects[j] = Object();
+					moved = true;
+					changed = true;
+				}
+			}
+			if (not moved) { break; }
+		}
+	}
+	
+	if (changed) {
+		emit objectsChanged();
+	}
+}
+
+
 void Map::readMap(const QString &filename) {
 	qCInfo(lcMap) << "opening" << filename;
 	
@@ -105,6 +191,13 @@ void Map::readMap(const QString &filename) {
 }
 
 
+Map::Object::Object() : Map::Object(UNITTYPE_NONE) {}
+
+
+Map::Object::Object(uint8_t unitType)
+    : unitType(unitType), x(0), y(0), a(0), b(0), c(0), d(0), health(0) {}
+
+
 Map::Object::Kind Map::Object::kind() const {
 	return kind(unitType);
 }
@@ -133,4 +226,34 @@ Map::Object::Kind Map::Object::kind(uint8_t unitType) {
 	case 134: return Kind::HiddenObject;
 	default: return Kind::Invalid;
 	}
+}
+
+
+const QString &Map::Object::toString(Map::Object::Kind kind) {
+	static const std::unordered_map<Object::Kind, QString> names = {
+	    { Object::Kind::Player, "player" }, { Object::Kind::Robot, "robot" },
+	    { Object::Kind::TransporterPad, "transporter pad" }, { Object::Kind::Elevator, "elevator" },
+	    { Object::Kind::WaterRaft, "water raft" }, { Object::Kind::Key, "key" },
+	    { Object::Kind::HiddenObject, "hidden object" }, { Object::Kind::Invalid, "invalid" }
+	};
+	
+	auto it = names.find(kind);
+	Q_ASSERT(it != names.end());
+	return it->second;
+}
+
+
+const QString &Map::Object::category(Map::Object::Kind kind) {
+	static const QString mapObjects = "map features";
+	static const QString hiddenItems = "hidden items";
+	static const std::unordered_map<Object::Kind, QString> names = {
+	    { Object::Kind::Player, "player" }, { Object::Kind::Robot, "robots" },
+	    { Object::Kind::TransporterPad, mapObjects }, { Object::Kind::Elevator, mapObjects },
+	    { Object::Kind::WaterRaft, mapObjects }, { Object::Kind::Key, hiddenItems },
+	    { Object::Kind::HiddenObject, hiddenItems }, { Object::Kind::Invalid, "invalid" }
+	};
+	
+	auto it = names.find(kind);
+	Q_ASSERT(it != names.end());
+	return it->second;
 }

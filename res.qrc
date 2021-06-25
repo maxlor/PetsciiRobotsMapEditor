@@ -15,5 +15,8 @@
         <file>res/robot-32.png</file>
         <file>res/robot-16.png</file>
         <file>res/target.svg</file>
+        <file>res/stickfigure.svg</file>
+        <file>res/hoverbot.svg</file>
+        <file>res/cross.svg</file>
     </qresource>
 </RCC>

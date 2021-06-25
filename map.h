@@ -18,6 +18,9 @@ public:
 			HiddenObject, Invalid
 		};
 		
+		Object();
+		Object(uint8_t unitType);
+		
 		uint8_t unitType;
 		uint8_t x;
 		uint8_t y;
@@ -29,12 +32,20 @@ public:
 		
 		Kind kind() const;
 		static Kind kind(uint8_t unitType);
+		static const QString &toString(Kind kind);
+		static const QString &category(Kind kind);
 	};
 	
 	Map(QObject *parent = nullptr);
 	
 	static constexpr int width() { return MAP_WIDTH; };
 	static constexpr int height() { return MAP_HEIGHT; }
+	
+	int hiddenItemCount() const;
+	int mapFeatureCount() const;
+	int robotCount() const;
+	
+	int nextAvailableObjectId(Object::Kind kind) const;
 	
 	int tileNo(int x, int y) const;
 	const Object &object(int no) const;
@@ -43,6 +54,8 @@ public:
 	void setObject(int objectNo, const Object &object);
 	
 	static const std::list<std::pair<uint8_t, QString> > &unitTypes();
+	
+	void compact();
 	
 signals:
 	void tilesChanged();

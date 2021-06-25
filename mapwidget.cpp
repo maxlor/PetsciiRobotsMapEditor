@@ -155,15 +155,19 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 	QPoint tilePos = pixelToTile(event->pos());
 	_drag = true;
 	if (_objectsVisible) {
+		bool foundObject = false;
 		for (int i = 0; i <= OBJECT_MAX; ++i) {
 			const Map::Object &object = _map->object(i);
 			if (object.x == tilePos.x() and object.y == tilePos.y()) {
 				emit objectClicked(i);
-				return;
+				foundObject = true;
+				break;
 			}
 		}
 		
-		emit objectClicked(-1);
+		if (not foundObject) {
+			emit objectClicked(-1);
+		}
 	}
 	
 	emit tileClicked(tilePos.x(), tilePos.y());
@@ -281,8 +285,8 @@ void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, int unit
 	painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 	painter.setPen(QPen(textAndColorPair.second, 2));
 	painter.setBrush(objectBgColor);
-	QFont font("Sans-Serif");
-	font.setPixelSize(8);
+	QFont font("Nimbus Sans Narrow", -1, QFont::Bold);
+	font.setPixelSize(10);
 	painter.setFont(font);
 	painter.drawEllipse(rect.adjusted(1, 1, -1, -1));
 	painter.setPen(textAndColorPair.second);
