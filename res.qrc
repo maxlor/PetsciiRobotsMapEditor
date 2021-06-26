@@ -1,15 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>res/characters.png</file>
-        <file>res/level-a</file>
-        <file>res/level-b</file>
-        <file>res/level-c</file>
-        <file>res/level-d</file>
-        <file>res/level-e</file>
-        <file>res/level-f</file>
-        <file>res/level-g</file>
-        <file>res/level-h</file>
-        <file>res/level-i</file>
         <file>res/paintbrush.svg</file>
         <file>res/pointer.svg</file>
         <file>res/robot-32.png</file>
