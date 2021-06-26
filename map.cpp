@@ -158,7 +158,6 @@ void Map::setTile(int x, int y, int tileNo) {
 
 
 void Map::floodFill(int x, int y, int tileNo) {
-	qDebug() << Q_FUNC_INFO << x << y << tileNo;
 	Q_ASSERT(0 <= x and x < MAP_WIDTH);
 	Q_ASSERT(0 <= y and y < MAP_HEIGHT);
 	Q_ASSERT(0 <= tileNo and tileNo < TILE_COUNT);

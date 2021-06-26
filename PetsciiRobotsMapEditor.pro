@@ -1,6 +1,10 @@
 QT       += core gui svg widgets
 CONFIG += c++17
+CONFIG -= debug_and_release_target
 VERSION = 0.9.0
+QMAKE_TARGET_PRODUCT = PETSCII Robots Map Editor
+QMAKE_TARGET_COPYRIGHT = Copyright 2021 Benjamin Lutz
+RC_ICONS = res/robot.ico
 
 DEFINES += APP_VERSION=$${VERSION}
 
@@ -45,6 +49,10 @@ RESOURCES += \
 OTHER_FILES += \
     res/NimbusSansNarrow-Bold.otf \
     res/NimbusSansNarrow-Bold.otf.license
+
+win32:contains(QMAKE_CXX, cl) {
+    QMAKE_CXXFLAGS += -permissive-
+}
 
 # copies the given files to the destination directory
 defineTest(copyToDestDir) {
