@@ -1,8 +1,8 @@
 QT       += core gui svg widgets
 CONFIG += c++17
-APP_VERSION = 0.1
+VERSION = 0.9.0
 
-DEFINES += APP_VERSION=$${APP_VERSION}
+DEFINES += APP_VERSION=$${VERSION}
 
 SOURCES += \
     abstracttilewidget.cpp \
