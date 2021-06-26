@@ -18,5 +18,6 @@
         <file>res/stickfigure.svg</file>
         <file>res/hoverbot.svg</file>
         <file>res/cross.svg</file>
+        <file>res/pour_bucket.svg</file>
     </qresource>
 </RCC>

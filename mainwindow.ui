@@ -208,8 +208,12 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <addaction name="separator"/>
     <addaction name="actionSelect"/>
+    <addaction name="separator"/>
     <addaction name="actionDrawTiles"/>
+    <addaction name="actionFloodFill"/>
+    <addaction name="separator"/>
     <addaction name="actionPlacePlayer"/>
     <addaction name="actionPlaceRobot"/>
     <addaction name="actionPlaceKey"/>
@@ -220,6 +224,7 @@
     <addaction name="actionPlaceTrashCompactor"/>
     <addaction name="actionPlaceWaterRaft"/>
     <addaction name="actionDeleteObject"/>
+    <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -255,6 +260,7 @@
    </attribute>
    <addaction name="actionSelect"/>
    <addaction name="actionDrawTiles"/>
+   <addaction name="actionFloodFill"/>
    <addaction name="actionPlacePlayer"/>
    <addaction name="actionPlaceRobot"/>
    <addaction name="actionPlaceKey"/>
@@ -622,6 +628,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionFloodFill">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/pour_bucket.svg</normaloff>:/res/pour_bucket.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Flood Fill with Tiles</string>
    </property>
   </action>
  </widget>

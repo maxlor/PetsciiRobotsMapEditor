@@ -99,6 +99,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionShowSearchable, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowSearchable);
 	connect(_ui.actionSelect, &QAction::triggered, this, &MainWindow::onActionSelectTriggered);
 	connect(_ui.actionDrawTiles, &QAction::triggered, this, &MainWindow::onActionDrawTilesTriggered);
+	connect(_ui.actionFloodFill, &QAction::triggered, this, &MainWindow::onActionFloodFillTriggered);
 	connect(_ui.actionDeleteObject, &QAction::triggered, this, &MainWindow::onActionDeleteObjectTriggered);
 	for (QAction *action : { _ui.actionPlaceDoor, _ui.actionPlaceElevator, _ui.actionPlaceHiddenItem, 
 	                         _ui.actionPlaceKey, _ui.actionPlacePlayer, _ui.actionPlaceRobot,
@@ -191,6 +192,12 @@ void MainWindow::onActionDrawTilesTriggered() {
 	activateTool(_ui.actionDrawTiles);
 	_ui.statusbar->showMessage("Draw tile");
 	updateLabelStatusTile();
+}
+
+
+void MainWindow::onActionFloodFillTriggered() {
+	activateTool(_ui.actionFloodFill);
+	_ui.statusbar->showMessage("Flood fill with tiles");
 }
 
 
@@ -309,10 +316,9 @@ void MainWindow::onTileClicked(int x, int y) {
 		_ui.objectEditor->mapClick(x, y);
 		_objectEditMapClickRequested = false;
 	} else if (_ui.actionDrawTiles->isChecked()) {
-		int tileNo = _ui.tileWidget->selectedTile();
-		if (0 <= tileNo and tileNo < TILE_COUNT) {
-			_map->setTile(x, y, tileNo);
-		}
+		_map->setTile(x, y, _ui.tileWidget->selectedTile());
+	} else if (_ui.actionFloodFill->isChecked()) {
+		_map->floodFill(x, y, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionPlaceDoor->isChecked()) {
 		placeObject(x, y, OBJECT_DOOR, 0, 5);
 	} else if (_ui.actionPlaceElevator->isChecked()) {
@@ -352,7 +358,7 @@ void MainWindow::onTileDragged(int x, int y) {
 
 void MainWindow::onTileWidgetTileSelected(int tileNo) {
 	Q_UNUSED(tileNo);
-	if (not _ui.actionDrawTiles->isChecked()) {
+	if (not (_ui.actionDrawTiles->isChecked() or _ui.actionFloodFill->isChecked())) {
 		_ui.actionDrawTiles->trigger();
 	}
 	updateLabelStatusTile();
@@ -411,15 +417,18 @@ void MainWindow::autoLoadTileset() {
 
 
 void MainWindow::activateTool(QAction *const action) {
-	for (QAction *toolAction : { _ui.actionSelect, _ui.actionDrawTiles, _ui.actionDeleteObject,
-	     _ui.actionPlaceDoor, _ui.actionPlaceElevator, _ui.actionPlaceHiddenItem,
-	     _ui.actionPlaceKey, _ui.actionPlacePlayer, _ui.actionPlaceRobot,
+	for (QAction *toolAction : { _ui.actionSelect, _ui.actionDrawTiles, _ui.actionFloodFill,
+	     _ui.actionDeleteObject, _ui.actionPlaceDoor, _ui.actionPlaceElevator,
+	     _ui.actionPlaceHiddenItem, _ui.actionPlaceKey, _ui.actionPlacePlayer, _ui.actionPlaceRobot,
 	     _ui.actionPlaceTransporterPad, _ui.actionPlaceTrashCompactor, _ui.actionPlaceWaterRaft }) {
 		toolAction->setChecked(action == toolAction);
 	}
+	
+	const bool showTileSelected = action == _ui.actionDrawTiles or action == _ui.actionFloodFill;
+	
 	_ui.mapWidget->setShowSelected(action == _ui.actionSelect);
-	_ui.tileWidget->setShowSelected(action == _ui.actionDrawTiles);
-	_labelStatusTile->setVisible(action == _ui.actionDrawTiles);
+	_ui.tileWidget->setShowSelected(showTileSelected);
+	_labelStatusTile->setVisible(showTileSelected);
 	
 	if (not _ui.actionSelect->isChecked()) { _ui.objectEditor->loadObject(-1); }
 }

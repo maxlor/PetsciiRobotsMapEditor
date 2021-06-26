@@ -54,6 +54,7 @@ public:
 	const Object &object(int no) const;
 	
 	void setTile(int x, int y, int tileNo);
+	void floodFill(int x, int y, int tileNo);
 	void setObject(int objectNo, const Object &object);
 	
 	static const std::list<std::pair<uint8_t, QString> > &unitTypes();
@@ -67,6 +68,8 @@ signals:
 	void objectsChanged();
 	
 private:
+	int recursiveFloodFill(int x, int y, int oldTile, int newTile);
+	
 	uint8_t _tiles[MAP_WIDTH * MAP_HEIGHT];
 	Object _objects[64];
 };

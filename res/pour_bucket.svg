@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg2081"
+   inkscape:version="1.1 (1:1.1+202105261517+ce6663b3b7)"
+   sodipodi:docname="pour_bucket.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title824">Pour Bucket</title>
+  <sodipodi:namedview
+     id="namedview2083"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="true"
+     units="px"
+     scale-x="1"
+     inkscape:zoom="6"
+     inkscape:cx="63.916667"
+     inkscape:cy="63.916667"
+     inkscape:window-width="1920"
+     inkscape:window-height="1021"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2142"
+       spacingx="8"
+       spacingy="8"
+       empspacing="4"
+       enabled="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2078" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 36.745166,58 33.941126,33.941125 c 5.656854,5.656855 16.970562,5.656855 22.627416,0 L 115.94113,69.313708 c 5.65685,-5.656854 5.65685,-16.970562 0,-22.627416 L 82,12.745166 Z"
+       id="path859"
+       sodipodi:nodetypes="csssscc" />
+    <path
+       style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m 16,48 c -0.738407,18.799399 0.279227,34.296821 0,56 -0.04852,3.77093 -5.788194,6.07107 -11,8 -6.497847,2.4049 -5,8 3,8 16,0 7.580805,0 24,0 7.580805,0 9.640342,-5.04125 3,-8 -5.446638,-2.42687 -10.981329,-2.03718 -11,-8 C 23.940943,85.139749 24.150111,76.795219 24.483988,60.850108 24.710153,50.049036 32,48 32,48 L 48,32 C 48,32 39.256739,28.47934 27.889699,33.525142 20.995902,36.585282 16.232181,42.088806 16,48 Z"
+       id="path5388"
+       sodipodi:nodetypes="ssssssssccss" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 71.090007,47.784515 110.74663,7.9842529 v 0"
+       id="path12573" />
+  </g>
+  <metadata
+     id="metadata822">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Benjamin Lutz</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Benjamin Lutz</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Pour Bucket</dc:title>
+        <dc:date>2021-06-26</dc:date>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/4.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-sa/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

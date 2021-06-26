@@ -27,6 +27,7 @@ private slots:
 	void onActionDeleteObjectTriggered();
 	void onActionSelectTriggered();
 	void onActionDrawTilesTriggered();
+	void onActionFloodFillTriggered();
 	void onActionPlaceTriggered();
 	void onLoadTileset();
 	void onMapObjectChanged();
