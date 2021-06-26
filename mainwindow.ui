@@ -258,6 +258,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionZoomIn"/>
+   <addaction name="actionZoomOut"/>
+   <addaction name="separator"/>
    <addaction name="actionSelect"/>
    <addaction name="actionDrawTiles"/>
    <addaction name="actionFloodFill"/>
@@ -358,6 +361,10 @@
    </property>
   </action>
   <action name="actionZoomIn">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/zoom_in.svg</normaloff>:/res/zoom_in.svg</iconset>
+   </property>
    <property name="text">
     <string>Zoom &amp;In</string>
    </property>
@@ -365,15 +372,19 @@
     <string>Zoom In</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl++</string>
+    <string>+</string>
    </property>
   </action>
   <action name="actionZoomOut">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/zoom_out.svg</normaloff>:/res/zoom_out.svg</iconset>
+   </property>
    <property name="text">
     <string>Zoom &amp;Out</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+-</string>
+    <string>-</string>
    </property>
   </action>
   <action name="actionShowObjects">

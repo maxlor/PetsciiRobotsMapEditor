@@ -19,5 +19,7 @@
         <file>res/hoverbot.svg</file>
         <file>res/cross.svg</file>
         <file>res/pour_bucket.svg</file>
+        <file>res/zoom_out.svg</file>
+        <file>res/zoom_in.svg</file>
     </qresource>
 </RCC>
