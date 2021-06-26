@@ -30,9 +30,12 @@ private slots:
 	void onActionPlaceTriggered();
 	void onLoadTileset();
 	void onMapObjectChanged();
+	void onMapTilesChanged();
 	void onMouseOverTile(int x, int y);
 	void onObjectClicked(int objectNo);
 	void onObjectEditMapClickRequested(const QString &label);
+	void onNewTriggered();
+	void onOpenTriggered();
 	void onSaveTriggered();
 	void onSaveAsTriggered();
 	void onTileClicked(int x, int y);
@@ -42,11 +45,14 @@ private slots:
 	void onViewFilterChanged();
 	
 private:
+	bool askSaveChanges();
 	void autoLoadTileset();
 	void activateTool(QAction *const action);
+	bool doSave(const QString &path);
 	void placeObject(int x, int y, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
 	void placeRobot(int x, int y);
-	bool save(const QString &path);
+	bool save();
+	bool saveAs();
 	void updateLabelStatusTile();
 	void updateMapCountLabels();
 	

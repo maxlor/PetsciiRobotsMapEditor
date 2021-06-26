@@ -41,6 +41,9 @@ public:
 	static constexpr int width() { return MAP_WIDTH; };
 	static constexpr int height() { return MAP_HEIGHT; }
 	
+	void clear();
+	QString load(const QString &path);
+	
 	int hiddenItemCount() const;
 	int mapFeatureCount() const;
 	int robotCount() const;
@@ -64,8 +67,6 @@ signals:
 	void objectsChanged();
 	
 private:
-	QString readMap(const QString &path);
-	
 	uint8_t _tiles[MAP_WIDTH * MAP_HEIGHT];
 	Object _objects[64];
 };
