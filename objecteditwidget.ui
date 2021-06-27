@@ -26,7 +26,7 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>7</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="pagePlayer">
       <layout class="QFormLayout" name="formLayout">
@@ -334,6 +334,9 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="CoordinateWidget" name="coordinatesKey" native="true"/>
+       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
@@ -375,8 +378,45 @@
          </item>
         </layout>
        </item>
-       <item row="0" column="1">
-        <widget class="CoordinateWidget" name="coordinatesKey" native="true"/>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelKeyContainerSize">
+         <property name="text">
+          <string>Container Size:</string>
+         </property>
+         <property name="buddy">
+          <cstring>editWeaponContainerWidth</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QSpinBox" name="editKeyContainerWidth">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Making the container size larger than 1/1 means that searching &amp;lt;i&amp;gt;any&amp;lt;/i&amp;gt; of several tiles let's the player find the item. Use this when placing an item in large objects like desks or beds, so that th player doesn't have to search every single tile of the object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>128</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="editKeyContainerHeight">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Making the container size larger than 1/1 means that searching &amp;lt;i&amp;gt;any&amp;lt;/i&amp;gt; of several tiles let's the player find the item. Use this when placing an item in large objects like desks or beds, so that th player doesn't have to search every single tile of the object.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>64</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

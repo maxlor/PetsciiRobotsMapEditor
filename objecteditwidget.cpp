@@ -183,6 +183,8 @@ void ObjectEditWidget::store() {
 		if (_ui.radioKeyHeart->isChecked()) { object.a = 1; }
 		else if (_ui.radioKeyStar->isChecked()) { object.a = 2; }
 		else { object.a = 0; }
+		object.c = _ui.editKeyContainerWidth->value();
+		object.d = _ui.editKeyContainerHeight->value();
 	} else if (_ui.stackedWidget->currentWidget() == _ui.pageTrashCompactor) {
 		object.x = _ui.coordinatesTrashCompactor->x();
 		object.y = _ui.coordinatesTrashCompactor->y();
@@ -237,14 +239,17 @@ void ObjectEditWidget::loadElevator(int objectNo) {
 
 
 void ObjectEditWidget::loadKey(int objectNo) {
-	MultiSignalBlocker blocker = { _ui.coordinatesKey, _ui.radioKeySpade,
-	                               _ui.radioKeyHeart, _ui.radioKeyStar };
+	MultiSignalBlocker blocker = { _ui.coordinatesKey, _ui.radioKeySpade, _ui.radioKeyHeart,
+	                               _ui.radioKeyStar, _ui.editKeyContainerWidth,
+	                               _ui.editKeyContainerHeight };
 	const Map::Object &object = _map->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageKey);
 	_ui.coordinatesKey->setXY(object.x, object.y);
 	_ui.radioKeySpade->setChecked(object.a == 0);
 	_ui.radioKeyHeart->setChecked(object.a == 1);
 	_ui.radioKeyStar->setChecked(object.a == 2);
+	_ui.editKeyContainerWidth->setValue(object.c);
+	_ui.editKeyContainerHeight->setValue(object.d);
 }
 
 

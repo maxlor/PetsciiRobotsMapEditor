@@ -126,6 +126,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	if (geometry.isValid()) { setGeometry(geometry); }
 	const bool maximized = settings.value(SETTINGS_WINDOW_MAXIMIZED).toBool();
 	if (maximized) { showMaximized(); }
+	
+	// reload map that was last open, fail silently.
+	const QString path = settings.value(SETTINGS_MAP_PATH).toString();
+	if (not path.isEmpty()) {
+		QString error = _map->load(path);
+		if (error.isNull()) {
+			_path = path;
+		} else {
+			_map->clear();
+		}
+		_changed = false;
+	}
 }
 
 
@@ -285,15 +297,16 @@ void MainWindow::onOpenTriggered() {
 		int result = dialog.exec();
 		if (result == QFileDialog::Accepted) {
 			if (dialog.selectedFiles().size() > 0) {
-				const QString path = dialog.selectedFiles().at(0);
+				_path = dialog.selectedFiles().at(0);
 				settings.setValue(SETTINGS_MAP_DIRECTORY, dialog.directory().canonicalPath());
-				QString error = _map->load(path);
+				QString error = _map->load(_path);
 				if (error.isNull()) {
-					settings.setValue(SETTINGS_MAP_PATH, path);
+					settings.setValue(SETTINGS_MAP_PATH, _path);
 				} else {
 					QMessageBox::critical(this, "Error Opening Map",
 					                      QString("Cannot open map: %1").arg(error));
 				}
+				_changed = false;
 			}
 		}
 	}
@@ -311,6 +324,7 @@ void MainWindow::onSaveAsTriggered() {
 
 
 void MainWindow::onTileClicked(int x, int y) {
+	int newObjectId = -1;
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
 		_ui.objectEditor->mapClick(x, y);
@@ -320,28 +334,35 @@ void MainWindow::onTileClicked(int x, int y) {
 	} else if (_ui.actionFloodFill->isChecked()) {
 		_map->floodFill(x, y, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionPlaceDoor->isChecked()) {
-		placeObject(x, y, OBJECT_DOOR, 0, 5);
+		newObjectId = placeObject(x, y, OBJECT_DOOR, 0, 5);
 	} else if (_ui.actionPlaceElevator->isChecked()) {
-		placeObject(x, y, OBJECT_ELEVATOR, 0, 2, 1, 1);
+		newObjectId = placeObject(x, y, OBJECT_ELEVATOR, 0, 2, 1, 1);
 	} else if (_ui.actionPlaceHiddenItem->isChecked()) {
-		placeObject(x, y, OBJECT_TIME_BOMB, 10);
+		newObjectId = placeObject(x, y, OBJECT_TIME_BOMB, 10);
 	} else if (_ui.actionPlaceKey->isChecked()) {
-		placeObject(x, y, OBJECT_KEY);
+		newObjectId = placeObject(x, y, OBJECT_KEY, 0, 0, 1, 1);
 	} else if (_ui.actionPlacePlayer->isChecked()) {
 		Map::Object playerObject = _map->object(PLAYER_OBJ);
 		playerObject.x = x;
 		playerObject.y = y;
+		playerObject.unitType = UNITTYPE_PLAYER;
 		playerObject.a = playerObject.b = playerObject.c = playerObject.d = 0;
 		if (playerObject.health == 0) { playerObject.health = 12; }
 		_map->setObject(PLAYER_OBJ, playerObject);
+		newObjectId = PLAYER_OBJ;
 	} else if (_ui.actionPlaceRobot->isChecked()) {
-		placeObject(x, y, ROBOT_HOVERBOT_LR, 0, 0, 0, 0, 10);
+		newObjectId = placeObject(x, y, ROBOT_HOVERBOT_LR, 0, 0, 0, 0, 10);
 	} else if (_ui.actionPlaceTransporterPad->isChecked()) {
-		placeObject(x, y, OBJECT_TRANSPORTER, 1);
+		newObjectId = placeObject(x, y, OBJECT_TRANSPORTER, 1);
 	} else if (_ui.actionPlaceTrashCompactor->isChecked()) {
-		placeObject(x, y, OBJECT_TRASH_COMPACTOR);
+		newObjectId = placeObject(x, y, OBJECT_TRASH_COMPACTOR);
 	} else if (_ui.actionPlaceWaterRaft->isChecked()) {
-		placeObject(x, y, OBJECT_WATER_RAFT, 0, 0, x - 1, x + 1);
+		newObjectId = placeObject(x, y, OBJECT_WATER_RAFT, 0, 0, x - 1, x + 1);
+	}
+	
+	if (newObjectId >= OBJECT_MIN) {
+		_ui.actionSelect->trigger();
+		_ui.objectEditor->loadObject(newObjectId);
 	}
 }
 
@@ -461,27 +482,28 @@ bool MainWindow::doSave(const QString &path) {
 }
 
 
-void MainWindow::placeObject(int x, int y, int unitType, int a, int b, int c, int d, int health) {
+int MainWindow::placeObject(int x, int y, int unitType, int a, int b, int c, int d, int health) {
 	const Map::Object::Kind kind = Map::Object::kind(unitType);
 	const int objectNo = _map->nextAvailableObjectId(kind);
-	if (objectNo == -1) {
+	if (objectNo >= OBJECT_MIN) {
+		Map::Object object(unitType);
+		object.x = x;
+		object.y = y;
+		object.a = a;
+		object.b = b;
+		object.c = c;
+		object.d = d;
+		object.health = health;
+		_map->setObject(objectNo, object);
+	} else {
 		const QString &type = Map::Object::toString(kind);
 		const QString &category = Map::Object::category(kind);
 		
 		QMessageBox::warning(this, QString("Cannot Add %1%2").arg(type.left(1).toUpper(), type.mid(1)),
 		                     QString("Cannot add %1: the map already contains the maximum number "
 		                             "of %2").arg(type).arg(category));
-		return;
 	}
-	Map::Object object(unitType);
-	object.x = x;
-	object.y = y;
-	object.a = a;
-	object.b = b;
-	object.c = c;
-	object.d = d;
-	object.health = health;
-	_map->setObject(objectNo, object);
+	return objectNo;
 }
 
 

@@ -50,7 +50,7 @@ private:
 	void autoLoadTileset();
 	void activateTool(QAction *const action);
 	bool doSave(const QString &path);
-	void placeObject(int x, int y, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
+	int placeObject(int x, int y, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
 	void placeRobot(int x, int y);
 	bool save();
 	bool saveAs();
