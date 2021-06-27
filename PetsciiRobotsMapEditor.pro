@@ -48,7 +48,8 @@ RESOURCES += \
 
 OTHER_FILES += \
     res/NimbusSansNarrow-Bold.otf \
-    res/NimbusSansNarrow-Bold.otf.license
+    res/NimbusSansNarrow-Bold.otf.license \
+    res/tileset.pet
 
 win32:contains(QMAKE_CXX, cl) {
     QMAKE_CXXFLAGS += -permissive-

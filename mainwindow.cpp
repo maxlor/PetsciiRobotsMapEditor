@@ -415,25 +415,16 @@ bool MainWindow::askSaveChanges() {
 
 void MainWindow::autoLoadTileset() {
 	QSettings settings;
-	const QString path = settings.value(SETTINGS_TILESET_PATH).toString();
-	if (not path.isNull()) {
-		QString error = _tileset->load(path);
-		if (error.isNull()) {
-			return;
-		}
-	}
+	const QString defaultPath = QApplication::applicationDirPath() + "/tileset.pet";
+	const QString path = settings.value(SETTINGS_TILESET_PATH, defaultPath).toString();
 	
-	QMetaObject::invokeMethod(this, [&]() {
-		static const QString text = QString(
-					"<html><p>To use this map editor, you need to load the tileset. It is shipped "
-					"with the game <i>Attack of the PETSCII Robots</i>, the file you need is "
-					"called <b>tileset.pet</b>.<p><p>Load the tileset now?</p>");
-		
-		QMessageBox::StandardButton button = QMessageBox::question(this, "Load Tileset?", text);
-		if (button == QMessageBox::Yes) {
-			onLoadTileset();
-		}
+	QString error = _tileset->load(path);
+	if (not error.isNull()) {
+		QMetaObject::invokeMethod(this, [=]() {
+			QMessageBox::critical(this, "Error Loading Tileset",
+			                      "Could not load the tileset: " + error);
 		}, Qt::QueuedConnection);
+	}
 }
 
 
