@@ -27,6 +27,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.actionShowObjects->setChecked(true);
 	_ui.scrollAreaMap->setPanButton(Qt::RightButton);
 	_ui.objectEditor->setVisible(false);
+	
+	_ui.actionNew->setIcon(QIcon::fromTheme("document-new"));
+	_ui.actionOpen->setIcon(QIcon::fromTheme("document-open"));
+	_ui.actionSave->setIcon(QIcon::fromTheme("document-save"));
+	_ui.actionSaveAs->setIcon(QIcon::fromTheme("document-save-as"));
+	_ui.actionQuit->setIcon(QIcon::fromTheme("application-exit"));
+	_ui.actionCopyArea->setIcon(QIcon::fromTheme("edit-copy"));
+	_ui.actionCopyObjects->setIcon(QIcon::fromTheme("edit-copy"));
+	_ui.actionCutArea->setIcon(QIcon::fromTheme("edit-cut"));
+	_ui.actionCutObjects->setIcon(QIcon::fromTheme("edit-cut"));
+	_ui.actionPaste->setIcon(QIcon::fromTheme("edit-paste"));
 	_ui.actionPlaceDoor->setIcon(_iconFactory.icon("Door"));
 	_ui.actionPlaceElevator->setIcon(_iconFactory.icon("Lift"));
 	_ui.actionPlaceHiddenItem->setIcon(_iconFactory.icon("Item"));
@@ -34,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.actionPlaceTransporterPad->setIcon(_iconFactory.icon("Pad"));
 	_ui.actionPlaceTrashCompactor->setIcon(_iconFactory.icon("TC"));
 	_ui.actionPlaceWaterRaft->setIcon(_iconFactory.icon("Raft"));
+	_ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
 	
 	QFontMetrics fm(QApplication::font());
 	_labelHiddenObjectsCount = new QLabel(this);
