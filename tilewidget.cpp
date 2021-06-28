@@ -25,7 +25,7 @@ TileWidget::~TileWidget() {
 }
 
 
-int TileWidget::selectedTile() const {
+uint8_t TileWidget::selectedTile() const {
 	return _selectedTile;
 }
 
@@ -64,7 +64,8 @@ void TileWidget::paintEvent(QPaintEvent *event) {
 	}
 	
 	// draw active border
-	if (showSelected() and _selectedTile != -1) {
+	if (showSelected()) {
+		painter.setPen(Qt::NoPen);
 		painter.setBrush(C::colorTileSelection);
 		drawMargin(painter, tileRect(_selectedTile, false), TILE_MARGIN * 2);
 	}
@@ -134,7 +135,7 @@ int TileWidget::rowsPerColumn() const {
 }
 
 
-QRect TileWidget::tileRect(int tileNo, bool withMargin) const {
+QRect TileWidget::tileRect(uint8_t tileNo, bool withMargin) const {
 	const int tilesPerColumn = rowsPerColumn() * TILES_PER_ROW;
 	const int outerCol = tileNo / tilesPerColumn;
 	tileNo -= outerCol * tilesPerColumn;

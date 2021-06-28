@@ -39,8 +39,16 @@ void MapWidget::setMap(const Map *map) {
 }
 
 
+QRect MapWidget::selectedArea() const {
+	if (_dragAreaBegin.x() >= 0) {
+		return QRect(_dragAreaBegin, _dragAreaEnd);
+	}
+	return QRect();
+}
+
+
 void MapWidget::clearSelection() {
-	_dragAreaBegin = _dragAreaEnd = QPoint();
+	_dragAreaBegin = _dragAreaEnd = QPoint(-1, -1);
 	update();
 }
 
@@ -124,8 +132,11 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 		}
 	}
 	
-	if (_dragMode == DragMode::Area and not _dragAreaBegin.isNull()) {
+	if (_dragMode == DragMode::Area and _dragAreaBegin.x() >= 0) {
 		painter.setPen(QPen(C::colorAreaSelection, 2));
+		QColor fillColor(C::colorAreaSelection);
+		fillColor.setAlpha(50);
+		painter.setBrush(fillColor);
 		const double left = qMin(_dragAreaBegin.x(), _dragAreaEnd.x()) * TILE_WIDTH * GLYPH_WIDTH * scale();
 		const double right = (qMax(_dragAreaBegin.x(), _dragAreaEnd.x()) + 1) * TILE_WIDTH * GLYPH_WIDTH * scale() - 1;
 		const double top = qMin(_dragAreaBegin.y(), _dragAreaEnd.y()) * TILE_HEIGHT * GLYPH_HEIGHT * scale();
@@ -255,7 +266,7 @@ QSize MapWidget::imageSize() const {
 void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	static const QColor playerColor(128, 255, 128);
 	static const QColor robotColor(255, 128, 128);
-	static const std::unordered_map<uint8_t, std::pair<int, QColor>> objectTiles = {
+	static const std::unordered_map<uint8_t, std::pair<uint8_t, QColor>> objectTiles = {
 	    { UNITTYPE_PLAYER,        {  97, playerColor }},
 	    { ROBOT_HOVERBOT_LR,      {  98, robotColor }},
 	    { ROBOT_HOVERBOT_UD,      {  98, robotColor }},
@@ -268,11 +279,11 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	const Map::Object &object = _map->object(objectNo);
 	if (object.unitType == UNITTYPE_NONE) { return; }
 	const QRect r = tileRect(object.pos());
-	std::pair<int, QColor> pair;
+	std::pair<uint8_t, QColor> pair;
 	try {
 		pair = objectTiles.at(object.unitType);
 		
-		const int &tileNo = pair.first;
+		const uint8_t &tileNo = pair.first;
 		const QColor &color = pair.second;
 		
 		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
@@ -364,7 +375,7 @@ void MapWidget::makeImage() {
 
 
 Tile MapWidget::tile(QPoint position) const {
-	const int tileNo = _map->tileNo(position);
+	const uint8_t tileNo = _map->tileNo(position);
 	return tileset()->tile(tileNo);
 }
 

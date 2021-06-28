@@ -26,7 +26,7 @@ public:
 	 *  @return a null string on success, an error message otherwise.
 	 */
 	QString load(const QString &path);
-	Tile tile(int tileNo) const;
+	Tile tile(uint8_t tileNo) const;
 	
 	bool isValid() const;
 	

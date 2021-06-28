@@ -78,8 +78,7 @@ QString Tileset::load(const QString &path) {
 }
 
 
-Tile Tileset::tile(int tileNo) const {
-	Q_ASSERT(0 <= tileNo and tileNo <= 255);
+Tile Tileset::tile(uint8_t tileNo) const {
 	const uint8_t flags = _tileset[0x102 + tileNo];
 	return Tile(flags, tileImage(tileNo));
 }

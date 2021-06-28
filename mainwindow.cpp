@@ -77,6 +77,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionSaveAs, &QAction::triggered, this, &MainWindow::onSaveAsTriggered);
 	connect(_ui.actionLoadTileset, &QAction::triggered, this, &MainWindow::onLoadTileset);
 	connect(_ui.actionQuit, &QAction::triggered, this, &MainWindow::onQuit);
+	connect(_ui.actionCopyArea, &QAction::triggered, this, &MainWindow::onCopyAreaTriggered);
+	connect(_ui.actionCopyObjects, &QAction::triggered, this, &MainWindow::onCopyObjectsTriggered);
+	connect(_ui.actionCutArea, &QAction::triggered, this, &MainWindow::onCutAreaTriggered);
+	connect(_ui.actionCutObjects, &QAction::triggered, this, &MainWindow::onCutObjectsTriggered);
+	connect(_ui.actionPaste, &QAction::triggered, this, &MainWindow::onPasteTriggered);
+	connect(_ui.actionFill, &QAction::triggered, this, &MainWindow::onFillTriggered);
+	
 	for (QAction *action : _viewFilterActions) {
 		connect(action, &QAction::triggered, this, &MainWindow::onViewFilterChanged);
 	}
@@ -84,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionZoomOut, &QAction::triggered, _ui.tileWidget, &TileWidget::zoomOut);
 	connect(_ui.actionZoomIn, &QAction::triggered, _ui.mapWidget, &MapWidget::zoomIn);
 	connect(_ui.actionZoomOut, &QAction::triggered, _ui.mapWidget, &MapWidget::zoomOut);
+	connect(_ui.actionShowObjects, &QAction::toggled, this, &MainWindow::onShowObjectsToggled);
 	connect(_ui.actionShowObjects, &QAction::toggled, _ui.mapWidget, &MapWidget::setObjectsVisible);
 	connect(_ui.actionShowGrid, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowGridLines);
 	connect(_ui.actionShowWalkable, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowWalkable);
@@ -135,6 +143,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 		}
 		_changed = false;
 	}
+	
+	activateTool(_ui.actionSelect);
 }
 
 
@@ -281,6 +291,87 @@ void MainWindow::onSaveAsTriggered() {
 }
 
 
+void MainWindow::onCopyAreaTriggered() {
+	copyMap(true, _ui.actionShowObjects->isChecked());
+}
+
+
+void MainWindow::onCopyObjectsTriggered() {
+	copyMap(false, _ui.actionShowObjects->isChecked());
+}
+
+
+void MainWindow::onCutAreaTriggered() {
+	copyMap(true, _ui.actionShowObjects->isChecked(), true);
+}
+
+
+void MainWindow::onCutObjectsTriggered() {
+	copyMap(false, _ui.actionShowObjects->isChecked(), true);
+}
+
+
+void MainWindow::onPasteTriggered() {
+	const QRect &rect = _ui.mapWidget->selectedArea();
+	if (rect.isNull()) {
+		QMessageBox::warning(this, "Cannot Paste",
+		                     "Cannot paste, because no destination has been chosen. Please select "
+		                     "a target area first.");
+		return;
+	}
+	
+	if (_clipboardTilesValid) {
+		auto it = _clipboardTiles.begin();
+		for (int y = 0; y < _clipboardSize.height(); ++y) {
+			for (int x = 0; x < _clipboardSize.width(); ++x) {
+				Q_ASSERT(it != _clipboardTiles.end());
+				_map->setTile(rect.topLeft() + QPoint(x, y), *it++);
+			}
+		}
+	}
+	bool addedAllObjects = true;
+	for (auto it = _clipboardObjects.begin(); it != _clipboardObjects.end(); ++it) {
+		Map::Object object = *it;
+		int objectId = _map->nextAvailableObjectId(object.kind());
+		if (objectId != OBJECT_NONE) {
+			object.x += rect.left();
+			object.y += rect.top();
+			_map->setObject(objectId, object);
+		} else {
+			addedAllObjects = false;
+		}
+	}
+	
+	if (not addedAllObjects) {
+		QMessageBox::information(this, "Not All Objects Were Pasted",
+		                         "Not all objects were pasted because not enough unused object "
+		                         "slots were available");
+	}
+}
+
+
+void MainWindow::onFillTriggered() {
+	QRect rect = _ui.mapWidget->selectedArea();
+	if (rect.isNull()) {
+		rect = QRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+	}
+	
+	for (int y = rect.top(); y <= rect.bottom(); ++y) {
+		for (int x = rect.left(); x <= rect.right(); ++x) {
+			_map->setTile({x, y}, _ui.tileWidget->selectedTile());
+		}
+	}
+}
+
+
+void MainWindow::onShowObjectsToggled(bool checked) {
+	if (_ui.actionSelectArea->isChecked()) {
+		_ui.actionCopyObjects->setEnabled(checked);
+		_ui.actionCutObjects->setEnabled(checked);
+	}
+}
+
+
 void MainWindow::onTileClicked(const QPoint &tile) {
 	int newObjectId = -1;
 	if (_objectEditMapClickRequested) {
@@ -336,9 +427,10 @@ void MainWindow::onTileDragged(const QPoint &tile) {
 }
 
 
-void MainWindow::onTileWidgetTileSelected(int tileNo) {
+void MainWindow::onTileWidgetTileSelected(uint8_t tileNo) {
 	Q_UNUSED(tileNo);
-	if (not (_ui.actionDrawTiles->isChecked() or _ui.actionFloodFill->isChecked())) {
+	if (not (_ui.actionDrawTiles->isChecked() or _ui.actionFloodFill->isChecked() or
+	         _ui.actionSelectArea->isChecked())) {
 		_ui.actionDrawTiles->trigger();
 	}
 	updateLabelStatusTile();
@@ -399,7 +491,8 @@ void MainWindow::activateTool(QAction *const action) {
 		toolAction->setChecked(action == toolAction);
 	}
 	
-	const bool showTileSelected = action == _ui.actionDrawTiles or action == _ui.actionFloodFill;
+	const bool showTileSelected = action == _ui.actionDrawTiles or action == _ui.actionFloodFill or
+	        action == _ui.actionSelectArea;
 	
 	_ui.mapWidget->setDragMode(action == _ui.actionSelectArea ? 
 	                           MapWidget::DragMode::Area : MapWidget::DragMode::Object);
@@ -417,6 +510,43 @@ void MainWindow::activateTool(QAction *const action) {
 		_ui.statusbar->clearMessage();
 		_ui.objectEditor->mapClickCancelled();
 		_objectEditMapClickRequested = false;
+	}
+	
+	for (QAction *action : { _ui.actionCopyArea, _ui.actionCopyObjects, _ui.actionCutArea,
+	                         _ui.actionCutObjects, _ui.actionPaste, _ui.actionFill }) {
+		action->setEnabled(_ui.actionSelectArea->isChecked());
+	}
+}
+
+
+void MainWindow::copyMap(bool copyTiles, bool copyObjects, bool clear) {
+	const QRect &rect = _ui.mapWidget->selectedArea();
+	if (rect.isNull()) { return; }
+	
+	_clipboardSize = rect.size();
+	_clipboardTiles.clear();
+	_clipboardTilesValid = false;
+	_clipboardObjects.clear();
+	
+	if (copyTiles) {
+		for (int y = rect.bottom(); y >= rect.top(); --y) {
+			for (int x = rect.right(); x >= rect.left(); --x) {
+				_clipboardTiles.push_front(_map->tileNo({x, y}));
+				if (clear) { _map->setTile({x, y}, 0); }
+			}
+		}
+		_clipboardTilesValid = true;
+	}
+	if (copyObjects) {
+		for (int objectNo = OBJECT_MAX; objectNo >= OBJECT_MIN; --objectNo) {
+			Map::Object object = _map->object(objectNo);
+			if (rect.contains(object.pos())) {
+				object.x -= rect.left();
+				object.y -= rect.top();
+				_clipboardObjects.push_front(object);
+				if (clear) { _map->setObject(objectNo, Map::Object()); }
+			}
+		}
 	}
 }
 

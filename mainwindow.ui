@@ -226,7 +226,20 @@
     <addaction name="actionDeleteObject"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actionCopyArea"/>
+    <addaction name="actionCopyObjects"/>
+    <addaction name="actionCutArea"/>
+    <addaction name="actionCutObjects"/>
+    <addaction name="actionPaste"/>
+    <addaction name="separator"/>
+    <addaction name="actionFill"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menu_Edit"/>
    <addaction name="menuView"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
@@ -670,6 +683,54 @@
    </property>
    <property name="shortcut">
     <string>A</string>
+   </property>
+  </action>
+  <action name="actionCopyArea">
+   <property name="text">
+    <string>&amp;Copy</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy the area on the map selected with the select area tool.</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionCutArea">
+   <property name="text">
+    <string>Cu&amp;t</string>
+   </property>
+   <property name="toolTip">
+    <string>Cut the area on the map selected with the select area tool</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>&amp;Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionCopyObjects">
+   <property name="text">
+    <string>Copy &amp;Objects</string>
+   </property>
+  </action>
+  <action name="actionCutObjects">
+   <property name="text">
+    <string>Cut O&amp;bjects</string>
+   </property>
+  </action>
+  <action name="actionFill">
+   <property name="text">
+    <string>&amp;Fill</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
  </widget>

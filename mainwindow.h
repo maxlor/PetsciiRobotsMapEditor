@@ -5,10 +5,11 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QSignalMapper>
+#include <QSize>
 #include <forward_list>
 #include "iconfactory.h"
+#include "map.h"
 
-class Map;
 class Tileset;
 
 
@@ -32,9 +33,17 @@ private slots:
 	void onOpenTriggered();
 	void onSaveTriggered();
 	void onSaveAsTriggered();
+	void onCopyAreaTriggered();
+	void onCopyObjectsTriggered();
+	void onCutAreaTriggered();
+	void onCutObjectsTriggered();
+	void onPasteTriggered();
+	void onFillTriggered();
+	void onShowObjectsToggled(bool checked);
+	
 	void onTileClicked(const QPoint &tile);
 	void onTileDragged(const QPoint &tile);
-	void onTileWidgetTileSelected(int tileNo);
+	void onTileWidgetTileSelected(uint8_t tileNo);
 	void onToolActionTriggered();
 	void onQuit();
 	void onViewFilterChanged();
@@ -43,6 +52,7 @@ private:
 	bool askSaveChanges();
 	void autoLoadTileset();
 	void activateTool(QAction *const action);
+	void copyMap(bool copyTiles, bool copyObjects, bool clear=false);
 	bool doSave(const QString &path);
 	int placeObject(const QPoint &position, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
 	void placeRobot(int x, int y);
@@ -66,5 +76,10 @@ private:
 	IconFactory _iconFactory;
 	bool _changed = false;
 	QString _path;
+	
+	QSize _clipboardSize;
+	std::forward_list<uint8_t> _clipboardTiles;
+	bool _clipboardTilesValid;
+	std::forward_list<Map::Object> _clipboardObjects;
 };
 #endif // MAINWINDOW_H

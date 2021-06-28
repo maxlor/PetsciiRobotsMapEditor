@@ -111,7 +111,7 @@ int Map::nextAvailableObjectId(Object::Kind kind) const {
 		for (int i = ROBOT_MIN; i <= ROBOT_MAX; ++i) {
 			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
 		}
-		return -1;
+		return OBJECT_NONE;
 	case Object::Kind::TransporterPad:
 	case Object::Kind::Door:
 	case Object::Kind::TrashCompator:
@@ -120,19 +120,19 @@ int Map::nextAvailableObjectId(Object::Kind kind) const {
 		for (int i = MAP_FEATURE_MIN; i <= MAP_FEATURE_MAX; ++i) {
 			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
 		}
-		return -1;
+		return OBJECT_NONE;
 	case Object::Kind::Key:
 	case Object::Kind::HiddenObject:
 		for (int i = HIDDEN_OBJECT_MIN; i <= HIDDEN_OBJECT_MAX; ++i) {
 			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
 		}
-		return -1;
-	case Object::Kind::Invalid: return -1;
+		return OBJECT_NONE;
+	case Object::Kind::Invalid: return OBJECT_NONE;
 	}
 }
 
 
-int Map::tileNo(const QPoint &tile) const {
+uint8_t Map::tileNo(const QPoint &tile) const {
 	Q_ASSERT(0 <= tile.x() and tile.x() < MAP_WIDTH);
 	Q_ASSERT(0 <= tile.y() and tile.y() < MAP_HEIGHT);
 	return _tiles[tile.x() + MAP_WIDTH * tile.y()];

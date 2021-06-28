@@ -23,6 +23,8 @@ public:
 	void setDragMode(DragMode dragMode);
 	void setMap(const Map *map);
 	
+	QRect selectedArea() const;
+	
 public slots:
 	void clearSelection();
 	void setShowGridLines(bool enable);
@@ -70,7 +72,7 @@ private:
 	bool _showGridLines = false;
 	int _dragObject = -1;
 	DragMode _dragMode = DragMode::Object;
-	QPoint _dragAreaBegin;
+	QPoint _dragAreaBegin = QPoint(-1, -1);
 	QPoint _dragAreaEnd;
 };
 

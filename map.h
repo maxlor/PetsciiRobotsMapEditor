@@ -52,7 +52,7 @@ public:
 	
 	int nextAvailableObjectId(Object::Kind kind) const;
 	
-	int tileNo(const QPoint &tile) const;
+	uint8_t tileNo(const QPoint &tile) const;
 	const Object &object(int no) const;
 	
 	void setTile(const QPoint &position, int tileNo);

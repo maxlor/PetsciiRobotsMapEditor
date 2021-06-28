@@ -17,10 +17,10 @@ public:
 	explicit TileWidget(QWidget *parent = nullptr);
 	virtual ~TileWidget();
 	
-	int selectedTile() const;
+	uint8_t selectedTile() const;
 	
 signals:
-	void tileSelected(int tileNo);
+	void tileSelected(uint8_t tileNo);
 	
 protected:
 	void mousePressEvent(QMouseEvent *event) override;
@@ -37,10 +37,10 @@ private:
 	void makeImage();
 	int tileColumns() const;
 	int rowsPerColumn() const;
-	QRect tileRect(int tileNo, bool withMargin = true) const;
+	QRect tileRect(uint8_t tileNo, bool withMargin = true) const;
 	
 	QImage *_image = nullptr;
-	int _selectedTile = -1;
+	uint8_t _selectedTile = 0;
 };
 
 #endif // TILEWIDGET_H
