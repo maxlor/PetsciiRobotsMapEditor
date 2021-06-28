@@ -1,12 +1,15 @@
 QT       += core gui svg widgets
 CONFIG += c++17
 CONFIG -= debug_and_release_target
-VERSION = 0.9.0
+GITREV = $$system(git --git-dir=$$PWD/.git describe --always --abbrev=0)
+GITCOUNT = $$system(git --git-dir=$$PWD/.git rev-list HEAD --count)
+APP_VERSION = 0.9.0
+VERSION = $${APP_VERSION}.$${GITREV}
 QMAKE_TARGET_PRODUCT = PETSCII Robots Map Editor
 QMAKE_TARGET_COPYRIGHT = Copyright 2021 Benjamin Lutz
 RC_ICONS = res/robot.ico
 
-DEFINES += APP_VERSION=$${VERSION}
+DEFINES += APP_VERSION=$${APP_VERSION} GITREV=$${GITREV}
 
 SOURCES += \
     abstracttilewidget.cpp \
