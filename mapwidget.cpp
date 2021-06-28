@@ -57,7 +57,7 @@ void MapWidget::setObjectsVisible(bool visible) {
 void MapWidget::clickEveryTile() {
 	for (int y = 0; y < MAP_HEIGHT; ++y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
-			emit tileClicked(x, y);
+			emit tileClicked({x, y});
 			if (_objectsVisible) {
 				for (int i = 0; i <= OBJECT_MAX; ++i) {
 					const Map::Object &object = _map->object(i);
@@ -95,8 +95,9 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 	if (highlightFlags()) {
 		for (int y = 0; y < MAP_HEIGHT; ++y) {
 			for (int x = 0; x < MAP_WIDTH; ++x) {
-				Tile t = tile(x, y);
-				QRect r = tileRect(x, y);
+				const QPoint position(x, y);
+				Tile t = tile(position);
+				QRect r = tileRect(position);
 				painter.setPen(Qt::NoPen);
 				painter.setBrush(t.flags() & highlightFlags() ? highlightColor() : noHighlightColor());
 				painter.drawRect(r);
@@ -133,12 +134,15 @@ void MapWidget::highlightFlagsChanged() {
 
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
-	QPoint tilePos = pixelToTile(event->pos());
-	emit mouseOverTile(tilePos.x(), tilePos.y());
+	const QPoint tilePos = pixelToTile(event->pos());
+	emit mouseOverTile(tilePos);
 	
-	if (_drag) {
+	if (event->buttons() == Qt::LeftButton) {
 		event->accept();
-		emit tileDragged(tilePos.x(), tilePos.y());
+		emit tileDragged(tilePos);
+		if (_dragObject != OBJECT_NONE) {
+			emit objectDragged(_dragObject, tilePos);
+		}
 	} else {
 		QWidget::mouseMoveEvent(event);
 	}
@@ -152,15 +156,15 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 	}
 	
 	event->accept();
-	QPoint tilePos = pixelToTile(event->pos());
-	_drag = true;
+	const QPoint tilePos = pixelToTile(event->pos());
 	if (_objectsVisible) {
 		bool foundObject = false;
 		for (int i = 0; i <= OBJECT_MAX; ++i) {
 			const Map::Object &object = _map->object(i);
-			if (object.unitType != UNITTYPE_NONE and object.x == tilePos.x() and object.y == tilePos.y()) {
+			if (object.unitType != UNITTYPE_NONE and object.pos() == tilePos) {
 				emit objectClicked(i);
 				foundObject = true;
+				_dragObject = i;
 				break;
 			}
 		}
@@ -170,15 +174,15 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 		}
 	}
 	
-	emit tileClicked(tilePos.x(), tilePos.y());
-	emit mouseOverTile(tilePos.x(), tilePos.y());
+	emit tileClicked(tilePos);
+	emit mouseOverTile(tilePos);
 }
 
 
 void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		event->accept();
-		_drag = false;
+		_dragObject = OBJECT_NONE;
 		emit mouseReleased();
 	} else {
 		QWidget::mouseReleaseEvent(event);
@@ -231,7 +235,7 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	
 	const Map::Object &object = _map->object(objectNo);
 	if (object.unitType == UNITTYPE_NONE) { return; }
-	const QRect r = tileRect(object.x, object.y);
+	const QRect r = tileRect(object.pos());
 	std::pair<int, QColor> pair;
 	try {
 		pair = objectTiles.at(object.unitType);
@@ -301,8 +305,9 @@ void MapWidget::makeTilesImage() {
 	
 	for (int y = 0; y < MAP_HEIGHT; ++y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
-			const Tile t = tile(x, y);
-			const QRect r = tileRect(x, y);
+			const QPoint position(x, y);
+			const Tile t = tile(position);
+			const QRect r = tileRect(position);
 			painter.drawImage(r, t.image());
 		}
 	}
@@ -326,14 +331,14 @@ void MapWidget::makeImage() {
 }
 
 
-Tile MapWidget::tile(int x, int y) const {
-	int tileNo = _map->tileNo(x, y);
+Tile MapWidget::tile(QPoint position) const {
+	const int tileNo = _map->tileNo(position);
 	return tileset()->tile(tileNo);
 }
 
 
-QRect MapWidget::tileRect(int x, int y) const {
-	return QRect(x * TILE_WIDTH * GLYPH_WIDTH, y * TILE_HEIGHT * GLYPH_HEIGHT,
+QRect MapWidget::tileRect(const QPoint &position) const {
+	return QRect(position.x() * TILE_WIDTH * GLYPH_WIDTH, position.y() * TILE_HEIGHT * GLYPH_HEIGHT,
 	             TILE_WIDTH * GLYPH_WIDTH, TILE_HEIGHT * GLYPH_HEIGHT);
 }
 

@@ -32,15 +32,16 @@ private slots:
 	void onLoadTileset();
 	void onMapObjectChanged();
 	void onMapTilesChanged();
-	void onMouseOverTile(int x, int y);
+	void onMouseOverTile(const QPoint &tile);
 	void onObjectClicked(int objectNo);
+	void onObjectDragged(int objectNo, QPoint pos);
 	void onObjectEditMapClickRequested(const QString &label);
 	void onNewTriggered();
 	void onOpenTriggered();
 	void onSaveTriggered();
 	void onSaveAsTriggered();
-	void onTileClicked(int x, int y);
-	void onTileDragged(int x, int y);
+	void onTileClicked(const QPoint &tile);
+	void onTileDragged(const QPoint &tile);
 	void onTileWidgetTileSelected(int tileNo);
 	void onQuit();
 	void onViewFilterChanged();
@@ -50,7 +51,7 @@ private:
 	void autoLoadTileset();
 	void activateTool(QAction *const action);
 	bool doSave(const QString &path);
-	int placeObject(int x, int y, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
+	int placeObject(const QPoint &position, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
 	void placeRobot(int x, int y);
 	bool save();
 	bool saveAs();

@@ -112,9 +112,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionClickEveryTile, &QAction::triggered, _ui.mapWidget, &MapWidget::clickEveryTile);
 	
 	connect(_ui.mapWidget, &MapWidget::mouseOverTile, this, &MainWindow::onMouseOverTile);
+	connect(_ui.mapWidget, &MapWidget::objectClicked, this, &MainWindow::onObjectClicked);
+	connect(_ui.mapWidget, &MapWidget::objectDragged, this, &MainWindow::onObjectDragged);
 	connect(_ui.mapWidget, &MapWidget::tileClicked, this, &MainWindow::onTileClicked);
 	connect(_ui.mapWidget, &MapWidget::tileDragged, this, &MainWindow::onTileDragged);
-	connect(_ui.mapWidget, &MapWidget::objectClicked, this, &MainWindow::onObjectClicked);
 	connect(_ui.tileWidget, &TileWidget::tileSelected, this, &MainWindow::onTileWidgetTileSelected);
 	connect(_ui.objectEditor, &ObjectEditWidget::mapClickRequested, this, &MainWindow::onObjectEditMapClickRequested);
 	
@@ -256,8 +257,8 @@ void MainWindow::onMapTilesChanged() {
 }
 
 
-void MainWindow::onMouseOverTile(int x, int y) {
-	_labelStatusCoords->setText(QString("Map Tile: %1, %2").arg(x).arg(y));
+void MainWindow::onMouseOverTile(const QPoint &tile) {
+	_labelStatusCoords->setText(QString("Map Tile: %1, %2").arg(tile.x()).arg(tile.y()));
 }
 
 
@@ -267,6 +268,17 @@ void MainWindow::onObjectClicked(int objectNo) {
 	} else if (_ui.actionDeleteObject->isChecked()) {
 		_map->setObject(objectNo, Map::Object());
 		_map->compact();
+	}
+}
+
+
+void MainWindow::onObjectDragged(int objectNo, QPoint pos) { 
+	if (_ui.actionSelect->isChecked()) {
+		Map::Object object = _map->object(objectNo);
+		if (object.pos() == pos) { return; }
+		object.x = pos.x();
+		object.y = pos.y();
+		_map->setObject(objectNo, object);
 	}
 }
 
@@ -323,41 +335,42 @@ void MainWindow::onSaveAsTriggered() {
 }
 
 
-void MainWindow::onTileClicked(int x, int y) {
+void MainWindow::onTileClicked(const QPoint &tile) {
 	int newObjectId = -1;
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
-		_ui.objectEditor->mapClick(x, y);
+		_ui.objectEditor->mapClick(tile.x(), tile.y());
 		_objectEditMapClickRequested = false;
 	} else if (_ui.actionDrawTiles->isChecked()) {
-		_map->setTile(x, y, _ui.tileWidget->selectedTile());
+		_map->setTile(tile, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionFloodFill->isChecked()) {
-		_map->floodFill(x, y, _ui.tileWidget->selectedTile());
+		_map->floodFill(tile, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionPlaceDoor->isChecked()) {
-		newObjectId = placeObject(x, y, OBJECT_DOOR, 0, 5);
+		newObjectId = placeObject(tile, OBJECT_DOOR, 0, 5);
 	} else if (_ui.actionPlaceElevator->isChecked()) {
-		newObjectId = placeObject(x, y, OBJECT_ELEVATOR, 0, 2, 1, 1);
+		newObjectId = placeObject(tile, OBJECT_ELEVATOR, 0, 2, 1, 1);
 	} else if (_ui.actionPlaceHiddenItem->isChecked()) {
-		newObjectId = placeObject(x, y, OBJECT_TIME_BOMB, 10);
+		newObjectId = placeObject(tile, OBJECT_TIME_BOMB, 10);
 	} else if (_ui.actionPlaceKey->isChecked()) {
-		newObjectId = placeObject(x, y, OBJECT_KEY, 0, 0, 1, 1);
+		newObjectId = placeObject(tile, OBJECT_KEY, 0, 0, 1, 1);
 	} else if (_ui.actionPlacePlayer->isChecked()) {
 		Map::Object playerObject = _map->object(PLAYER_OBJ);
-		playerObject.x = x;
-		playerObject.y = y;
+		playerObject.x = tile.x();
+		playerObject.y = tile.y();
 		playerObject.unitType = UNITTYPE_PLAYER;
 		playerObject.a = playerObject.b = playerObject.c = playerObject.d = 0;
 		if (playerObject.health == 0) { playerObject.health = 12; }
 		_map->setObject(PLAYER_OBJ, playerObject);
 		newObjectId = PLAYER_OBJ;
 	} else if (_ui.actionPlaceRobot->isChecked()) {
-		newObjectId = placeObject(x, y, ROBOT_HOVERBOT_LR, 0, 0, 0, 0, 10);
+		newObjectId = placeObject(tile, ROBOT_HOVERBOT_LR, 0, 0, 0, 0, 10);
 	} else if (_ui.actionPlaceTransporterPad->isChecked()) {
-		newObjectId = placeObject(x, y, OBJECT_TRANSPORTER, 1);
+		newObjectId = placeObject(tile, OBJECT_TRANSPORTER, 1);
 	} else if (_ui.actionPlaceTrashCompactor->isChecked()) {
-		newObjectId = placeObject(x, y, OBJECT_TRASH_COMPACTOR);
+		newObjectId = placeObject(tile, OBJECT_TRASH_COMPACTOR);
 	} else if (_ui.actionPlaceWaterRaft->isChecked()) {
-		newObjectId = placeObject(x, y, OBJECT_WATER_RAFT, 0, 0, x - 1, x + 1);
+		newObjectId = placeObject(tile, OBJECT_WATER_RAFT, 0, 0,
+		                          tile.x() - 1, tile.x() + 1);
 	}
 	
 	if (newObjectId >= OBJECT_MIN) {
@@ -367,11 +380,11 @@ void MainWindow::onTileClicked(int x, int y) {
 }
 
 
-void MainWindow::onTileDragged(int x, int y) {
+void MainWindow::onTileDragged(const QPoint &tile) {
 	if (_ui.actionDrawTiles->isChecked()) {
 		int tileNo = _ui.tileWidget->selectedTile();
 		if (0 <= tileNo and tileNo < TILE_COUNT) {
-			_map->setTile(x, y, tileNo);
+			_map->setTile(tile, tileNo);
 		}
 	}
 }
@@ -473,13 +486,13 @@ bool MainWindow::doSave(const QString &path) {
 }
 
 
-int MainWindow::placeObject(int x, int y, int unitType, int a, int b, int c, int d, int health) {
+int MainWindow::placeObject(const QPoint &position, int unitType, int a, int b, int c, int d, int health) {
 	const Map::Object::Kind kind = Map::Object::kind(unitType);
 	const int objectNo = _map->nextAvailableObjectId(kind);
 	if (objectNo >= OBJECT_MIN) {
 		Map::Object object(unitType);
-		object.x = x;
-		object.y = y;
+		object.x = position.x();
+		object.y = position.y();
 		object.a = a;
 		object.b = b;
 		object.c = c;

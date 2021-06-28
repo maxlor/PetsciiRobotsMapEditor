@@ -23,6 +23,7 @@ signals:
 	void mapClickRequested(const QString &label);
 	
 private slots:
+	void onObjectsChanged();
 	void onCoordinateMapClickRequested(const QString &label);
 	void store();
 	

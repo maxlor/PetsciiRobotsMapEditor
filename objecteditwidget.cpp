@@ -129,6 +129,7 @@ void ObjectEditWidget::loadObject(int objectNo) {
 
 void ObjectEditWidget::setMap(Map *map) {
 	_map = map;
+	connect(_map, &Map::objectsChanged, this, &ObjectEditWidget::onObjectsChanged);
 }
 
 
@@ -142,6 +143,13 @@ void ObjectEditWidget::mapClick(int x, int y) {
 
 void ObjectEditWidget::mapClickCancelled() {
 	_mapClickRequester = nullptr;
+}
+
+
+void ObjectEditWidget::onObjectsChanged() {
+	if (_objectNo != OBJECT_NONE) {
+		loadObject(_objectNo);
+	}
 }
 
 

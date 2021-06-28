@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <QObject>
+#include <QPoint>
 #include <QString>
 #include <list>
 #include <utility>
@@ -31,6 +32,7 @@ public:
 		uint8_t health;
 		
 		Kind kind() const;
+		QPoint pos() const;
 		static Kind kind(uint8_t unitType);
 		static const QString &toString(Kind kind);
 		static const QString &category(Kind kind);
@@ -50,11 +52,11 @@ public:
 	
 	int nextAvailableObjectId(Object::Kind kind) const;
 	
-	int tileNo(int x, int y) const;
+	int tileNo(const QPoint &tile) const;
 	const Object &object(int no) const;
 	
-	void setTile(int x, int y, int tileNo);
-	void floodFill(int x, int y, int tileNo);
+	void setTile(const QPoint &position, int tileNo);
+	void floodFill(const QPoint &position, int tileNo);
 	void setObject(int objectNo, const Object &object);
 	
 	static const std::list<std::pair<uint8_t, QString> > &unitTypes();
@@ -68,7 +70,7 @@ signals:
 	void objectsChanged();
 	
 private:
-	int recursiveFloodFill(int x, int y, int oldTile, int newTile);
+	int recursiveFloodFill(const QPoint &position, int oldTile, int newTile);
 	
 	uint8_t _tiles[MAP_WIDTH * MAP_HEIGHT];
 	Object _objects[64];

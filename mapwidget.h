@@ -27,11 +27,12 @@ public slots:
 	void clickEveryTile(); // TODO: remove
 	
 signals:
-	void tileClicked(int x, int y);
-	void tileDragged(int x, int y);
+	void tileClicked(const QPoint &tile);
+	void tileDragged(const QPoint &tile);
+	void mouseOverTile(const QPoint &tile);
 	void mouseReleased();
 	void objectClicked(int objectNo);
-	void mouseOverTile(int x, int y);
+	void objectDragged(int objectNo, const QPoint &tile);
 	
 protected:
 	void paintEvent(QPaintEvent *event) override;
@@ -54,8 +55,8 @@ private:
 	QSize imageSize() const;
 	void makeTilesImage();
 	void makeImage();
-	Tile tile(int x, int y) const;
-	QRect tileRect(int x, int y) const;
+	Tile tile(QPoint position) const;
+	QRect tileRect(const QPoint &position) const;
 	QPoint pixelToTile(QPoint pos);
 	
 	bool _objectsVisible = true;
@@ -64,8 +65,8 @@ private:
 	QImage *_image = nullptr;
 	bool _redrawTiles = false;
 	bool _redrawImage = false;
-	bool _drag = false;
 	bool _showGridLines = false;
+	int _dragObject = -1;
 };
 
 #endif // MAPWIDGET_H

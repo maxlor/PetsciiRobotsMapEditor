@@ -16,6 +16,7 @@
 #define PLAYER_OBJ (0)
 #define UNITTYPE_NONE (0)
 #define UNITTYPE_PLAYER (1)
+#define OBJECT_NONE (-1)
 #define OBJECT_MIN (0)
 #define OBJECT_MAX (63)
 #define ROBOT_MIN (1)
