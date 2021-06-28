@@ -13,8 +13,6 @@
 static const int TILES_PER_ROW = 4;
 static const int OUTER_MARGIN = 1;
 static const int TILE_MARGIN = 1;
-static const QColor MARGIN_COLOR = Qt::red;
-static const QColor SELECTED_COLOR = QColor(66, 255, 0);
 
 
 TileWidget::TileWidget(QWidget *parent) : AbstractTileWidget(parent) {
@@ -51,11 +49,6 @@ void TileWidget::paintEvent(QPaintEvent *event) {
 	if (tileset() == nullptr) { return; }
 	QPainter painter(this);
 	
-	// draw outer margin
-	painter.setBrush(MARGIN_COLOR);
-	painter.setPen(Qt::NoPen);
-	drawMargin(painter, QRect(QPoint(0, 0), sizeHint()), OUTER_MARGIN);
-	
 	// draw tiles
 	painter.translate(OUTER_MARGIN, OUTER_MARGIN);
 	painter.scale(scale(), scale());
@@ -72,7 +65,7 @@ void TileWidget::paintEvent(QPaintEvent *event) {
 	
 	// draw active border
 	if (showSelected() and _selectedTile != -1) {
-		painter.setBrush(SELECTED_COLOR);
+		painter.setBrush(C::colorTileSelection);
 		drawMargin(painter, tileRect(_selectedTile, false), TILE_MARGIN * 2);
 	}
 }

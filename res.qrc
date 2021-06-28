@@ -12,5 +12,6 @@
         <file>res/pour_bucket.svg</file>
         <file>res/zoom_out.svg</file>
         <file>res/zoom_in.svg</file>
+        <file>res/dashed_rectangle.svg</file>
     </qresource>
 </RCC>

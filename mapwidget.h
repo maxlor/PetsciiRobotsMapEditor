@@ -15,9 +15,12 @@ class Tileset;
 class MapWidget : public AbstractTileWidget {
 	Q_OBJECT
 public:
+	enum class DragMode { Object, Area };
+	
 	explicit MapWidget(QWidget *parent = nullptr);
 	virtual ~MapWidget();
 	
+	void setDragMode(DragMode dragMode);
 	void setMap(const Map *map);
 	
 public slots:
@@ -30,7 +33,6 @@ signals:
 	void tileClicked(const QPoint &tile);
 	void tileDragged(const QPoint &tile);
 	void mouseOverTile(const QPoint &tile);
-	void mouseReleased();
 	void objectClicked(int objectNo);
 	void objectDragged(int objectNo, const QPoint &tile);
 	
@@ -67,6 +69,9 @@ private:
 	bool _redrawImage = false;
 	bool _showGridLines = false;
 	int _dragObject = -1;
+	DragMode _dragMode = DragMode::Object;
+	QPoint _dragAreaBegin;
+	QPoint _dragAreaEnd;
 };
 
 #endif // MAPWIDGET_H

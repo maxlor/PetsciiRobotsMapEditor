@@ -19,16 +19,8 @@ public:
 	MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 	
-protected:
-	void keyPressEvent(QKeyEvent *event) override;
-	
 private slots:
 	void onAbout();
-	void onActionDeleteObjectTriggered();
-	void onActionSelectTriggered();
-	void onActionDrawTilesTriggered();
-	void onActionFloodFillTriggered();
-	void onActionPlaceTriggered();
 	void onLoadTileset();
 	void onMapObjectChanged();
 	void onMapTilesChanged();
@@ -43,6 +35,7 @@ private slots:
 	void onTileClicked(const QPoint &tile);
 	void onTileDragged(const QPoint &tile);
 	void onTileWidgetTileSelected(int tileNo);
+	void onToolActionTriggered();
 	void onQuit();
 	void onViewFilterChanged();
 	
@@ -67,6 +60,7 @@ private:
 	Map *_map = nullptr;
 	Tileset *_tileset = nullptr;
 	std::forward_list<QAction*> _viewFilterActions;
+	std::forward_list<QAction*> _toolActions;
 	int _currentObject = -1;
 	bool _objectEditMapClickRequested = false;
 	IconFactory _iconFactory;

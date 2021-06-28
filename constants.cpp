@@ -13,4 +13,6 @@ const QColor colorPushOnto(0, 255, 255, 128);
 const QColor colorSearchable(255, 0, 255, 128);
 const QColor colorDarken(128, 128, 128, 128);
 const QColor colorGrid(150, 170, 0);
+const QColor colorAreaSelection(66, 255, 0);
+const QColor colorTileSelection(66, 255, 0);
 }

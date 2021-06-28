@@ -60,13 +60,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.objectEditor->setMap(_map);
 	updateMapCountLabels();
 	
-	_viewFilterActions.push_front(_ui.actionShowSearchable);
-	_viewFilterActions.push_front(_ui.actionShowPushOnto);
-	_viewFilterActions.push_front(_ui.actionShowShootThrough);
-	_viewFilterActions.push_front(_ui.actionShowDestructible);
-	_viewFilterActions.push_front(_ui.actionShowMoveable);
-	_viewFilterActions.push_front(_ui.actionShowHoverable);
-	_viewFilterActions.push_front(_ui.actionShowWalkable);
+	_viewFilterActions = { _ui.actionShowWalkable, _ui.actionShowHoverable,
+	                       _ui.actionShowMoveable, _ui.actionShowDestructible,
+	                       _ui.actionShowShootThrough, _ui.actionShowPushOnto,
+	                       _ui.actionShowSearchable };
+	_toolActions = { _ui.actionSelect, _ui.actionSelectArea, _ui.actionDrawTiles,
+	                 _ui.actionFloodFill, _ui.actionDeleteObject,
+	                 _ui.actionPlaceDoor, _ui.actionPlaceElevator, _ui.actionPlaceHiddenItem, 
+	                 _ui.actionPlaceKey, _ui.actionPlacePlayer, _ui.actionPlaceRobot,
+                     _ui.actionPlaceTransporterPad, _ui.actionPlaceTrashCompactor,
+                     _ui.actionPlaceWaterRaft };
 	
 	connect(_ui.actionNew, &QAction::triggered, this, &MainWindow::onNewTriggered);
 	connect(_ui.actionOpen, &QAction::triggered, this, &MainWindow::onOpenTriggered);
@@ -97,15 +100,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionShowShootThrough, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowShootThrough);
 	connect(_ui.actionShowPushOnto, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowPushOnto);
 	connect(_ui.actionShowSearchable, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowSearchable);
-	connect(_ui.actionSelect, &QAction::triggered, this, &MainWindow::onActionSelectTriggered);
-	connect(_ui.actionDrawTiles, &QAction::triggered, this, &MainWindow::onActionDrawTilesTriggered);
-	connect(_ui.actionFloodFill, &QAction::triggered, this, &MainWindow::onActionFloodFillTriggered);
-	connect(_ui.actionDeleteObject, &QAction::triggered, this, &MainWindow::onActionDeleteObjectTriggered);
-	for (QAction *action : { _ui.actionPlaceDoor, _ui.actionPlaceElevator, _ui.actionPlaceHiddenItem, 
-	                         _ui.actionPlaceKey, _ui.actionPlacePlayer, _ui.actionPlaceRobot,
-	                         _ui.actionPlaceTransporterPad, _ui.actionPlaceTrashCompactor,
-	                         _ui.actionPlaceWaterRaft }) {
-		connect(action, &QAction::triggered, this, &MainWindow::onActionPlaceTriggered);
+	for (QAction *action : _toolActions) {
+		connect(action, &QAction::triggered, this, &MainWindow::onToolActionTriggered);
 	}
 	
 	connect(_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAbout);
@@ -149,23 +145,6 @@ MainWindow::~MainWindow() {
 }
 
 
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-	if (event->key() == Qt::Key_Escape and event->modifiers() == Qt::NoModifier) {
-		event->accept();
-		if (not _ui.actionSelect->isChecked()) {
-			_ui.actionSelect->trigger();
-		}
-		if (_objectEditMapClickRequested) {
-			_ui.statusbar->clearMessage();
-			_ui.objectEditor->mapClickCancelled();
-			_objectEditMapClickRequested = false;
-		}
-	} else {
-		QMainWindow::keyPressEvent(event);
-	}
-}
-
-
 void MainWindow::onAbout() {
 	QMessageBox::about(this, tr("About %1").arg(QApplication::applicationDisplayName()),
 	                   tr(
@@ -186,39 +165,6 @@ void MainWindow::onAbout() {
 "https://www.gnu.org/licenses/gpl.html</a>.</p>")
 	                   .arg(QApplication::applicationDisplayName(),
 	                        QApplication::applicationVersion()));
-}
-
-
-void MainWindow::onActionDeleteObjectTriggered() {
-	activateTool(_ui.actionDeleteObject);
-	_ui.statusbar->showMessage("Delete object");
-}
-
-
-void MainWindow::onActionSelectTriggered() {
-	activateTool(_ui.actionSelect);
-	_ui.statusbar->clearMessage();
-}
-
-
-void MainWindow::onActionDrawTilesTriggered() {
-	activateTool(_ui.actionDrawTiles);
-	_ui.statusbar->showMessage("Draw tile");
-	updateLabelStatusTile();
-}
-
-
-void MainWindow::onActionFloodFillTriggered() {
-	activateTool(_ui.actionFloodFill);
-	_ui.statusbar->showMessage("Flood fill with tiles");
-}
-
-
-void MainWindow::onActionPlaceTriggered() {
-	QAction *action = qobject_cast<QAction*>(sender());
-	Q_ASSERT(action);
-	activateTool(action);
-	_ui.statusbar->showMessage(action->toolTip());
 }
 
 
@@ -399,6 +345,13 @@ void MainWindow::onTileWidgetTileSelected(int tileNo) {
 }
 
 
+void MainWindow::onToolActionTriggered() {
+	QAction *action = qobject_cast<QAction*>(sender());
+	Q_ASSERT(action);
+	activateTool(action);
+}
+
+
 void MainWindow::onQuit() {
 	close();
 }
@@ -442,20 +395,29 @@ void MainWindow::autoLoadTileset() {
 
 
 void MainWindow::activateTool(QAction *const action) {
-	for (QAction *toolAction : { _ui.actionSelect, _ui.actionDrawTiles, _ui.actionFloodFill,
-	     _ui.actionDeleteObject, _ui.actionPlaceDoor, _ui.actionPlaceElevator,
-	     _ui.actionPlaceHiddenItem, _ui.actionPlaceKey, _ui.actionPlacePlayer, _ui.actionPlaceRobot,
-	     _ui.actionPlaceTransporterPad, _ui.actionPlaceTrashCompactor, _ui.actionPlaceWaterRaft }) {
+	for (QAction *toolAction : _toolActions) {
 		toolAction->setChecked(action == toolAction);
 	}
 	
 	const bool showTileSelected = action == _ui.actionDrawTiles or action == _ui.actionFloodFill;
 	
+	_ui.mapWidget->setDragMode(action == _ui.actionSelectArea ? 
+	                           MapWidget::DragMode::Area : MapWidget::DragMode::Object);
 	_ui.mapWidget->setShowSelected(action == _ui.actionSelect);
+	_ui.mapWidget->clearSelection();
 	_ui.tileWidget->setShowSelected(showTileSelected);
+	
+	_ui.statusbar->showMessage(action->toolTip());
+	updateLabelStatusTile();
 	_labelStatusTile->setVisible(showTileSelected);
 	
 	if (not _ui.actionSelect->isChecked()) { _ui.objectEditor->loadObject(-1); }
+	
+	if (_objectEditMapClickRequested) {
+		_ui.statusbar->clearMessage();
+		_ui.objectEditor->mapClickCancelled();
+		_objectEditMapClickRequested = false;
+	}
 }
 
 
