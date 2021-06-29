@@ -344,6 +344,7 @@ void MainWindow::onPasteTriggered() {
 	bool addedAllObjects = true;
 	for (auto it = _clipboardObjects.begin(); it != _clipboardObjects.end(); ++it) {
 		Map::Object object = *it;
+		if (object.kind() == Map::Object::Kind::Invalid) { continue; }
 		int objectId = _map->nextAvailableObjectId(object.kind());
 		if (objectId != OBJECT_NONE) {
 			object.x += rect.left();

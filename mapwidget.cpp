@@ -41,7 +41,10 @@ void MapWidget::setMap(const Map *map) {
 
 QRect MapWidget::selectedArea() const {
 	if (_dragAreaBegin.x() >= 0) {
-		return QRect(_dragAreaBegin, _dragAreaEnd);
+		return QRect(QPoint(qMin(_dragAreaBegin.x(), _dragAreaEnd.x()),
+		                    qMin(_dragAreaBegin.y(), _dragAreaEnd.y())),
+		             QPoint(qMax(_dragAreaBegin.x(), _dragAreaEnd.x()),
+		                    qMax(_dragAreaBegin.y(), _dragAreaEnd.y())));
 	}
 	return QRect();
 }
@@ -387,7 +390,9 @@ QRect MapWidget::tileRect(const QPoint &position) const {
 
 
 QPoint MapWidget::pixelToTile(QPoint pos) {
-	const int x = pos.x() / scale() / GLYPH_WIDTH / TILE_WIDTH;
-	const int y = pos.y() / scale() / GLYPH_HEIGHT / TILE_HEIGHT;
+	const int x = qBound(0, static_cast<int>(pos.x() / scale() / GLYPH_WIDTH / TILE_WIDTH),
+	                     MAP_WIDTH - 1);
+	const int y = qBound(0, static_cast<int>(pos.y() / scale() / GLYPH_HEIGHT / TILE_HEIGHT),
+	                     MAP_HEIGHT - 1);
 	return QPoint(x, y);
 }
