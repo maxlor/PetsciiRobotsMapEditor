@@ -1,10 +1,12 @@
 #include "mainwindow.h"
 #include <QDir>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFontMetrics>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QSettings>
+#include <QStringList>
 #include "iconfactory.h"
 #include "map.h"
 #include "multisignalblocker.h"
@@ -486,14 +488,42 @@ bool MainWindow::askSaveChanges() {
 
 void MainWindow::autoLoadTileset() {
 	QSettings settings;
-	const QString defaultPath = QApplication::applicationDirPath() + "/tileset.pet";
-	const QString path = settings.value(SETTINGS_TILESET_PATH, defaultPath).toString();
+	QString path;
+	if (settings.contains(SETTINGS_TILESET_PATH)) {
+		path = settings.value(SETTINGS_TILESET_PATH).toString();
+	} else {
+		QStringList directories = {
+#ifdef Q_OS_UNIX
+			QString("%1/../share/%2").arg(QApplication::applicationDirPath(),
+			                              QFileInfo(QApplication::applicationFilePath()).baseName()),
+		    QString("%1/../share").arg(QApplication::applicationDirPath()),
+#endif
+			QApplication::applicationDirPath(),
+		};
+		qDebug() << Q_FUNC_INFO << directories;
+		for (const QString &dir : directories) {
+			const QString maybePath = dir + "/tileset.pet";
+			if (QFile::exists(maybePath)) {
+				path = maybePath;
+				break;
+			}
+		}
+	}
+	
+	if (path.isEmpty()) {
+		QMetaObject::invokeMethod(this, [=]() {
+			QMessageBox::critical(this, "Error Loading Tileset",
+			                      "Cannot find the tileset (file \"tileset.pet\"). Please load it "
+			                      "manually.");
+		}, Qt::QueuedConnection);
+		return;
+	}
 	
 	QString error = _tileset->load(path);
 	if (not error.isNull()) {
 		QMetaObject::invokeMethod(this, [=]() {
 			QMessageBox::critical(this, "Error Loading Tileset",
-			                      "Could not load the tileset: " + error);
+								  "Could not load the tileset: " + error);
 		}, Qt::QueuedConnection);
 	}
 }

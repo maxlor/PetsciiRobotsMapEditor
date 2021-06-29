@@ -15,7 +15,7 @@ CoordinateWidget::CoordinateWidget(QWidget *parent) : QWidget(parent) {
 	_editY->setMaximum(MAP_HEIGHT - 1);
 	
 	_buttonGetCoordinates = new QToolButton(this);
-	_buttonGetCoordinates->setIcon(QIcon(":/res/target.svg"));
+	_buttonGetCoordinates->setIcon(QIcon(":/target.svg"));
 	_buttonGetCoordinates->setToolTip("Set position by clicking on map");
 	
 	QHBoxLayout *layout = new QHBoxLayout();

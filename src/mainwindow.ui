@@ -377,7 +377,7 @@
   <action name="actionZoomIn">
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/zoom_in.svg</normaloff>:/res/zoom_in.svg</iconset>
+     <normaloff>:/zoom_in.svg</normaloff>:/res/zoom_in.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom &amp;In</string>
@@ -392,7 +392,7 @@
   <action name="actionZoomOut">
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/zoom_out.svg</normaloff>:/res/zoom_out.svg</iconset>
+     <normaloff>:/zoom_out.svg</normaloff>:/res/zoom_out.svg</iconset>
    </property>
    <property name="text">
     <string>Zoom &amp;Out</string>
@@ -428,7 +428,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/pointer.svg</normaloff>:/res/pointer.svg</iconset>
+     <normaloff>:/pointer.svg</normaloff>:/res/pointer.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Select</string>
@@ -446,7 +446,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/paintbrush.svg</normaloff>:/res/paintbrush.svg</iconset>
+     <normaloff>:/paintbrush.svg</normaloff>:/res/paintbrush.svg</iconset>
    </property>
    <property name="text">
     <string>Draw &amp;Tiles</string>
@@ -480,7 +480,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/stickfigure.svg</normaloff>:/res/stickfigure.svg</iconset>
+     <normaloff>:/stickfigure.svg</normaloff>:/res/stickfigure.svg</iconset>
    </property>
    <property name="text">
     <string>Place &amp;Player</string>
@@ -498,7 +498,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/hoverbot.svg</normaloff>:/res/hoverbot.svg</iconset>
+     <normaloff>:/hoverbot.svg</normaloff>:/res/hoverbot.svg</iconset>
    </property>
    <property name="text">
     <string>Place &amp;Robot</string>
@@ -516,7 +516,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/cross.svg</normaloff>:/res/cross.svg</iconset>
+     <normaloff>:/cross.svg</normaloff>:/res/cross.svg</iconset>
    </property>
    <property name="text">
     <string>Delete &amp;Object</string>
@@ -661,7 +661,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/pour_bucket.svg</normaloff>:/res/pour_bucket.svg</iconset>
+     <normaloff>:/pour_bucket.svg</normaloff>:/res/pour_bucket.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Flood Fill with Tiles</string>
@@ -676,7 +676,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/dashed_rectangle.svg</normaloff>:/res/dashed_rectangle.svg</iconset>
+     <normaloff>:/dashed_rectangle.svg</normaloff>:/res/dashed_rectangle.svg</iconset>
    </property>
    <property name="text">
     <string>Select &amp;Area</string>

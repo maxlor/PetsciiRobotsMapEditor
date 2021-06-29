@@ -109,7 +109,7 @@ QImage Tileset::characterImage(uint8_t c) const {
 
 
 void Tileset::readCharacters() {
-	static const QString filename = ":/res/characters.png";
+	static const QString filename = ":/characters.png";
 	
 	QFile file(filename);
 	if (not file.exists()) {

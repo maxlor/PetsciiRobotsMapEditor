@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>characters.png</file>
+        <file>paintbrush.svg</file>
+        <file>pointer.svg</file>
+        <file>robot-32.png</file>
+        <file>robot-16.png</file>
+        <file>target.svg</file>
+        <file>stickfigure.svg</file>
+        <file>hoverbot.svg</file>
+        <file>cross.svg</file>
+        <file>pour_bucket.svg</file>
+        <file>zoom_out.svg</file>
+        <file>zoom_in.svg</file>
+        <file>dashed_rectangle.svg</file>
+    </qresource>
+</RCC>
