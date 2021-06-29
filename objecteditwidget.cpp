@@ -178,7 +178,7 @@ void ObjectEditWidget::store() {
 		object.unitType = _ui.comboWeaponType->currentData().toInt();
 		object.a = _ui.editWeaponAmount->value();
 		object.c = _ui.editWeaponContainerWidth->value();
-		object.c = _ui.editWeaponContainerHeight->value();
+		object.d = _ui.editWeaponContainerHeight->value();
 	} else if (_ui.stackedWidget->currentWidget() == _ui.pageDoor) {
 		object.x = _ui.coordinatesDoor->x();
 		object.y = _ui.coordinatesDoor->y();
