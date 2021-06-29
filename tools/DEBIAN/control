@@ -1,0 +1,10 @@
+Package: PetsciiRobotsMapEditor
+Version: $VERSION
+Section: games
+Priority: optional
+Architecture: $ARCHITECTURE
+Depends: fonts-urw-base35
+Installed-Size: $SIZE 
+Maintainer: Benjamin Lutz <>
+Description: Map editor for the game Attack of the PETSCII Robots
+Homepage: https://github.com/maxlor/PetsciiRobotsMapEditor
