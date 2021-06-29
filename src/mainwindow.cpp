@@ -169,6 +169,15 @@ MainWindow::~MainWindow() {
 }
 
 
+void MainWindow::closeEvent(QCloseEvent *event) {
+	if (not _changed or askSaveChanges()) {
+		event->accept();
+	} else {
+		event->ignore();
+	}
+}
+
+
 void MainWindow::onAbout() {
 	QMessageBox::about(this, tr("About %1").arg(QApplication::applicationDisplayName()),
 	                   tr(
