@@ -23,7 +23,7 @@ the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
 version.
 
-See the `LICENSE <blob/master/LICENSE>`_ for the license details.
+See the `LICENSE <LICENSE>`_ for the license details.
 
 The file ``tileset.pet`` is taken from the `shareware version of Attack of the
 PETSCII Robots
@@ -34,4 +34,4 @@ The file ``NimbusSansNarrow-Bold.otf`` is part of the
 `urw-base35-fonts <https://github.com/ArtifexSoftware/urw-base35-fonts>`_
 package and redistributed under the GNU Affero General Public License; see the
 file `NimbusSansNarrow-Bold.otf.license
-<blob/master/res/NimbusSansNarrow-Bold.otf.license>`_.
+<res/NimbusSansNarrow-Bold.otf.license>`_.
