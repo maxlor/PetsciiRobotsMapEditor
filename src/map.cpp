@@ -13,14 +13,21 @@ static constexpr char MAP_MAGIC[2] = { 0x00, 0x5d };
 Map::Map(QObject *parent) : QObject(parent) {
 	memset(_tiles, 0, sizeof(_tiles));
 	memset(_objects, 0, sizeof(_objects));
+	
+	connect(this, &Map::objectsChanged, &Map::setModifiedFlag);
+	connect(this, &Map::tilesChanged, &Map::setModifiedFlag);
 }
 
 
 void Map::clear() {
-	memset(_tiles, 0, sizeof(_tiles));
 	memset(_objects, 0, sizeof(_objects));
-	emit tilesChanged();
+	memset(_tiles, 0, sizeof(_tiles));
+	
+	_modified = true; // make sure only one modifiedChanged signal is emitted	
+	setPath(QString());
 	emit objectsChanged();
+	emit tilesChanged();
+	setModified(false);
 }
 
 
@@ -70,9 +77,32 @@ QString Map::load(const QString &path) {
 	file.seek(0x302);
 	file.read(reinterpret_cast<char*>(_tiles), 0x2000);
 	
+	_modified = true; // make sure only one modifiedChanged signal is emitted
+	setPath(path);
 	emit tilesChanged();
 	emit objectsChanged();
+	setModified(false);
 	
+	return QString();
+}
+
+
+QString Map::save(const QString &path) {
+	QFile file(path);
+	if (not file.open(QFile::WriteOnly)) {
+		return QString("cannot open \"%1\" for writing: %2") .arg(path, file.errorString());
+	}
+	
+	qint64 bytesWritten = file.write(data());
+	if (bytesWritten == -1) {
+		return QString("cannot write to \"%1\": %2") .arg(path, file.errorString());
+	} else if (bytesWritten != MAP_BYTES) {
+		return QString("cannot write to \"%1\": short " "write, only %2 out of %3 bytes were "
+		               "written").arg(path).arg(bytesWritten).arg(MAP_BYTES);
+	}
+	
+	setPath(path);
+	setModified(false);
 	return QString();
 }
 
@@ -132,6 +162,38 @@ int Map::nextAvailableObjectId(MapObject::Kind kind) const {
 }
 
 
+const MapObject &Map::object(int no) const {
+	return const_cast<Map*>(this)->objectAt(no);
+}
+
+
+void Map::deleteObject(int no) {
+	objectAt(no) = MapObject();
+	compact();
+	emit objectsChanged();
+}
+
+
+void Map::moveObject(int no, const QPoint &pos) {
+	MapObject &object = objectAt(no);
+	object.x = pos.x();
+	object.y = pos.y();
+	emit objectsChanged();
+}
+
+
+void Map::setObject(int no, const MapObject &object) {
+	objectAt(no) = object;
+	emit objectsChanged();
+}
+
+
+void Map::setObjects(const MapObject objects[]) {
+	memcpy(_objects, objects, sizeof(MapObject) * (OBJECT_MAX + 1));
+	emit objectsChanged();
+}
+
+
 uint8_t Map::tileNo(const QPoint &tile) const {
 	Q_ASSERT(0 <= tile.x() and tile.x() < MAP_WIDTH);
 	Q_ASSERT(0 <= tile.y() and tile.y() < MAP_HEIGHT);
@@ -139,20 +201,27 @@ uint8_t Map::tileNo(const QPoint &tile) const {
 }
 
 
-const MapObject &Map::object(int no) const {
-	Q_ASSERT_X(0 <= no and no <= 63, Q_FUNC_INFO,
-	           QString("Can't get object no %1").arg(no).toUtf8().constData());
-	return _objects[no];
+uint8_t *Map::tiles() {
+	return _tiles;
 }
 
 
-void Map::setTile(const QPoint &position, int tileNo) {
+void Map::setTile(const QPoint &position, uint8_t tileNo) {
 	Q_ASSERT(0 <= position.x() and position.x() < MAP_WIDTH);
 	Q_ASSERT(0 <= position.y() and position.y() < MAP_HEIGHT);
-	Q_ASSERT(0 <= tileNo and tileNo < TILE_COUNT);
 	int oldTileNo = _tiles[position.x() + MAP_WIDTH * position.y()];
 	if (oldTileNo == tileNo) { return; }
 	_tiles[position.x() + MAP_WIDTH * position.y()] = tileNo;
+	emit tilesChanged();
+}
+
+
+void Map::setTiles(const QRect &rect, uint8_t *tiles) {
+	Q_ASSERT(0 <= rect.left() and rect.right() < MAP_WIDTH);
+	Q_ASSERT(0 <= rect.top() and rect.bottom() < MAP_HEIGHT);
+	for (int y = rect.top(); y <= rect.bottom(); ++y) {
+		memcpy(&_tiles[rect.left() + MAP_WIDTH * y], &tiles[rect.width() * (y - rect.top())], rect.width());
+	}
 	emit tilesChanged();
 }
 
@@ -167,11 +236,13 @@ void Map::floodFill(const QPoint &position, uint8_t tileNo) {
 }
 
 
-void Map::setObject(int objectNo, const MapObject &object) {
-	Q_ASSERT_X(OBJECT_MIN <= objectNo and objectNo <= OBJECT_MAX, Q_FUNC_INFO,
-	           QString("can't load objectNo %1").arg(objectNo).toUtf8().constData());
-	_objects[objectNo] = object;
-	emit objectsChanged();
+bool Map::isModified() const {
+	return _modified;
+}
+
+
+const QString &Map::path() const {
+	return _path;
 }
 
 
@@ -255,6 +326,18 @@ QByteArray Map::data() const {
 }
 
 
+void Map::setModifiedFlag() {
+	setModified(true);
+}
+
+
+MapObject &Map::objectAt(int no) {
+	Q_ASSERT_X(0 <= no and no <= 63, Q_FUNC_INFO,
+	           QString("Can't get object no %1").arg(no).toUtf8().constData());
+	return _objects[no];
+}
+
+
 int Map::recursiveFloodFill(const QPoint &pos, uint8_t oldTile, uint8_t newTile) {
 	Q_ASSERT(_tiles[pos.x() + MAP_WIDTH * pos.y()] == oldTile);
 	int left = pos.x();
@@ -272,4 +355,20 @@ int Map::recursiveFloodFill(const QPoint &pos, uint8_t oldTile, uint8_t newTile)
 		}
 	}
 	return right;
+}
+
+
+void Map::setModified(bool modified) {
+	if (_modified != modified) {
+		_modified = modified;
+		emit modifiedChanged();
+	}
+}
+
+
+void Map::setPath(const QString &path) {
+	if (_path != path) {
+		_path = path;
+		emit pathChanged();
+	}
 }

@@ -54,7 +54,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_labelHiddenObjectsCount = new QLabel(this);
 	_labelMapFeatureCount = new QLabel(this);
 	_labelRobotCount = new QLabel(this);
-	updateMapCountLabels();
 	_labelStatusCoords = new QLabel(this);
 	_labelStatusCoords->setMinimumWidth(fm.width("Map Tile: 000, 00"));
 	_labelStatusCoords->setAlignment(Qt::AlignLeading | Qt::AlignBaseline);
@@ -140,7 +139,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.objectEditor, &ObjectEditWidget::mapClickRequested, this, &MainWindow::onObjectEditMapClickRequested);
 	
 	connect(_mapController->map(), &Map::objectsChanged, this, &MainWindow::onMapObjectChanged);
-	connect(_mapController->map(), &Map::tilesChanged, this, &MainWindow::onMapTilesChanged);
 	
 	const QSettings settings;
 	const QRect geometry = settings.value(SETTINGS_WINDOW_GEOMETRY).toRect();
@@ -151,13 +149,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	// reload map that was last open, fail silently.
 	const QString path = settings.value(SETTINGS_MAP_PATH).toString();
 	if (not path.isEmpty()) {
-		QString error = _mapController->load(path);
-		if (error.isNull()) {
-			_path = path;
-		} else {
-			_mapController->clear();
-		}
-		_changed = false;
+		_mapController->load(path);
 	}
 	
 	activateTool(_ui.actionSelect);
@@ -172,7 +164,7 @@ MainWindow::~MainWindow() {
 
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-	if (not _changed or askSaveChanges()) {
+	if (not _mapController->map()->isModified() or askSaveChanges()) {
 		event->accept();
 	} else {
 		event->ignore();
@@ -229,12 +221,6 @@ void MainWindow::onLoadTileset() {
 
 void MainWindow::onMapObjectChanged() {
 	updateMapCountLabels();
-	_changed = true;
-}
-
-
-void MainWindow::onMapTilesChanged() {
-	_changed = true;
 }
 
 
@@ -266,16 +252,14 @@ void MainWindow::onObjectEditMapClickRequested(const QString &label) {
 
 
 void MainWindow::onNewTriggered() {
-	if (not _changed or askSaveChanges()) {
+	if (not _mapController->map()->isModified() or askSaveChanges()) {
 		_mapController->clear();
-		_path.clear();
-		_changed = false;
 	}
 }
 
 
 void MainWindow::onOpenTriggered() {
-	if (not _changed or askSaveChanges()) {
+	if (not _mapController->map()->isModified() or askSaveChanges()) {
 		QSettings settings;
 		QString directory = settings.value(SETTINGS_MAP_DIRECTORY, QDir::homePath()).toString();		
 		QFileDialog dialog(this, "Open Map...", directory);
@@ -285,16 +269,15 @@ void MainWindow::onOpenTriggered() {
 		int result = dialog.exec();
 		if (result == QFileDialog::Accepted) {
 			if (dialog.selectedFiles().size() > 0) {
-				_path = dialog.selectedFiles().at(0);
+				QString path = dialog.selectedFiles().at(0);
 				settings.setValue(SETTINGS_MAP_DIRECTORY, dialog.directory().canonicalPath());
-				QString error = _mapController->load(_path);
+				QString error = _mapController->load(path);
 				if (error.isNull()) {
-					settings.setValue(SETTINGS_MAP_PATH, _path);
+					settings.setValue(SETTINGS_MAP_PATH, path);
 				} else {
 					QMessageBox::critical(this, "Error Opening Map",
 					                      QString("Cannot open map: %1").arg(error));
 				}
-				_changed = false;
 			}
 		}
 	}
@@ -512,7 +495,6 @@ void MainWindow::autoLoadTileset() {
 #endif
 			QApplication::applicationDirPath(),
 		};
-		qDebug() << Q_FUNC_INFO << directories;
 		for (const QString &dir : directories) {
 			const QString maybePath = dir + "/tileset.pet";
 			if (QFile::exists(maybePath)) {
@@ -607,27 +589,12 @@ void MainWindow::copyMap(bool copyTiles, bool copyObjects, bool clear) {
 
 
 bool MainWindow::doSave(const QString &path) {
-	QFile file(path);
-	if (not file.open(QFile::WriteOnly)) {
-		QMessageBox::critical(this, "Cannot Save", QString("Cannot open \"%1\" for writing: %2")
-		                      .arg(path, file.errorString()));
+	QString error = _mapController->save(path);
+	if (not error.isNull()) {
+		QMessageBox::critical(this, "Cannot Save", "Saving failed: " + error);
 		return false;
 	}
-	
-	qint64 bytesWritten = file.write(_mapController->map()->data());
-	if (bytesWritten == -1) {
-		QMessageBox::critical(this, "Cannot Save", QString("Cannot write to \"%1\": %2")
-		                      .arg(path, file.errorString()));
-		return false;
-	} else if (bytesWritten != MAP_BYTES) {
-		QMessageBox::critical(this, "Cannot Save", QString("Cannot write to \"%1\": short "
-		                      "write, only %2 out of %3 bytes were written")
-		                      .arg(path).arg(bytesWritten).arg(MAP_BYTES));
-		return false;
-	}
-	
-	file.close();
-	_changed = false;
+
 	_ui.statusbar->showMessage(QString("Saved to %1").arg(path), 5000);
 	return true;
 }
@@ -675,11 +642,8 @@ void MainWindow::placeRobot(int x, int y) {
 
 
 bool MainWindow::save() {
-	if (_path.isNull()) {
-		return saveAs();
-	}
-	
-	return doSave(_path);
+	const QString path = _mapController->map()->path();
+	return path.isNull() ? saveAs() : doSave(path);
 }
 
 
@@ -694,7 +658,6 @@ bool MainWindow::saveAs() {
 		settings.setValue(SETTINGS_MAP_DIRECTORY, dialog.directory().canonicalPath());
 		const QString path = dialog.selectedFiles().at(0);
 		if (doSave(path)) {
-			_path = path;
 			settings.setValue(SETTINGS_MAP_PATH, path);
 			return true;
 		}

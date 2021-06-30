@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QPoint>
+#include <QUndoStack>
 
 class Map;
 class MapObject;
@@ -16,8 +17,10 @@ public:
 	const Map *map();
 	
 	void clear();
-	void deleteObject(int objectNo);
 	QString load(const QString &path);
+	QString save(const QString &path);
+	
+	void deleteObject(int objectNo);
 	void moveObject(int objectNo, const QPoint &position);
 	void setObject(int objectNo, const MapObject &object);
 	
@@ -28,6 +31,7 @@ public:
 	
 private:
 	Map *_map;
+	QUndoStack _undoStack;
 };
 
 #endif // MAPCONTROLLER_H

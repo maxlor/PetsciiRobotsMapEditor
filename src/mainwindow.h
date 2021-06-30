@@ -29,7 +29,6 @@ private slots:
 	void onAbout();
 	void onLoadTileset();
 	void onMapObjectChanged();
-	void onMapTilesChanged();
 	void onMouseOverTile(const QPoint &tile);
 	void onObjectClicked(int objectNo);
 	void onObjectDragged(int objectNo, QPoint pos);
@@ -79,8 +78,6 @@ private:
 	int _currentObject = -1;
 	bool _objectEditMapClickRequested = false;
 	IconFactory _iconFactory;
-	bool _changed = false;
-	QString _path;
 	
 	QSize _clipboardSize;
 	std::forward_list<uint8_t> _clipboardTiles;
