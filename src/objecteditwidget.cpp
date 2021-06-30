@@ -4,19 +4,21 @@
 #include <unordered_map>
 #include "constants.h"
 #include "map.h"
+#include "mapcontroller.h"
 #include "multisignalblocker.h"
 
 Q_LOGGING_CATEGORY(lcObjEd, "ObjEd");
+
 
 ObjectEditWidget::ObjectEditWidget(QWidget *parent) : QGroupBox(parent){
 	_ui.setupUi(this);
 	
 	for (const auto &pair : Map::unitTypes()) {
-		switch (Map::Object::kind(pair.first)) {
-		case Map::Object::Kind::Robot:
+		switch (MapObject::kind(pair.first)) {
+		case MapObject::Kind::Robot:
 			_ui.comboRobotType->insertItem(_ui.comboRobotType->count(), pair.second, pair.first);
 			break;
-		case Map::Object::Kind::HiddenObject:
+		case MapObject::Kind::HiddenObject:
 			_ui.comboWeaponType->insertItem(_ui.comboWeaponType->count(), pair.second, pair.first);
 			break;
 		default:;
@@ -75,20 +77,20 @@ ObjectEditWidget::ObjectEditWidget(QWidget *parent) : QGroupBox(parent){
 
 
 void ObjectEditWidget::loadObject(int objectNo) {
-	static const std::unordered_map<Map::Object::Kind, QString> groupNames {
-		{ Map::Object::Kind::Player, "Player" },
-		{ Map::Object::Kind::Robot, "Robot" },
-		{ Map::Object::Kind::TransporterPad, "Transporter Pad" },
-		{ Map::Object::Kind::Door, "Door" },
-		{ Map::Object::Kind::TrashCompator, "Trash Compactor" },
-		{ Map::Object::Kind::Elevator, "Elevator" },
-		{ Map::Object::Kind::WaterRaft, "Water Raft" },
-		{ Map::Object::Kind::Key, "Key" },
-		{ Map::Object::Kind::HiddenObject, "Hidden Weapon / Item" }
+	static const std::unordered_map<MapObject::Kind, QString> groupNames {
+		{ MapObject::Kind::Player, "Player" },
+		{ MapObject::Kind::Robot, "Robot" },
+		{ MapObject::Kind::TransporterPad, "Transporter Pad" },
+		{ MapObject::Kind::Door, "Door" },
+		{ MapObject::Kind::TrashCompator, "Trash Compactor" },
+		{ MapObject::Kind::Elevator, "Elevator" },
+		{ MapObject::Kind::WaterRaft, "Water Raft" },
+		{ MapObject::Kind::Key, "Key" },
+		{ MapObject::Kind::HiddenObject, "Hidden Weapon / Item" }
 	};
 	_objectNo = -1;
 	
-	if (not _map) {
+	if (not map()) {
 		qCWarning(lcObjEd, "can't edit object, map not set");
 		setVisible(false);
 		return;
@@ -99,8 +101,8 @@ void ObjectEditWidget::loadObject(int objectNo) {
 		return;
 	}
 	
-	const Map::Object &object = _map->object(objectNo);
-	const Map::Object::Kind kind = object.kind();
+	const MapObject &object = map()->object(objectNo);
+	const MapObject::Kind kind = object.kind();
 	try {
 		setTitle(groupNames.at(kind));
 	} catch (std::out_of_range) {
@@ -110,16 +112,16 @@ void ObjectEditWidget::loadObject(int objectNo) {
 	}
 	
 	switch (kind) {
-	case Map::Object::Kind::Player: loadPlayer(); break;
-	case Map::Object::Kind::Door: loadDoor(objectNo); break;
-	case Map::Object::Kind::Elevator: loadElevator(objectNo); break;
-	case Map::Object::Kind::Key: loadKey(objectNo); break;
-	case Map::Object::Kind::HiddenObject: loadWeapon(objectNo); break;
-	case Map::Object::Kind::Robot: loadRobot(objectNo); break;
-	case Map::Object::Kind::TrashCompator: loadTrashCompactor(objectNo); break;
-	case Map::Object::Kind::TransporterPad: loadTransporterPad(objectNo); break;
-	case Map::Object::Kind::WaterRaft: loadWaterRaft(objectNo); break;
-	case Map::Object::Kind::Invalid: setVisible(false); break;
+	case MapObject::Kind::Player: loadPlayer(); break;
+	case MapObject::Kind::Door: loadDoor(objectNo); break;
+	case MapObject::Kind::Elevator: loadElevator(objectNo); break;
+	case MapObject::Kind::Key: loadKey(objectNo); break;
+	case MapObject::Kind::HiddenObject: loadWeapon(objectNo); break;
+	case MapObject::Kind::Robot: loadRobot(objectNo); break;
+	case MapObject::Kind::TrashCompator: loadTrashCompactor(objectNo); break;
+	case MapObject::Kind::TransporterPad: loadTransporterPad(objectNo); break;
+	case MapObject::Kind::WaterRaft: loadWaterRaft(objectNo); break;
+	case MapObject::Kind::Invalid: setVisible(false); break;
 	}
 	
 	_objectNo = objectNo;
@@ -127,9 +129,12 @@ void ObjectEditWidget::loadObject(int objectNo) {
 }
 
 
-void ObjectEditWidget::setMap(Map *map) {
-	_map = map;
-	connect(_map, &Map::objectsChanged, this, &ObjectEditWidget::onObjectsChanged);
+void ObjectEditWidget::setMapController(MapController *mapController) {
+	if (_mapController) {
+		_mapController->map()->disconnect(this);
+	}
+	_mapController = mapController;
+	connect(_mapController->map(), &Map::objectsChanged, this, &ObjectEditWidget::onObjectsChanged);
 }
 
 
@@ -162,7 +167,7 @@ void ObjectEditWidget::onCoordinateMapClickRequested(const QString &label) {
 
 
 void ObjectEditWidget::store() {
-	Map::Object object = _map->object(_objectNo);
+	MapObject object = map()->object(_objectNo);
 	if (_ui.stackedWidget->currentWidget() == _ui.pagePlayer) {
 		object.x = _ui.coordinatesPlayer->x();
 		object.y = _ui.coordinatesPlayer->y();
@@ -218,14 +223,14 @@ void ObjectEditWidget::store() {
 	} else {
 		Q_ASSERT(false);
 	}
-	_map->setObject(_objectNo, object);
+	_mapController->setObject(_objectNo, object);
 }
 
 
 void ObjectEditWidget::loadDoor(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesDoor, _ui.comboDoorOrientation,
 	                               _ui.comboDoorState, _ui.comboDoorLock };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageDoor);
 	_ui.coordinatesDoor->setXY(object.x, object.y);
 	_ui.comboDoorOrientation->setCurrentIndex(object.a ? 1 : 0);
@@ -237,7 +242,7 @@ void ObjectEditWidget::loadDoor(int objectNo) {
 void ObjectEditWidget::loadElevator(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesElevator, _ui.comboElevatorState,
 	                               _ui.editElevatorFloor, _ui.editElevatorTotalFloors };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageElevator);
 	_ui.coordinatesElevator->setXY(object.x, object.y);
 	_ui.comboElevatorState->setCurrentIndex(object.b < 6 ? object.b : 5);
@@ -250,7 +255,7 @@ void ObjectEditWidget::loadKey(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesKey, _ui.radioKeySpade, _ui.radioKeyHeart,
 	                               _ui.radioKeyStar, _ui.editKeyContainerWidth,
 	                               _ui.editKeyContainerHeight };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageKey);
 	_ui.coordinatesKey->setXY(object.x, object.y);
 	_ui.radioKeySpade->setChecked(object.a == 0);
@@ -263,7 +268,7 @@ void ObjectEditWidget::loadKey(int objectNo) {
 
 void ObjectEditWidget::loadPlayer() {
 	MultiSignalBlocker blocker = { _ui.coordinatesPlayer, _ui.editPlayerHealth };
-	const Map::Object &object = _map->object(PLAYER_OBJ);
+	const MapObject &object = map()->object(PLAYER_OBJ);
 	_ui.stackedWidget->setCurrentWidget(_ui.pagePlayer);
 	_ui.coordinatesPlayer->setXY(object.x, object.y);
 	_ui.editPlayerHealth->setValue(object.health);
@@ -273,7 +278,7 @@ void ObjectEditWidget::loadPlayer() {
 void ObjectEditWidget::loadRobot(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesRobot, _ui.editRobotHealth,
 	                               _ui.comboRobotType };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageRobot);
 	_ui.coordinatesRobot->setXY(object.x, object.y);
 	_ui.editRobotHealth->setValue(object.health);
@@ -296,7 +301,7 @@ void ObjectEditWidget::loadRobot(int objectNo) {
 
 void ObjectEditWidget::loadTrashCompactor(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesTrashCompactor };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageTrashCompactor);
 	_ui.coordinatesTrashCompactor->setXY(object.x, object.y);
 }
@@ -306,7 +311,7 @@ void ObjectEditWidget::loadTransporterPad(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesTransporter, _ui.checkTransporterDisable,
 	                               _ui.radioTransporterEOL, _ui.radioTransporterCoordinates,
 	                               _ui.coordinatesTransporterDest };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageTransporter);
 	_ui.coordinatesTransporter->setXY(object.x, object.y);
 	_ui.checkTransporterDisable->setChecked(object.a == 1);
@@ -320,7 +325,7 @@ void ObjectEditWidget::loadWaterRaft(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesRaft, _ui.radioRaftDirectionLeft,
 	                               _ui.radioRaftDirectionRight, _ui.editRaftLeftTurnaround,
 	                               _ui.editRaftRightTurnaround };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageRaft);
 	_ui.coordinatesRaft->setXY(object.x, object.y);
 	_ui.radioRaftDirectionLeft->setChecked(object.a == 0);
@@ -334,7 +339,7 @@ void ObjectEditWidget::loadWeapon(int objectNo) {
 	MultiSignalBlocker blocker = { _ui.coordinatesWeapon, _ui.comboWeaponType,
 	                               _ui.editWeaponAmount, _ui.editWeaponContainerWidth,
 	                               _ui.editWeaponContainerHeight };
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = map()->object(objectNo);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageWeapon);
 	_ui.coordinatesWeapon->setXY(object.x, object.y);
 	bool found = false;
@@ -354,4 +359,10 @@ void ObjectEditWidget::loadWeapon(int objectNo) {
 	_ui.editWeaponAmount->setValue(object.a);
 	_ui.editWeaponContainerWidth->setValue(object.c);
 	_ui.editWeaponContainerHeight->setValue(object.d);
+}
+
+
+const Map *ObjectEditWidget::map() const {
+	if (_mapController) { return _mapController->map(); }
+	return nullptr;
 }

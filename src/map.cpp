@@ -104,30 +104,30 @@ int Map::robotCount() const {
 }
 
 
-int Map::nextAvailableObjectId(Object::Kind kind) const {
+int Map::nextAvailableObjectId(MapObject::Kind kind) const {
 	switch (kind) {
-	case Object::Kind::Player: return PLAYER_OBJ;
-	case Object::Kind::Robot:
+	case MapObject::Kind::Player: return PLAYER_OBJ;
+	case MapObject::Kind::Robot:
 		for (int i = ROBOT_MIN; i <= ROBOT_MAX; ++i) {
 			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
 		}
 		return OBJECT_NONE;
-	case Object::Kind::TransporterPad:
-	case Object::Kind::Door:
-	case Object::Kind::TrashCompator:
-	case Object::Kind::Elevator:
-	case Object::Kind::WaterRaft:
+	case MapObject::Kind::TransporterPad:
+	case MapObject::Kind::Door:
+	case MapObject::Kind::TrashCompator:
+	case MapObject::Kind::Elevator:
+	case MapObject::Kind::WaterRaft:
 		for (int i = MAP_FEATURE_MIN; i <= MAP_FEATURE_MAX; ++i) {
 			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
 		}
 		return OBJECT_NONE;
-	case Object::Kind::Key:
-	case Object::Kind::HiddenObject:
+	case MapObject::Kind::Key:
+	case MapObject::Kind::HiddenObject:
 		for (int i = HIDDEN_OBJECT_MIN; i <= HIDDEN_OBJECT_MAX; ++i) {
 			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
 		}
 		return OBJECT_NONE;
-	case Object::Kind::Invalid: return OBJECT_NONE;
+	case MapObject::Kind::Invalid: return OBJECT_NONE;
 	}
 }
 
@@ -139,7 +139,7 @@ uint8_t Map::tileNo(const QPoint &tile) const {
 }
 
 
-const Map::Object &Map::object(int no) const {
+const MapObject &Map::object(int no) const {
 	Q_ASSERT_X(0 <= no and no <= 63, Q_FUNC_INFO,
 	           QString("Can't get object no %1").arg(no).toUtf8().constData());
 	return _objects[no];
@@ -157,18 +157,17 @@ void Map::setTile(const QPoint &position, int tileNo) {
 }
 
 
-void Map::floodFill(const QPoint &position, int tileNo) {
+void Map::floodFill(const QPoint &position, uint8_t tileNo) {
 	Q_ASSERT(0 <= position.x() and position.x() < MAP_WIDTH);
 	Q_ASSERT(0 <= position.y() and position.y() < MAP_HEIGHT);
-	Q_ASSERT(0 <= tileNo and tileNo < TILE_COUNT);
-	int oldTileNo = _tiles[position.x() + MAP_WIDTH * position.y()];
+	uint8_t oldTileNo = _tiles[position.x() + MAP_WIDTH * position.y()];
 	if (oldTileNo == tileNo) { return; }
 	recursiveFloodFill(position, oldTileNo, tileNo);
 	emit tilesChanged();
 }
 
 
-void Map::setObject(int objectNo, const Map::Object &object) {
+void Map::setObject(int objectNo, const MapObject &object) {
 	Q_ASSERT_X(OBJECT_MIN <= objectNo and objectNo <= OBJECT_MAX, Q_FUNC_INFO,
 	           QString("can't load objectNo %1").arg(objectNo).toUtf8().constData());
 	_objects[objectNo] = object;
@@ -215,7 +214,7 @@ void Map::compact() {
 			for (int j = i + 1; j < range.second; ++j) {
 				if (_objects[j].unitType != UNITTYPE_NONE) {
 					_objects[i] = _objects[j];
-					_objects[j] = Object();
+					_objects[j] = MapObject();
 					++i;
 					moved = true;
 					changed = true;
@@ -231,7 +230,7 @@ void Map::compact() {
 }
 
 
-QByteArray Map::data() {
+QByteArray Map::data() const {
 	QByteArray ba(MAP_BYTES, 0);
 	
 	memcpy(ba.data(), MAP_MAGIC, sizeof(MAP_MAGIC));
@@ -256,7 +255,7 @@ QByteArray Map::data() {
 }
 
 
-int Map::recursiveFloodFill(const QPoint &pos, int oldTile, int newTile) {
+int Map::recursiveFloodFill(const QPoint &pos, uint8_t oldTile, uint8_t newTile) {
 	Q_ASSERT(_tiles[pos.x() + MAP_WIDTH * pos.y()] == oldTile);
 	int left = pos.x();
 	int right = pos.x();
@@ -273,77 +272,4 @@ int Map::recursiveFloodFill(const QPoint &pos, int oldTile, int newTile) {
 		}
 	}
 	return right;
-}
-
-
-Map::Object::Object() : Map::Object(UNITTYPE_NONE) {}
-
-
-Map::Object::Object(uint8_t unitType)
-    : unitType(unitType), x(0), y(0), a(0), b(0), c(0), d(0), health(0) {}
-
-
-Map::Object::Kind Map::Object::kind() const {
-	return kind(unitType);
-}
-
-
-QPoint Map::Object::pos() const {
-	return QPoint(x, y);
-}
-
-
-Map::Object::Kind Map::Object::kind(uint8_t unitType) {
-	switch (unitType) {
-	case 1: return Kind::Player;
-	case 2:
-	case 3:
-	case 4:
-	case 9:
-	case 17:
-	case 18: return Kind::Robot;
-	case 7: return Kind::TransporterPad;
-	case 10: return Kind::Door;
-	case 16: return Kind::TrashCompator;
-	case 19: return Kind::Elevator;
-	case 22: return Kind::WaterRaft;
-	case 128: return Kind::Key;
-	case 129:
-	case 130:
-	case 131:
-	case 132:
-	case 133:
-	case 134: return Kind::HiddenObject;
-	default: return Kind::Invalid;
-	}
-}
-
-
-const QString &Map::Object::toString(Map::Object::Kind kind) {
-	static const std::unordered_map<Object::Kind, QString> names = {
-	    { Object::Kind::Player, "player" }, { Object::Kind::Robot, "robot" },
-	    { Object::Kind::TransporterPad, "transporter pad" }, { Object::Kind::Elevator, "elevator" },
-	    { Object::Kind::WaterRaft, "water raft" }, { Object::Kind::Key, "key" },
-	    { Object::Kind::HiddenObject, "hidden object" }, { Object::Kind::Invalid, "invalid" }
-	};
-	
-	auto it = names.find(kind);
-	Q_ASSERT(it != names.end());
-	return it->second;
-}
-
-
-const QString &Map::Object::category(Map::Object::Kind kind) {
-	static const QString mapObjects = "map features";
-	static const QString hiddenItems = "hidden items";
-	static const std::unordered_map<Object::Kind, QString> names = {
-	    { Object::Kind::Player, "player" }, { Object::Kind::Robot, "robots" },
-	    { Object::Kind::TransporterPad, mapObjects }, { Object::Kind::Elevator, mapObjects },
-	    { Object::Kind::WaterRaft, mapObjects }, { Object::Kind::Key, hiddenItems },
-	    { Object::Kind::HiddenObject, hiddenItems }, { Object::Kind::Invalid, "invalid" }
-	};
-	
-	auto it = names.find(kind);
-	Q_ASSERT(it != names.end());
-	return it->second;
 }

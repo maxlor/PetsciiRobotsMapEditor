@@ -5,6 +5,7 @@
 #include "forward_list"
 
 class Map;
+class MapController;
 
 
 class ObjectEditWidget : public QGroupBox {
@@ -13,7 +14,7 @@ public:
 	explicit ObjectEditWidget(QWidget *parent = nullptr);
 	
 	void loadObject(int objectNo);
-	void setMap(Map *map);
+	void setMapController(MapController *mapController);
 	
 public slots:
 	void mapClick(int x, int y);
@@ -37,9 +38,10 @@ private:
 	void loadTransporterPad(int objectNo);
 	void loadWaterRaft(int objectNo);
 	void loadWeapon(int objectNo);
+	const Map *map() const;
 	
 	Ui::ObjectEditWidget _ui;
-	Map *_map = nullptr;
+	MapController *_mapController = nullptr;
 	int _objectNo = -1;
 	CoordinateWidget *_mapClickRequester = nullptr;
 };

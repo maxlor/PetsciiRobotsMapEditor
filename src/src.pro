@@ -21,6 +21,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
+    mapcontroller.cpp \
+    mapobject.cpp \
     mapwidget.cpp \
     multisignalblocker.cpp \
     objecteditwidget.cpp \
@@ -36,6 +38,8 @@ HEADERS += \
     iconfactory.h \
     mainwindow.h \
     map.h \
+    mapcontroller.h \
+    mapobject.h \
     mapwidget.h \
     multisignalblocker.h \
     objecteditwidget.h \

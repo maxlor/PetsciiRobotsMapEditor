@@ -8,8 +8,10 @@
 #include <QSize>
 #include <forward_list>
 #include "iconfactory.h"
-#include "map.h"
+#include "mapcontroller.h"
+#include "mapobject.h"
 
+class Map;
 class Tileset;
 
 
@@ -44,8 +46,9 @@ private slots:
 	void onFillTriggered();
 	void onShowObjectsToggled(bool checked);
 	
-	void onTileClicked(const QPoint &tile);
+	void onTilePressed(const QPoint &tile);
 	void onTileDragged(const QPoint &tile);
+	void onTileReleased();
 	void onTileWidgetTileSelected(uint8_t tileNo);
 	void onToolActionTriggered();
 	void onQuit();
@@ -70,7 +73,6 @@ private:
 	QLabel *_labelRobotCount;
 	QLabel *_labelStatusCoords;
 	QLabel *_labelStatusTile;
-	Map *_map = nullptr;
 	Tileset *_tileset = nullptr;
 	std::forward_list<QAction*> _viewFilterActions;
 	std::forward_list<QAction*> _toolActions;
@@ -83,6 +85,8 @@ private:
 	QSize _clipboardSize;
 	std::forward_list<uint8_t> _clipboardTiles;
 	bool _clipboardTilesValid;
-	std::forward_list<Map::Object> _clipboardObjects;
+	std::forward_list<MapObject> _clipboardObjects;
+	
+	MapController *_mapController;
 };
 #endif // MAINWINDOW_H

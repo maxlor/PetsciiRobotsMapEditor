@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <QApplication>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -69,9 +70,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.mapWidget->setTileset(_tileset);
 	_ui.tileWidget->setTileset(_tileset);
 	
-	_map = new Map();
-	_ui.mapWidget->setMap(_map);
-	_ui.objectEditor->setMap(_map);
+	_mapController = new MapController(this);
+	_ui.mapWidget->setMap(_mapController->map());
+	_ui.objectEditor->setMapController(_mapController);
 	updateMapCountLabels();
 	
 	_viewFilterActions = { _ui.actionShowWalkable, _ui.actionShowHoverable,
@@ -132,13 +133,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.mapWidget, &MapWidget::mouseOverTile, this, &MainWindow::onMouseOverTile);
 	connect(_ui.mapWidget, &MapWidget::objectClicked, this, &MainWindow::onObjectClicked);
 	connect(_ui.mapWidget, &MapWidget::objectDragged, this, &MainWindow::onObjectDragged);
-	connect(_ui.mapWidget, &MapWidget::tileClicked, this, &MainWindow::onTileClicked);
+	connect(_ui.mapWidget, &MapWidget::tilePressed, this, &MainWindow::onTilePressed);
 	connect(_ui.mapWidget, &MapWidget::tileDragged, this, &MainWindow::onTileDragged);
+	connect(_ui.mapWidget, &MapWidget::tileReleased, this, &MainWindow::onTileReleased);
 	connect(_ui.tileWidget, &TileWidget::tileSelected, this, &MainWindow::onTileWidgetTileSelected);
 	connect(_ui.objectEditor, &ObjectEditWidget::mapClickRequested, this, &MainWindow::onObjectEditMapClickRequested);
 	
-	connect(_map, &Map::objectsChanged, this, &MainWindow::onMapObjectChanged);
-	connect(_map, &Map::tilesChanged, this, &MainWindow::onMapTilesChanged);
+	connect(_mapController->map(), &Map::objectsChanged, this, &MainWindow::onMapObjectChanged);
+	connect(_mapController->map(), &Map::tilesChanged, this, &MainWindow::onMapTilesChanged);
 	
 	const QSettings settings;
 	const QRect geometry = settings.value(SETTINGS_WINDOW_GEOMETRY).toRect();
@@ -149,11 +151,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	// reload map that was last open, fail silently.
 	const QString path = settings.value(SETTINGS_MAP_PATH).toString();
 	if (not path.isEmpty()) {
-		QString error = _map->load(path);
+		QString error = _mapController->load(path);
 		if (error.isNull()) {
 			_path = path;
 		} else {
-			_map->clear();
+			_mapController->clear();
 		}
 		_changed = false;
 	}
@@ -245,19 +247,14 @@ void MainWindow::onObjectClicked(int objectNo) {
 	if (_ui.actionSelect->isChecked() and not _objectEditMapClickRequested) {
 		_ui.objectEditor->loadObject(objectNo);
 	} else if (_ui.actionDeleteObject->isChecked()) {
-		_map->setObject(objectNo, Map::Object());
-		_map->compact();
+		_mapController->deleteObject(objectNo);
 	}
 }
 
 
 void MainWindow::onObjectDragged(int objectNo, QPoint pos) { 
 	if (_ui.actionSelect->isChecked()) {
-		Map::Object object = _map->object(objectNo);
-		if (object.pos() == pos) { return; }
-		object.x = pos.x();
-		object.y = pos.y();
-		_map->setObject(objectNo, object);
+		_mapController->moveObject(objectNo, pos);
 	}
 }
 
@@ -270,7 +267,7 @@ void MainWindow::onObjectEditMapClickRequested(const QString &label) {
 
 void MainWindow::onNewTriggered() {
 	if (not _changed or askSaveChanges()) {
-		_map->clear();
+		_mapController->clear();
 		_path.clear();
 		_changed = false;
 	}
@@ -290,7 +287,7 @@ void MainWindow::onOpenTriggered() {
 			if (dialog.selectedFiles().size() > 0) {
 				_path = dialog.selectedFiles().at(0);
 				settings.setValue(SETTINGS_MAP_DIRECTORY, dialog.directory().canonicalPath());
-				QString error = _map->load(_path);
+				QString error = _mapController->load(_path);
 				if (error.isNull()) {
 					settings.setValue(SETTINGS_MAP_PATH, _path);
 				} else {
@@ -348,19 +345,19 @@ void MainWindow::onPasteTriggered() {
 		for (int y = 0; y < _clipboardSize.height(); ++y) {
 			for (int x = 0; x < _clipboardSize.width(); ++x) {
 				Q_ASSERT(it != _clipboardTiles.end());
-				_map->setTile(rect.topLeft() + QPoint(x, y), *it++);
+				_mapController->setTile(rect.topLeft() + QPoint(x, y), *it++);
 			}
 		}
 	}
 	bool addedAllObjects = true;
 	for (auto it = _clipboardObjects.begin(); it != _clipboardObjects.end(); ++it) {
-		Map::Object object = *it;
-		if (object.kind() == Map::Object::Kind::Invalid) { continue; }
-		int objectId = _map->nextAvailableObjectId(object.kind());
+		MapObject object = *it;
+		if (object.kind() == MapObject::Kind::Invalid) { continue; }
+		int objectId = _mapController->map()->nextAvailableObjectId(object.kind());
 		if (objectId != OBJECT_NONE) {
 			object.x += rect.left();
 			object.y += rect.top();
-			_map->setObject(objectId, object);
+			_mapController->setObject(objectId, object);
 		} else {
 			addedAllObjects = false;
 		}
@@ -382,7 +379,7 @@ void MainWindow::onFillTriggered() {
 	
 	for (int y = rect.top(); y <= rect.bottom(); ++y) {
 		for (int x = rect.left(); x <= rect.right(); ++x) {
-			_map->setTile({x, y}, _ui.tileWidget->selectedTile());
+			_mapController->setTile({x, y}, _ui.tileWidget->selectedTile());
 		}
 	}
 }
@@ -396,16 +393,17 @@ void MainWindow::onShowObjectsToggled(bool checked) {
 }
 
 
-void MainWindow::onTileClicked(const QPoint &tile) {
+void MainWindow::onTilePressed(const QPoint &tile) {
 	int newObjectId = -1;
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
 		_ui.objectEditor->mapClick(tile.x(), tile.y());
 		_objectEditMapClickRequested = false;
 	} else if (_ui.actionDrawTiles->isChecked()) {
-		_map->setTile(tile, _ui.tileWidget->selectedTile());
+		_mapController->beginTileDrawing();
+		_mapController->setTile(tile, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionFloodFill->isChecked()) {
-		_map->floodFill(tile, _ui.tileWidget->selectedTile());
+		_mapController->floodFill(tile, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionPlaceDoor->isChecked()) {
 		newObjectId = placeObject(tile, OBJECT_DOOR, 0, 5);
 	} else if (_ui.actionPlaceElevator->isChecked()) {
@@ -415,13 +413,13 @@ void MainWindow::onTileClicked(const QPoint &tile) {
 	} else if (_ui.actionPlaceKey->isChecked()) {
 		newObjectId = placeObject(tile, OBJECT_KEY, 0, 0, 1, 1);
 	} else if (_ui.actionPlacePlayer->isChecked()) {
-		Map::Object playerObject = _map->object(PLAYER_OBJ);
+		MapObject playerObject = _mapController->map()->object(PLAYER_OBJ);
 		playerObject.x = tile.x();
 		playerObject.y = tile.y();
 		playerObject.unitType = UNITTYPE_PLAYER;
 		playerObject.a = playerObject.b = playerObject.c = playerObject.d = 0;
 		if (playerObject.health == 0) { playerObject.health = 12; }
-		_map->setObject(PLAYER_OBJ, playerObject);
+		_mapController->setObject(PLAYER_OBJ, playerObject);
 		newObjectId = PLAYER_OBJ;
 	} else if (_ui.actionPlaceRobot->isChecked()) {
 		newObjectId = placeObject(tile, ROBOT_HOVERBOT_LR, 0, 0, 0, 0, 10);
@@ -443,10 +441,15 @@ void MainWindow::onTileClicked(const QPoint &tile) {
 
 void MainWindow::onTileDragged(const QPoint &tile) {
 	if (_ui.actionDrawTiles->isChecked()) {
-		int tileNo = _ui.tileWidget->selectedTile();
-		if (0 <= tileNo and tileNo < TILE_COUNT) {
-			_map->setTile(tile, tileNo);
-		}
+		const uint8_t tileNo = _ui.tileWidget->selectedTile();
+		_mapController->setTile(tile, tileNo);
+	}
+}
+
+
+void MainWindow::onTileReleased() {
+	if (_ui.actionDrawTiles->isChecked()) {
+		_mapController->endTileDrawing();
 	}
 }
 
@@ -583,20 +586,20 @@ void MainWindow::copyMap(bool copyTiles, bool copyObjects, bool clear) {
 	if (copyTiles) {
 		for (int y = rect.bottom(); y >= rect.top(); --y) {
 			for (int x = rect.right(); x >= rect.left(); --x) {
-				_clipboardTiles.push_front(_map->tileNo({x, y}));
-				if (clear) { _map->setTile({x, y}, 0); }
+				_clipboardTiles.push_front(_mapController->map()->tileNo({x, y}));
+				if (clear) { _mapController->setTile({x, y}, 0); }
 			}
 		}
 		_clipboardTilesValid = true;
 	}
 	if (copyObjects) {
 		for (int objectNo = OBJECT_MAX; objectNo >= OBJECT_MIN; --objectNo) {
-			Map::Object object = _map->object(objectNo);
+			MapObject object = _mapController->map()->object(objectNo);
 			if (rect.contains(object.pos())) {
 				object.x -= rect.left();
 				object.y -= rect.top();
 				_clipboardObjects.push_front(object);
-				if (clear) { _map->setObject(objectNo, Map::Object()); }
+				if (clear) { _mapController->deleteObject(objectNo); }
 			}
 		}
 	}
@@ -611,7 +614,7 @@ bool MainWindow::doSave(const QString &path) {
 		return false;
 	}
 	
-	qint64 bytesWritten = file.write(_map->data());
+	qint64 bytesWritten = file.write(_mapController->map()->data());
 	if (bytesWritten == -1) {
 		QMessageBox::critical(this, "Cannot Save", QString("Cannot write to \"%1\": %2")
 		                      .arg(path, file.errorString()));
@@ -631,10 +634,10 @@ bool MainWindow::doSave(const QString &path) {
 
 
 int MainWindow::placeObject(const QPoint &position, int unitType, int a, int b, int c, int d, int health) {
-	const Map::Object::Kind kind = Map::Object::kind(unitType);
-	const int objectNo = _map->nextAvailableObjectId(kind);
+	const MapObject::Kind kind = MapObject::kind(unitType);
+	const int objectNo = _mapController->map()->nextAvailableObjectId(kind);
 	if (objectNo >= OBJECT_MIN) {
-		Map::Object object(unitType);
+		MapObject object(unitType);
 		object.x = position.x();
 		object.y = position.y();
 		object.a = a;
@@ -642,10 +645,10 @@ int MainWindow::placeObject(const QPoint &position, int unitType, int a, int b, 
 		object.c = c;
 		object.d = d;
 		object.health = health;
-		_map->setObject(objectNo, object);
+		_mapController->setObject(objectNo, object);
 	} else {
-		const QString &type = Map::Object::toString(kind);
-		const QString &category = Map::Object::category(kind);
+		const QString &type = MapObject::toString(kind);
+		const QString &category = MapObject::category(kind);
 		
 		QMessageBox::warning(this, QString("Cannot Add %1%2").arg(type.left(1).toUpper(), type.mid(1)),
 		                     QString("Cannot add %1: the map already contains the maximum number "
@@ -656,18 +659,18 @@ int MainWindow::placeObject(const QPoint &position, int unitType, int a, int b, 
 
 
 void MainWindow::placeRobot(int x, int y) {
-	const int objectNo = _map->nextAvailableObjectId(Map::Object::Kind::Robot);
+	const int objectNo = _mapController->map()->nextAvailableObjectId(MapObject::Kind::Robot);
 	if (objectNo == -1) {
 		QMessageBox::warning(this, "Cannot add robot",
 		                     "Cannot add robot: the maximum number of robots has already been "
 		                     "reached");
 		return;
 	}
-	Map::Object object(ROBOT_HOVERBOT_LR);
+	MapObject object(ROBOT_HOVERBOT_LR);
 	object.x = x;
 	object.y = y;
 	object.health = 10;
-	_map->setObject(objectNo, object);
+	_mapController->setObject(objectNo, object);
 }
 
 
@@ -707,21 +710,16 @@ void MainWindow::updateLabelStatusTile() {
 
 
 void MainWindow::updateMapCountLabels() {
-	if (_map == nullptr) {
-		_labelHiddenObjectsCount->clear();
-		_labelMapFeatureCount->clear();
-		_labelRobotCount->clear();
-		return;
-	}
-	
 	static constexpr int maxHiddenItemCount = HIDDEN_OBJECT_MAX - HIDDEN_OBJECT_MIN + 1;
 	static constexpr int maxMapFeatureCount = MAP_FEATURE_MAX - MAP_FEATURE_MIN + 1;
 	static constexpr int maxRobotCount = ROBOT_MAX - ROBOT_MIN + 1;
 	
-	_labelRobotCount->setText(QString("Robots: %1/%2").arg(_map->robotCount())
+	const Map &map = *_mapController->map();
+	
+	_labelRobotCount->setText(QString("Robots: %1/%2").arg(map.robotCount())
 	                          .arg(maxRobotCount));
-	_labelMapFeatureCount->setText(QString("Map features: %1/%2").arg(_map->mapFeatureCount())
+	_labelMapFeatureCount->setText(QString("Map features: %1/%2").arg(map.mapFeatureCount())
 	                               .arg(maxMapFeatureCount));
-	_labelHiddenObjectsCount->setText(QString("Hidden objects: %1/%2").arg(_map->hiddenItemCount())
+	_labelHiddenObjectsCount->setText(QString("Hidden objects: %1/%2").arg(map.hiddenItemCount())
 	                                  .arg(maxHiddenItemCount));
 }

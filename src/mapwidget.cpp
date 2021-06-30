@@ -4,6 +4,7 @@
 #include <QSize>
 #include "constants.h"
 #include "map.h"
+#include "mapobject.h"
 #include "tile.h"
 #include "tileset.h"
 #include <QtDebug>
@@ -73,10 +74,10 @@ void MapWidget::setObjectsVisible(bool visible) {
 void MapWidget::clickEveryTile() {
 	for (int y = 0; y < MAP_HEIGHT; ++y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
-			emit tileClicked({x, y});
+			emit tilePressed({x, y});
 			if (_objectsVisible) {
 				for (int i = 0; i <= OBJECT_MAX; ++i) {
-					const Map::Object &object = _map->object(i);
+					const MapObject &object = _map->object(i);
 					if (object.unitType != UNITTYPE_NONE and object.x == x and object.y == y) {
 						emit objectClicked(i);
 						break;
@@ -205,7 +206,7 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 		if (_objectsVisible) {
 			bool foundObject = false;
 			for (int i = 0; i <= OBJECT_MAX; ++i) {
-				const Map::Object &object = _map->object(i);
+				const MapObject &object = _map->object(i);
 				if (object.unitType != UNITTYPE_NONE and object.pos() == tilePos) {
 					emit objectClicked(i);
 					foundObject = true;
@@ -219,7 +220,7 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 			}
 		}
 		
-		emit tileClicked(tilePos);
+		emit tilePressed(tilePos);
 		emit mouseOverTile(tilePos);
 		break;
 	}
@@ -229,7 +230,10 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		event->accept();
-		_dragObject = OBJECT_NONE;
+		if (_dragMode == DragMode::Object) {
+			_dragObject = OBJECT_NONE;
+			emit tileReleased();
+		}
 	} else {
 		QWidget::mouseReleaseEvent(event);
 	}
@@ -279,7 +283,7 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	    { ROBOT_ROLLERBOT_UD,     { 164, robotColor }},
 	};
 	
-	const Map::Object &object = _map->object(objectNo);
+	const MapObject &object = _map->object(objectNo);
 	if (object.unitType == UNITTYPE_NONE) { return; }
 	const QRect r = tileRect(object.pos());
 	std::pair<uint8_t, QColor> pair;
