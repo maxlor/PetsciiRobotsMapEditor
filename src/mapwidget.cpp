@@ -7,7 +7,6 @@
 #include "mapobject.h"
 #include "tile.h"
 #include "tileset.h"
-#include <QtDebug>
 
 
 MapWidget::MapWidget(QWidget *parent) : AbstractTileWidget(parent) {
@@ -88,7 +87,6 @@ void MapWidget::clickEveryTile() {
 			}
 		}
 	}
-	qDebug() << Q_FUNC_INFO << "done";
 }
 
 
@@ -230,10 +228,8 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		event->accept();
-		if (_dragMode == DragMode::Object) {
-			_dragObject = OBJECT_NONE;
-			emit tileReleased();
-		}
+		_dragObject = OBJECT_NONE;
+		emit released();
 	} else {
 		QWidget::mouseReleaseEvent(event);
 	}

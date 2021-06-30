@@ -57,9 +57,9 @@ ObjectEditWidget::ObjectEditWidget(QWidget *parent) : QGroupBox(parent){
 				connect(u.comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 				        this, &ObjectEditWidget::store);
 			} else if ((u.checkBox = qobject_cast<QCheckBox*>(child))) {
-				connect(u.checkBox, &QCheckBox::toggled, this, &ObjectEditWidget::store);
+				connect(u.checkBox, &QCheckBox::clicked, this, &ObjectEditWidget::store);
 			} else if ((u.radioButton = qobject_cast<QRadioButton*>(child))) {
-				connect(u.radioButton, &QCheckBox::toggled, this, &ObjectEditWidget::store);
+				connect(u.radioButton, &QCheckBox::clicked, this, &ObjectEditWidget::store);
 			} else if ((u.coordinateWidget = qobject_cast<CoordinateWidget*>(child))) {
 				connect(u.coordinateWidget, &CoordinateWidget::valueChanged,
 				        this, &ObjectEditWidget::store);

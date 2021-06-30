@@ -8,7 +8,7 @@
 #include "constants.h"
 #include "tile.h"
 #include "tileset.h"
-#include <QtDebug>
+
 
 static const int TILES_PER_ROW = 4;
 static const int OUTER_MARGIN = 1;

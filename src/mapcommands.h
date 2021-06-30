@@ -40,16 +40,20 @@ private:
 
 class MoveObject : public QUndoCommand {
 public:
-	MoveObject(Map &map, int objectNo, const QPoint &pos, QUndoCommand *parent = nullptr);
+	MoveObject(Map &map, int objectNo, const QPoint &pos, int mergeCounter,
+	           QUndoCommand *parent = nullptr);
 	
+	int id() const override;
+	bool mergeWith(const QUndoCommand *command) override;
 	void redo() override;
 	void undo() override;
 	
 private:
 	Map &_map;
 	const int _objectNo;
-	const QPoint _position;
+	QPoint _position;
 	QPoint _previousPosition;
+	int _mergeCounter;
 };
 
 

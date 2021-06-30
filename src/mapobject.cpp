@@ -46,30 +46,47 @@ MapObject::Kind MapObject::kind(uint8_t unitType) {
 
 
 const QString &MapObject::toString(MapObject::Kind kind) {
-	static const std::unordered_map<Kind, QString> names = {
-	    { Kind::Player, "player" }, { Kind::Robot, "robot" },
-	    { Kind::TransporterPad, "transporter pad" }, { Kind::Elevator, "elevator" },
-	    { Kind::WaterRaft, "water raft" }, { Kind::Key, "key" },
-	    { Kind::HiddenObject, "hidden object" }, { Kind::Invalid, "invalid" }
-	};
-	
-	auto it = names.find(kind);
-	Q_ASSERT(it != names.end());
-	return it->second;
+	static const QString player = "player";
+	static const QString robots = "robot";
+	static const QString transporterPad = "transporter pad";
+	static const QString door = "door";
+	static const QString trashCompactor = "trash compactor";
+	static const QString elevator = "elevator";
+	static const QString waterRaft = "water raft";
+	static const QString key = "key";
+	static const QString hiddenObject = "item";
+	static const QString invalid = "invalid";
+	switch (kind) {
+	case Kind::Player: return player;
+	case Kind::Robot: return robots;
+	case Kind::TransporterPad: return transporterPad;
+	case Kind::Door: return door;
+	case Kind::TrashCompator: return trashCompactor;
+	case Kind::Elevator: return elevator;
+	case Kind::WaterRaft: return waterRaft;
+	case Kind::Key: return key;
+	case Kind::HiddenObject: return hiddenObject;
+	case Kind::Invalid: return invalid;
+	}
 }
 
 
 const QString &MapObject::category(MapObject::Kind kind) {
+	static const QString player = "player";
+	static const QString robots = "robots";
 	static const QString mapObjects = "map features";
 	static const QString hiddenItems = "hidden items";
-	static const std::unordered_map<Kind, QString> names = {
-	    { Kind::Player, "player" }, { Kind::Robot, "robots" },
-	    { Kind::TransporterPad, mapObjects }, { Kind::Elevator, mapObjects },
-	    { Kind::WaterRaft, mapObjects }, { Kind::Key, hiddenItems },
-	    { Kind::HiddenObject, hiddenItems }, { Kind::Invalid, "invalid" }
-	};
-	
-	auto it = names.find(kind);
-	Q_ASSERT(it != names.end());
-	return it->second;
+	static const QString invalid = "invalid";
+	switch (kind) {
+	case Kind::Player: return player;
+	case Kind::Robot: return robots;
+	case Kind::TransporterPad: return mapObjects;
+	case Kind::Door: return mapObjects;
+	case Kind::TrashCompator: return mapObjects;
+	case Kind::Elevator: return mapObjects;
+	case Kind::WaterRaft: return mapObjects;
+	case Kind::Key: return hiddenItems;
+	case Kind::HiddenObject: return hiddenItems;
+	case Kind::Invalid: Q_ASSERT(false); return invalid;
+	}
 }

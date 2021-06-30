@@ -34,7 +34,7 @@ public slots:
 signals:
 	void tilePressed(const QPoint &tile);
 	void tileDragged(const QPoint &tile);
-	void tileReleased();
+	void released();
 	void mouseOverTile(const QPoint &tile);
 	void objectClicked(int objectNo);
 	void objectDragged(int objectNo, const QPoint &tile);

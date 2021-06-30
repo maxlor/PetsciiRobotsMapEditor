@@ -1,7 +1,6 @@
 #include "scrollarea.h"
 #include <QMouseEvent>
 #include <QScrollBar>
-#include <QtDebug>
 
 
 static const qreal minMoveAmount(10);

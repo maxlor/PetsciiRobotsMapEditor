@@ -28,7 +28,6 @@ protected:
 private slots:
 	void onAbout();
 	void onLoadTileset();
-	void onMapObjectChanged();
 	void onMouseOverTile(const QPoint &tile);
 	void onObjectClicked(int objectNo);
 	void onObjectDragged(int objectNo, QPoint pos);
@@ -47,11 +46,13 @@ private slots:
 	
 	void onTilePressed(const QPoint &tile);
 	void onTileDragged(const QPoint &tile);
-	void onTileReleased();
+	void onReleased();
 	void onTileWidgetTileSelected(uint8_t tileNo);
 	void onToolActionTriggered();
 	void onQuit();
 	void onViewFilterChanged();
+	
+	void updateMapCountLabels();
 	
 private:
 	bool askSaveChanges();
@@ -59,12 +60,10 @@ private:
 	void activateTool(QAction *const action);
 	void copyMap(bool copyTiles, bool copyObjects, bool clear=false);
 	bool doSave(const QString &path);
-	int placeObject(const QPoint &position, int unitType, int a = 0, int b = 0, int c = 0, int d = 0, int health = 0);
-	void placeRobot(int x, int y);
+	void placeObject(MapObject::Kind kind, const QPoint &position);
 	bool save();
 	bool saveAs();
 	void updateLabelStatusTile();
-	void updateMapCountLabels();
 	
 	Ui::MainWindow _ui;
 	QLabel *_labelHiddenObjectsCount;

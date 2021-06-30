@@ -13,5 +13,7 @@
         <file>zoom_out.svg</file>
         <file>zoom_in.svg</file>
         <file>dashed_rectangle.svg</file>
+        <file>undo.svg</file>
+        <file>redo.svg</file>
     </qresource>
 </RCC>

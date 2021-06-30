@@ -4,7 +4,6 @@
 #include <QSize>
 #include <QSvgGenerator>
 #include <QTemporaryFile>
-#include <QtDebug>
 
 
 IconFactory::IconFactory() {}

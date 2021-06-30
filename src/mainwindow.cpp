@@ -12,7 +12,6 @@
 #include "map.h"
 #include "multisignalblocker.h"
 #include "tileset.h"
-#include <QtDebug>
 
 
 static constexpr char SETTINGS_TILESET_DIRECTORY[] = "General/TilesetDirectory";
@@ -73,6 +72,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.mapWidget->setMap(_mapController->map());
 	_ui.objectEditor->setMapController(_mapController);
 	updateMapCountLabels();
+	_ui.menuEdit->insertSeparator(_ui.menuEdit->actions().at(0));
+	_ui.menuEdit->insertAction(_ui.menuEdit->actions().at(0), _mapController->redoAction());
+	_ui.menuEdit->insertAction(_ui.menuEdit->actions().at(0), _mapController->undoAction());
+	_ui.toolBar->insertSeparator(_ui.toolBar->actions().at(0));
+	_ui.toolBar->insertAction(_ui.toolBar->actions().at(0), _mapController->redoAction());
+	_ui.toolBar->insertAction(_ui.toolBar->actions().at(0), _mapController->undoAction());
 	
 	_viewFilterActions = { _ui.actionShowWalkable, _ui.actionShowHoverable,
 	                       _ui.actionShowMoveable, _ui.actionShowDestructible,
@@ -134,11 +139,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.mapWidget, &MapWidget::objectDragged, this, &MainWindow::onObjectDragged);
 	connect(_ui.mapWidget, &MapWidget::tilePressed, this, &MainWindow::onTilePressed);
 	connect(_ui.mapWidget, &MapWidget::tileDragged, this, &MainWindow::onTileDragged);
-	connect(_ui.mapWidget, &MapWidget::tileReleased, this, &MainWindow::onTileReleased);
+	connect(_ui.mapWidget, &MapWidget::released, this, &MainWindow::onReleased);
 	connect(_ui.tileWidget, &TileWidget::tileSelected, this, &MainWindow::onTileWidgetTileSelected);
 	connect(_ui.objectEditor, &ObjectEditWidget::mapClickRequested, this, &MainWindow::onObjectEditMapClickRequested);
 	
-	connect(_mapController->map(), &Map::objectsChanged, this, &MainWindow::onMapObjectChanged);
+	connect(_mapController->map(), &Map::objectsChanged, this, &MainWindow::updateMapCountLabels);
 	
 	const QSettings settings;
 	const QRect geometry = settings.value(SETTINGS_WINDOW_GEOMETRY).toRect();
@@ -216,11 +221,6 @@ void MainWindow::onLoadTileset() {
 			}
 		}
 	}
-}
-
-
-void MainWindow::onMapObjectChanged() {
-	updateMapCountLabels();
 }
 
 
@@ -377,7 +377,7 @@ void MainWindow::onShowObjectsToggled(bool checked) {
 
 
 void MainWindow::onTilePressed(const QPoint &tile) {
-	int newObjectId = -1;
+	QString error;
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
 		_ui.objectEditor->mapClick(tile.x(), tile.y());
@@ -388,36 +388,23 @@ void MainWindow::onTilePressed(const QPoint &tile) {
 	} else if (_ui.actionFloodFill->isChecked()) {
 		_mapController->floodFill(tile, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionPlaceDoor->isChecked()) {
-		newObjectId = placeObject(tile, OBJECT_DOOR, 0, 5);
+		placeObject(MapObject::Kind::Door, tile);
 	} else if (_ui.actionPlaceElevator->isChecked()) {
-		newObjectId = placeObject(tile, OBJECT_ELEVATOR, 0, 2, 1, 1);
+		placeObject(MapObject::Kind::Elevator, tile);
 	} else if (_ui.actionPlaceHiddenItem->isChecked()) {
-		newObjectId = placeObject(tile, OBJECT_TIME_BOMB, 10);
+		placeObject(MapObject::Kind::HiddenObject, tile);
 	} else if (_ui.actionPlaceKey->isChecked()) {
-		newObjectId = placeObject(tile, OBJECT_KEY, 0, 0, 1, 1);
+		placeObject(MapObject::Kind::Key, tile);
 	} else if (_ui.actionPlacePlayer->isChecked()) {
-		MapObject playerObject = _mapController->map()->object(PLAYER_OBJ);
-		playerObject.x = tile.x();
-		playerObject.y = tile.y();
-		playerObject.unitType = UNITTYPE_PLAYER;
-		playerObject.a = playerObject.b = playerObject.c = playerObject.d = 0;
-		if (playerObject.health == 0) { playerObject.health = 12; }
-		_mapController->setObject(PLAYER_OBJ, playerObject);
-		newObjectId = PLAYER_OBJ;
+		placeObject(MapObject::Kind::Player, tile);
 	} else if (_ui.actionPlaceRobot->isChecked()) {
-		newObjectId = placeObject(tile, ROBOT_HOVERBOT_LR, 0, 0, 0, 0, 10);
+		placeObject(MapObject::Kind::Robot, tile);
 	} else if (_ui.actionPlaceTransporterPad->isChecked()) {
-		newObjectId = placeObject(tile, OBJECT_TRANSPORTER, 1);
+		placeObject(MapObject::Kind::TransporterPad, tile);
 	} else if (_ui.actionPlaceTrashCompactor->isChecked()) {
-		newObjectId = placeObject(tile, OBJECT_TRASH_COMPACTOR);
+		placeObject(MapObject::Kind::TrashCompator, tile);
 	} else if (_ui.actionPlaceWaterRaft->isChecked()) {
-		newObjectId = placeObject(tile, OBJECT_WATER_RAFT, 0, 0,
-		                          tile.x() - 1, tile.x() + 1);
-	}
-	
-	if (newObjectId >= OBJECT_MIN) {
-		_ui.actionSelect->trigger();
-		_ui.objectEditor->loadObject(newObjectId);
+		placeObject(MapObject::Kind::WaterRaft, tile);
 	}
 }
 
@@ -430,10 +417,11 @@ void MainWindow::onTileDragged(const QPoint &tile) {
 }
 
 
-void MainWindow::onTileReleased() {
+void MainWindow::onReleased() {
 	if (_ui.actionDrawTiles->isChecked()) {
 		_mapController->endTileDrawing();
 	}
+	_mapController->incrementMergeCounter();
 }
 
 
@@ -464,6 +452,22 @@ void MainWindow::onViewFilterChanged() {
 		if (action == sender()) { continue; }
 		action->setChecked(false);
 	}
+}
+
+
+void MainWindow::updateMapCountLabels() {
+	static constexpr int maxHiddenItemCount = HIDDEN_OBJECT_MAX - HIDDEN_OBJECT_MIN + 1;
+	static constexpr int maxMapFeatureCount = MAP_FEATURE_MAX - MAP_FEATURE_MIN + 1;
+	static constexpr int maxRobotCount = ROBOT_MAX - ROBOT_MIN + 1;
+	
+	const Map &map = *_mapController->map();
+	
+	_labelRobotCount->setText(QString("Robots: %1/%2").arg(map.robotCount())
+	                          .arg(maxRobotCount));
+	_labelMapFeatureCount->setText(QString("Map features: %1/%2").arg(map.mapFeatureCount())
+	                               .arg(maxMapFeatureCount));
+	_labelHiddenObjectsCount->setText(QString("Hidden objects: %1/%2").arg(map.hiddenItemCount())
+	                                  .arg(maxHiddenItemCount));
 }
 
 
@@ -600,44 +604,19 @@ bool MainWindow::doSave(const QString &path) {
 }
 
 
-int MainWindow::placeObject(const QPoint &position, int unitType, int a, int b, int c, int d, int health) {
-	const MapObject::Kind kind = MapObject::kind(unitType);
-	const int objectNo = _mapController->map()->nextAvailableObjectId(kind);
-	if (objectNo >= OBJECT_MIN) {
-		MapObject object(unitType);
-		object.x = position.x();
-		object.y = position.y();
-		object.a = a;
-		object.b = b;
-		object.c = c;
-		object.d = d;
-		object.health = health;
-		_mapController->setObject(objectNo, object);
+void MainWindow::placeObject(MapObject::Kind kind, const QPoint &position) {
+	QString error;
+	int objectNo = _mapController->newObject(kind, position, &error);
+	
+	if (error.isNull()) {
+		_ui.actionSelect->trigger();
+		_ui.objectEditor->loadObject(objectNo);
 	} else {
-		const QString &type = MapObject::toString(kind);
-		const QString &category = MapObject::category(kind);
-		
-		QMessageBox::warning(this, QString("Cannot Add %1%2").arg(type.left(1).toUpper(), type.mid(1)),
-		                     QString("Cannot add %1: the map already contains the maximum number "
-		                             "of %2").arg(type).arg(category));
+		QString kindLc = MapObject::toString(kind);
+		QString kindUc = kindLc[0].toUpper() + kindLc.mid(1);
+		QMessageBox::warning(this, "Cannot Place " + kindUc,
+		                     QString("Cannot place %1: %2").arg(kindLc, error));
 	}
-	return objectNo;
-}
-
-
-void MainWindow::placeRobot(int x, int y) {
-	const int objectNo = _mapController->map()->nextAvailableObjectId(MapObject::Kind::Robot);
-	if (objectNo == -1) {
-		QMessageBox::warning(this, "Cannot add robot",
-		                     "Cannot add robot: the maximum number of robots has already been "
-		                     "reached");
-		return;
-	}
-	MapObject object(ROBOT_HOVERBOT_LR);
-	object.x = x;
-	object.y = y;
-	object.health = 10;
-	_mapController->setObject(objectNo, object);
 }
 
 
@@ -669,20 +648,4 @@ bool MainWindow::saveAs() {
 void MainWindow::updateLabelStatusTile() {
 	_labelStatusTile->setText(QString("Selected Tile: 0x%1")
 	                          .arg(_ui.tileWidget->selectedTile(), 2, 16, QChar('0')));
-}
-
-
-void MainWindow::updateMapCountLabels() {
-	static constexpr int maxHiddenItemCount = HIDDEN_OBJECT_MAX - HIDDEN_OBJECT_MIN + 1;
-	static constexpr int maxMapFeatureCount = MAP_FEATURE_MAX - MAP_FEATURE_MIN + 1;
-	static constexpr int maxRobotCount = ROBOT_MAX - ROBOT_MIN + 1;
-	
-	const Map &map = *_mapController->map();
-	
-	_labelRobotCount->setText(QString("Robots: %1/%2").arg(map.robotCount())
-	                          .arg(maxRobotCount));
-	_labelMapFeatureCount->setText(QString("Map features: %1/%2").arg(map.mapFeatureCount())
-	                               .arg(maxMapFeatureCount));
-	_labelHiddenObjectsCount->setText(QString("Hidden objects: %1/%2").arg(map.hiddenItemCount())
-	                                  .arg(maxHiddenItemCount));
 }
