@@ -8,18 +8,18 @@
 
 class Map;
 
-
 class MapController : public QObject {
 	Q_OBJECT
 public:
 	MapController(QObject *parent = nullptr);
 	
+	const Map *map();
+	
 	QAction *redoAction();
 	QAction *undoAction();
 	
-	const Map *map();
-	
 	void clear();
+	
 	QString load(const QString &path);
 	QString save(const QString &path);
 	
@@ -27,13 +27,12 @@ public:
 	void moveObject(int objectNo, const QPoint &position);
 	int newObject(MapObject::Kind kind, const QPoint &position, QString *error);
 	void setObject(int objectNo, const MapObject &object, bool isNew = false);
+	void incrementMergeCounter();
 	
-	void beginTileDrawing();
-	void endTileDrawing();
+	void beginUndoGroup();
+	void endUndoGroup();
 	void floodFill(const QPoint &position, uint8_t tileNo);
 	void setTile(const QPoint &position, uint8_t tileNo);
-	
-	void incrementMergeCounter();
 	
 private:
 	Map *_map;

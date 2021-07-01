@@ -372,13 +372,12 @@ void MainWindow::onShowObjectsToggled(bool checked) {
 
 
 void MainWindow::onTilePressed(const QPoint &tile) {
-	QString error;
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
 		_ui.objectEditor->mapClick(tile.x(), tile.y());
 		_objectEditMapClickRequested = false;
 	} else if (_ui.actionDrawTiles->isChecked()) {
-		_mapController->beginTileDrawing();
+		_mapController->beginUndoGroup();
 		_mapController->setTile(tile, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionFloodFill->isChecked()) {
 		_mapController->floodFill(tile, _ui.tileWidget->selectedTile());
@@ -414,7 +413,7 @@ void MainWindow::onTileDragged(const QPoint &tile) {
 
 void MainWindow::onReleased() {
 	if (_ui.actionDrawTiles->isChecked()) {
-		_mapController->endTileDrawing();
+		_mapController->endUndoGroup();
 	}
 	_mapController->incrementMergeCounter();
 }
