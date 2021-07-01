@@ -402,7 +402,7 @@ void MainWindow::onTilePressed(const QPoint &tile) {
 	} else if (_ui.actionPlaceTransporterPad->isChecked()) {
 		placeObject(MapObject::Kind::TransporterPad, tile);
 	} else if (_ui.actionPlaceTrashCompactor->isChecked()) {
-		placeObject(MapObject::Kind::TrashCompator, tile);
+		placeObject(MapObject::Kind::TrashCompactor, tile);
 	} else if (_ui.actionPlaceWaterRaft->isChecked()) {
 		placeObject(MapObject::Kind::WaterRaft, tile);
 	}

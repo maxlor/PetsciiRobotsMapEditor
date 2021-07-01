@@ -9,7 +9,7 @@
 class MapObject {
 public:
 	enum class Kind {
-		Player, Robot, TransporterPad, Door, TrashCompator, Elevator, WaterRaft, Key,
+		Player, Robot, TransporterPad, Door, TrashCompactor, Elevator, WaterRaft, Key,
 		HiddenObject, Invalid
 	};
 	

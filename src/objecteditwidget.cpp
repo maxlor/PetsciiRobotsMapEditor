@@ -82,7 +82,7 @@ void ObjectEditWidget::loadObject(int objectNo) {
 		{ MapObject::Kind::Robot, "Robot" },
 		{ MapObject::Kind::TransporterPad, "Transporter Pad" },
 		{ MapObject::Kind::Door, "Door" },
-		{ MapObject::Kind::TrashCompator, "Trash Compactor" },
+		{ MapObject::Kind::TrashCompactor, "Trash Compactor" },
 		{ MapObject::Kind::Elevator, "Elevator" },
 		{ MapObject::Kind::WaterRaft, "Water Raft" },
 		{ MapObject::Kind::Key, "Key" },
@@ -118,7 +118,7 @@ void ObjectEditWidget::loadObject(int objectNo) {
 	case MapObject::Kind::Key: loadKey(objectNo); break;
 	case MapObject::Kind::HiddenObject: loadWeapon(objectNo); break;
 	case MapObject::Kind::Robot: loadRobot(objectNo); break;
-	case MapObject::Kind::TrashCompator: loadTrashCompactor(objectNo); break;
+	case MapObject::Kind::TrashCompactor: loadTrashCompactor(objectNo); break;
 	case MapObject::Kind::TransporterPad: loadTransporterPad(objectNo); break;
 	case MapObject::Kind::WaterRaft: loadWaterRaft(objectNo); break;
 	case MapObject::Kind::Invalid: setVisible(false); break;

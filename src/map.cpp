@@ -144,7 +144,7 @@ int Map::nextAvailableObjectId(MapObject::Kind kind) const {
 		return OBJECT_NONE;
 	case MapObject::Kind::TransporterPad:
 	case MapObject::Kind::Door:
-	case MapObject::Kind::TrashCompator:
+	case MapObject::Kind::TrashCompactor:
 	case MapObject::Kind::Elevator:
 	case MapObject::Kind::WaterRaft:
 		for (int i = MAP_FEATURE_MIN; i <= MAP_FEATURE_MAX; ++i) {

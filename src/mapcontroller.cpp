@@ -146,7 +146,7 @@ MapObject defaultObject(MapObject::Kind kind, const QPoint &pos) {
 		result.unitType = OBJECT_DOOR;
 		result.b = 5;
 		break;
-	case MapObject::Kind::TrashCompator:
+	case MapObject::Kind::TrashCompactor:
 		result.unitType = OBJECT_TRASH_COMPACTOR;
 		break;
 	case MapObject::Kind::Elevator:
