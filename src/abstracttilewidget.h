@@ -2,7 +2,9 @@
 #define ABSTRACTTILEWIDGET_H
 
 #include <QColor>
+#include <QFlags>
 #include <QWidget>
+#include "tile.h"
 
 class Tileset;
 
@@ -11,7 +13,6 @@ class AbstractTileWidget : public QWidget{
 	Q_OBJECT
 public:
 	AbstractTileWidget(QWidget *parent = nullptr);
-	
 	virtual ~AbstractTileWidget();
 
 	void setTileset(const Tileset *tileset);
@@ -20,34 +21,27 @@ public:
 public slots:
 	void zoomIn();
 	void zoomOut();
-	void setEnlarge(bool enlarge);
-	void setShowWalkable(bool show);
-	void setShowHoverable(bool show);
-	void setShowMovable(bool show);
-	void setShowDestructible(bool show);
-	void setShowShootThrough(bool show);
-	void setShowPushOnto(bool show);
-	void setShowSearchable(bool show);
+	
+	void setHighlightAttribute(Tile::Attribute attribute);
+	
 	void setShowSelected(bool show);
 	
 protected:
-	virtual void highlightFlagsChanged() = 0;
+	virtual void highlightAttributeChanged() = 0;
 	virtual void scaleChanged() = 0;
 	virtual void tilesetChanged() = 0;
 	bool showSelected() const;
-	static void drawMargin(QPainter &painter, const QRect &rect, int margin);
 	
 	QColor highlightColor() const;
 	QColor noHighlightColor() const;
-	uint8_t highlightFlags() const;
+	Tile::Attribute highlightAttribute() const;
 	double scale() const;
 	
-private:
-	void setHighlightFlag(int bit, bool set);
+	static void drawMargin(QPainter &painter, const QRect &rect, int margin);
 	
+private:
 	const Tileset *_tileset = nullptr;
-	uint8_t _highlightFlags = 0;
-	QColor _highlightColor;
+	Tile::Attribute _highlightAttribute = Tile::None;
 	double _scale = 1.0;
 	bool _showSelected = false;
 };

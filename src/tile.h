@@ -1,6 +1,7 @@
 #ifndef _TILE_H
 #define _TILE_H
 
+#include <QFlags>
 #include <QImage>
 
 class Tileset;
@@ -8,27 +9,24 @@ class Tileset;
 class Tile {
 	friend class Tileset;
 public:
+	enum Attribute : uint8_t {
+		None = 0x00, Walkable = 0x01, Hoverable = 0x02, Movable = 0x04, Destructible = 0x08,
+		ShootThrough = 0x10, PushOnto = 0x20, Searchable = 0x40
+	};
+	
 	Tile(const Tile &other) = default;
 	Tile(Tile &&other);
 	
 	Tile &operator=(const Tile &other);
 	
-	bool canWalk() const { return _flags & 0x01; }
-	bool canHover() const { return _flags & 0x02; }
-	bool canBeMoved() const { return _flags & 0x04; }
-	bool canBeDestroyed() const { return _flags & 0x08; }
-	bool canShootThrough() const { return _flags & 0x10; }
-	bool canPushOnto() const { return _flags & 0x20; }
-	bool canSearch() const { return _flags & 0x40; }
-	
-	uint8_t flags() const { return _flags; }
+	QFlags<Attribute> attributes() const { return _attributes; }
 	const QImage &image() const { return _image; }
 	
 protected:
-	Tile(uint8_t flags, QImage image);
+	Tile(QFlags<Attribute> flags, QImage image);
 	
 private:
-	uint8_t _flags;
+	QFlags<Attribute> _attributes;
 	QImage _image;
 };
 

@@ -107,14 +107,15 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 		painter.restore();
 	}
 	
-	if (highlightFlags()) {
+	if (highlightAttribute() != Tile::None) {
 		for (int y = 0; y < MAP_HEIGHT; ++y) {
 			for (int x = 0; x < MAP_WIDTH; ++x) {
 				const QPoint position(x, y);
 				Tile t = tile(position);
 				QRect r = tileRect(position);
 				painter.setPen(Qt::NoPen);
-				painter.setBrush(t.flags() & highlightFlags() ? highlightColor() : noHighlightColor());
+				painter.setBrush(t.attributes().testFlag(highlightAttribute()) ?
+				                     highlightColor() : noHighlightColor());
 				painter.drawRect(r);
 			}
 		}
@@ -155,7 +156,7 @@ QSize MapWidget::sizeHint() const {
 }
 
 
-void MapWidget::highlightFlagsChanged() {
+void MapWidget::highlightAttributeChanged() {
 	_redrawImage = true;
 	update();
 }

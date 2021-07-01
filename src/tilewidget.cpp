@@ -55,10 +55,11 @@ void TileWidget::paintEvent(QPaintEvent *event) {
 	painter.drawImage(0, 0, *_image);
 	
 	// draw highlight overlay
-	if (highlightFlags()) {
+	if (highlightAttribute() != Tile::None) {
 		for (int tileNo = 0; tileNo < 256; ++tileNo) {
 			const Tile tile = tileset()->tile(tileNo);
-			painter.setBrush(tile.flags() & highlightFlags() ? highlightColor() : noHighlightColor());
+			painter.setBrush(tile.attributes().testFlag(highlightAttribute()) ?
+			                     highlightColor() : noHighlightColor());
 			painter.drawRect(tileRect(tileNo));
 		}
 	}
@@ -77,7 +78,7 @@ QSize TileWidget::sizeHint() const {
 }
 
 
-void TileWidget::highlightFlagsChanged() {
+void TileWidget::highlightAttributeChanged() {
 	makeImage();
 	update();
 }

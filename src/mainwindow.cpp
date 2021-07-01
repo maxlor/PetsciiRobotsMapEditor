@@ -63,6 +63,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.statusbar->addPermanentWidget(_labelStatusCoords);
 	_ui.statusbar->addPermanentWidget(_labelStatusTile);
 	
+	_ui.actionHighlightWalkable->setData(Tile::Walkable);
+	_ui.actionHighlightHoverable->setData(Tile::Hoverable);
+	_ui.actionHighlightMoveable->setData(Tile::Movable);
+	_ui.actionHighlightDestructible->setData(Tile::Destructible);
+	_ui.actionHighlightShootThrough->setData(Tile::ShootThrough);
+	_ui.actionHighlightPushOnto->setData(Tile::PushOnto);
+	_ui.actionHighlightSearchable->setData(Tile::Searchable);
+	
 	_tileset = new Tileset();
 	autoLoadTileset();
 	_ui.mapWidget->setTileset(_tileset);
@@ -79,10 +87,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.toolBar->insertAction(_ui.toolBar->actions().at(0), _mapController->redoAction());
 	_ui.toolBar->insertAction(_ui.toolBar->actions().at(0), _mapController->undoAction());
 	
-	_viewFilterActions = { _ui.actionShowWalkable, _ui.actionShowHoverable,
-	                       _ui.actionShowMoveable, _ui.actionShowDestructible,
-	                       _ui.actionShowShootThrough, _ui.actionShowPushOnto,
-	                       _ui.actionShowSearchable };
+	_viewFilterActions = { _ui.actionHighlightWalkable, _ui.actionHighlightHoverable,
+	                       _ui.actionHighlightMoveable, _ui.actionHighlightDestructible,
+	                       _ui.actionHighlightShootThrough, _ui.actionHighlightPushOnto,
+	                       _ui.actionHighlightSearchable };
 	_toolActions = { _ui.actionSelect, _ui.actionSelectArea, _ui.actionDrawTiles,
 	                 _ui.actionFloodFill, _ui.actionDeleteObject,
 	                 _ui.actionPlaceDoor, _ui.actionPlaceElevator, _ui.actionPlaceHiddenItem, 
@@ -113,20 +121,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionShowObjects, &QAction::toggled, this, &MainWindow::onShowObjectsToggled);
 	connect(_ui.actionShowObjects, &QAction::toggled, _ui.mapWidget, &MapWidget::setObjectsVisible);
 	connect(_ui.actionShowGrid, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowGridLines);
-	connect(_ui.actionShowWalkable, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowWalkable);
-	connect(_ui.actionShowHoverable, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowHoverable);
-	connect(_ui.actionShowMoveable, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowMovable);
-	connect(_ui.actionShowDestructible, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowDestructible);
-	connect(_ui.actionShowShootThrough, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowShootThrough);
-	connect(_ui.actionShowPushOnto, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowPushOnto);
-	connect(_ui.actionShowSearchable, &QAction::toggled, _ui.mapWidget, &MapWidget::setShowSearchable);
-	connect(_ui.actionShowWalkable, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowWalkable);
-	connect(_ui.actionShowHoverable, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowHoverable);
-	connect(_ui.actionShowMoveable, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowMovable);
-	connect(_ui.actionShowDestructible, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowDestructible);
-	connect(_ui.actionShowShootThrough, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowShootThrough);
-	connect(_ui.actionShowPushOnto, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowPushOnto);
-	connect(_ui.actionShowSearchable, &QAction::toggled, _ui.tileWidget, &TileWidget::setShowSearchable);
+	
 	for (QAction *action : _toolActions) {
 		connect(action, &QAction::triggered, this, &MainWindow::onToolActionTriggered);
 	}
@@ -447,11 +442,19 @@ void MainWindow::onQuit() {
 }
 
 
-void MainWindow::onViewFilterChanged() {
+void MainWindow::onViewFilterChanged(bool checked) {
+	QAction *senderAction = qobject_cast<QAction*>(sender());
+	Q_ASSERT(senderAction);
 	for (QAction *action : _viewFilterActions) {
-		if (action == sender()) { continue; }
-		action->setChecked(false);
+		if (action != senderAction) {
+			action->setChecked(false);
+		}
 	}
+	
+	const Tile::Attribute highlightAttribute = checked ?
+	            static_cast<Tile::Attribute>(senderAction->data().toUInt()) : Tile::None;
+	_ui.mapWidget->setHighlightAttribute(highlightAttribute);
+	_ui.tileWidget->setHighlightAttribute(highlightAttribute);
 }
 
 

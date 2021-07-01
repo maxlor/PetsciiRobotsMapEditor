@@ -175,13 +175,13 @@
     <addaction name="actionShowObjects"/>
     <addaction name="actionShowGrid"/>
     <addaction name="separator"/>
-    <addaction name="actionShowWalkable"/>
-    <addaction name="actionShowHoverable"/>
-    <addaction name="actionShowMoveable"/>
-    <addaction name="actionShowDestructible"/>
-    <addaction name="actionShowShootThrough"/>
-    <addaction name="actionShowPushOnto"/>
-    <addaction name="actionShowSearchable"/>
+    <addaction name="actionHighlightWalkable"/>
+    <addaction name="actionHighlightHoverable"/>
+    <addaction name="actionHighlightMoveable"/>
+    <addaction name="actionHighlightDestructible"/>
+    <addaction name="actionHighlightShootThrough"/>
+    <addaction name="actionHighlightPushOnto"/>
+    <addaction name="actionHighlightSearchable"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -289,78 +289,99 @@
    <addaction name="actionPlaceWaterRaft"/>
    <addaction name="actionDeleteObject"/>
   </widget>
-  <action name="actionShowWalkable">
+  <action name="actionHighlightWalkable">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Walkable</string>
+    <string>Highlight &amp;Walkable</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight walkable tiles</string>
    </property>
    <property name="shortcut">
     <string>1</string>
    </property>
   </action>
-  <action name="actionShowHoverable">
+  <action name="actionHighlightHoverable">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Hoverable</string>
+    <string>Highlight &amp;Hoverable</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight hoverable tiles</string>
    </property>
    <property name="shortcut">
     <string>2</string>
    </property>
   </action>
-  <action name="actionShowMoveable">
+  <action name="actionHighlightMoveable">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Movable</string>
+    <string>Highlight &amp;Movable</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight movable tiles</string>
    </property>
    <property name="shortcut">
     <string>3</string>
    </property>
   </action>
-  <action name="actionShowDestructible">
+  <action name="actionHighlightDestructible">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Destructible</string>
+    <string>Highlight &amp;Destructible</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight destructible tiles</string>
    </property>
    <property name="shortcut">
     <string>4</string>
    </property>
   </action>
-  <action name="actionShowShootThrough">
+  <action name="actionHighlightShootThrough">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Shoot &amp;Through</string>
+    <string>Highlight Shoot &amp;Through</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight tiles that can be shot through</string>
    </property>
    <property name="shortcut">
     <string>5</string>
    </property>
   </action>
-  <action name="actionShowPushOnto">
+  <action name="actionHighlightPushOnto">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Push Onto</string>
+    <string>Highlight &amp;Push Onto</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight tiles onto which objects can be pushed</string>
    </property>
    <property name="shortcut">
     <string>6</string>
    </property>
   </action>
-  <action name="actionShowSearchable">
+  <action name="actionHighlightSearchable">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Searchable</string>
+    <string>Highlight &amp;Searchable</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight searchable tiles</string>
    </property>
    <property name="shortcut">
     <string>7</string>

@@ -50,7 +50,7 @@ private slots:
 	void onTileWidgetTileSelected(uint8_t tileNo);
 	void onToolActionTriggered();
 	void onQuit();
-	void onViewFilterChanged();
+	void onViewFilterChanged(bool checked);
 	
 	void updateMapCountLabels();
 	

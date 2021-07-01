@@ -9,6 +9,10 @@
 
 
 static constexpr char TILESET_PET_MAGIC[2] = { 0x00, 0x49 };
+static constexpr Tile::Attribute TILE_ATTRIBUTES[] = {
+    Tile::Walkable, Tile::Hoverable, Tile::Movable, Tile::Destructible,
+    Tile::ShootThrough, Tile::PushOnto, Tile::Searchable
+};
 
 
 Tileset::Tileset(QObject *parent) : QObject(parent), _tiles(TILE_COUNT) {
@@ -79,7 +83,11 @@ QString Tileset::load(const QString &path) {
 
 
 Tile Tileset::tile(uint8_t tileNo) const {
-	const uint8_t flags = _tileset[0x102 + tileNo];
+	QFlags<Tile::Attribute> flags;
+	uint8_t f = _tileset[0x102 + tileNo];
+	for (Tile::Attribute attribute : TILE_ATTRIBUTES) {
+		flags.setFlag(attribute, f & attribute);
+	}
 	return Tile(flags, tileImage(tileNo));
 }
 

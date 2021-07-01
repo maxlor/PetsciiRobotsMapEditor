@@ -27,7 +27,7 @@ protected:
 	void paintEvent(QPaintEvent *event) override;
 	QSize sizeHint() const override;
 	
-	void highlightFlagsChanged() override;
+	void highlightAttributeChanged() override;
 	void scaleChanged() override;
 	void tilesetChanged() override;
 	
