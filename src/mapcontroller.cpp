@@ -23,7 +23,7 @@
  * #MapObject::IdNone is used to designate no object, or failure of an operation.
  * The range of valid object numbers comprises these groups:
  * 
- * * #PLAYER_OBJ
+ * * #MapObject::IdPlayer
  *   : the player object
  * * #MapObject::IdRobotMin – #MapObject::IdRobotMax
  *   : for the enemy robots
@@ -34,9 +34,6 @@
  *   : for hidden objects, i.e. keys, time bombs, EMPs, pistols, plasma guns,
  *     medkits and magnets
  */
-
-
-static MapObject defaultObject(MapObject::Kind kind, const QPoint &pos);
 
 
 MapController::MapController(QObject *parent) : QObject(parent) {
@@ -124,31 +121,28 @@ void MapController::moveObject(int objectNo, const QPoint &position) {
 
 
 /**
- * Creates a new object of the specified kind. The object is created
- * with reasonable default properties.
+ * Places the new \a object into the map.
  * 
- * If the object cannot be created, #MapObject::IdNone is returned and \a error
+ * If the object cannot be placed, #MapObject::IdNone is returned and \a error
  * is filled with an explanation, unless it is \c nullptr.
  * 
- * @param kind the kind of object to create
- * @param position the object's position on the map
+ * @param object the object to place
  * @param[out] error an error explanation will be stored here if not \c nullptr
  * @return the id of the created object, or #MapObject::IdNone on error
  */
-int MapController::newObject(MapObject::Kind kind, const QPoint &position, QString *error) {
-	MapObject::id_t no = _map->nextAvailableObjectId(kind);
-	if (no == MapObject::IdNone) {
+int MapController::newObject(const MapObject &object, QString *error) {
+	const MapObject::id_t id = _map->nextAvailableObjectId(object.group());
+	if (id == MapObject::IdNone) {
 		if (error) {
-			const QString &category = MapObject::category(kind);
-			*error = QString("the map already contais the maximum number of " + category);
+			const QString &groupS = MapObject::toString(object.group());
+			*error = QString("the map already contains the maximum number of " + groupS);
 			return MapObject::IdNone;
 		}
 	}
 	
-	const MapObject object = defaultObject(kind, position);
-	_undoStack.push(new MapCommands::NewObject(*_map, no, object));
+	_undoStack.push(new MapCommands::NewObject(*_map, id, object));
 	
-	return no;
+	return id;
 }
 
 
@@ -207,56 +201,3 @@ void MapController::setTile(const QPoint &position, uint8_t tileNo) {
 	_undoStack.push(new MapCommands::SetTile(*_map, position, tileNo));
 }
 /// @}
-
-
-MapObject defaultObject(MapObject::Kind kind, const QPoint &pos) {
-	MapObject result;
-	switch (kind) {
-	case MapObject::Kind::Player:
-		result.unitType = MapObject::UnitType::Player;
-		result.health = 12;
-		break;
-	case MapObject::Kind:: Robot:
-		result.unitType = MapObject::UnitType::HoverbotLR;
-		result.health = 10;
-		break;
-	case MapObject::Kind::TransporterPad:
-		result.unitType = MapObject::UnitType::Transporter;
-		result.a = 1;
-		break;
-	case MapObject::Kind::Door:
-		result.unitType = MapObject::UnitType::Door;
-		result.b = 5;
-		break;
-	case MapObject::Kind::TrashCompactor:
-		result.unitType = MapObject::UnitType::TrashCompactor;
-		break;
-	case MapObject::Kind::Elevator:
-		result.unitType = MapObject::UnitType::Elevator;
-		result.b = 2;
-		result.c = 1;
-		result.d = 1;
-		break;
-	case MapObject::Kind::WaterRaft:
-		result.unitType = MapObject::UnitType::WaterRaft;
-		result.c = pos.x() - 1;
-		result.d = pos.x() + 1;
-		break;
-	case MapObject::Kind::Key:
-		result.unitType = MapObject::UnitType::Key;
-		result.c = 1;
-		result.d = 1;
-		break;
-	case MapObject::Kind::HiddenObject:
-		result.unitType = MapObject::UnitType::TimeBomb;
-		result.a = 10;
-		break;
-	case MapObject::Kind::Invalid:
-		Q_ASSERT(false);
-		break;
-	}
-	result.x = pos.x();
-	result.y = pos.y();
-	
-	return result;
-}

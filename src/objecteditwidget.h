@@ -2,9 +2,9 @@
 #define OBJECTEDITWIDGET_H
 
 #include "ui_objecteditwidget.h"
+#include "mapobject.h"
 #include "forward_list"
 
-class Map;
 class MapController;
 
 
@@ -29,16 +29,15 @@ private slots:
 	void store();
 	
 private:
-	void loadDoor(int objectNo);
-	void loadElevator(int objectNo);
-	void loadKey(int objectNo);
-	void loadPlayer();
-	void loadRobot(int objectNo);
-	void loadTrashCompactor(int objectNo);
-	void loadTransporterPad(int objectNo);
-	void loadWaterRaft(int objectNo);
-	void loadWeapon(int objectNo);
-	const Map *map() const;
+	void loadDoor(const MapObject &object);
+	void loadElevator(const MapObject &object);
+	void loadKey(const MapObject &object);
+	void loadPlayer(const MapObject &object);
+	void loadRobot(const MapObject &object);
+	void loadTrashCompactor(const MapObject &object);
+	void loadTransporterPad(const MapObject &object);
+	void loadWaterRaft(const MapObject &object);
+	void loadWeapon(const MapObject &object);
 	
 	Ui::ObjectEditWidget _ui;
 	MapController *_mapController = nullptr;

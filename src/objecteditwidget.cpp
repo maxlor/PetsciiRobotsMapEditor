@@ -5,6 +5,7 @@
 #include "map.h"
 #include "mapcontroller.h"
 #include "multisignalblocker.h"
+#include "util.h"
 
 Q_LOGGING_CATEGORY(lcObjEd, "ObjEd");
 
@@ -12,15 +13,16 @@ Q_LOGGING_CATEGORY(lcObjEd, "ObjEd");
 ObjectEditWidget::ObjectEditWidget(QWidget *parent) : QGroupBox(parent){
 	_ui.setupUi(this);
 	
-	for (const auto &pair : Map::unitTypes()) {
-		switch (MapObject::kind(pair.first)) {
-		case MapObject::Kind::Robot:
-			_ui.comboRobotType->insertItem(_ui.comboRobotType->count(), pair.second, MapObject::unitType_t(pair.first));
-			break;
-		case MapObject::Kind::HiddenObject:
-			_ui.comboWeaponType->insertItem(_ui.comboWeaponType->count(), pair.second, MapObject::unitType_t(pair.first));
-			break;
-		default:;
+	for (MapObject::UnitType unitType : MapObject::unitTypes()) {
+		if (MapObject::group(unitType) == MapObject::Group::Robots) {
+			_ui.comboRobotType->insertItem(_ui.comboRobotType->count(),
+			                               capitalize(MapObject::toString(unitType)),
+			                               MapObject::unitType_t(unitType));
+		} else if (MapObject::group(unitType) == MapObject::Group::HiddenObjects and
+		           unitType != MapObject::UnitType::Key) {
+			_ui.comboWeaponType->insertItem(_ui.comboWeaponType->count(),
+			                                capitalize(MapObject::toString(unitType)),
+			                                MapObject::unitType_t(unitType));
 		}
 	}
 	
@@ -76,21 +78,10 @@ ObjectEditWidget::ObjectEditWidget(QWidget *parent) : QGroupBox(parent){
 
 
 void ObjectEditWidget::loadObject(int objectNo) {
-	static const std::unordered_map<MapObject::Kind, QString> groupNames {
-		{ MapObject::Kind::Player, "Player" },
-		{ MapObject::Kind::Robot, "Robot" },
-		{ MapObject::Kind::TransporterPad, "Transporter Pad" },
-		{ MapObject::Kind::Door, "Door" },
-		{ MapObject::Kind::TrashCompactor, "Trash Compactor" },
-		{ MapObject::Kind::Elevator, "Elevator" },
-		{ MapObject::Kind::WaterRaft, "Water Raft" },
-		{ MapObject::Kind::Key, "Key" },
-		{ MapObject::Kind::HiddenObject, "Hidden Weapon / Item" }
-	};
 	_objectNo = -1;
 	
-	if (not map()) {
-		qCWarning(lcObjEd, "can't edit object, map not set");
+	if (not _mapController) {
+		qCWarning(lcObjEd, "can't edit object, _mapController not set");
 		setVisible(false);
 		return;
 	}
@@ -100,27 +91,29 @@ void ObjectEditWidget::loadObject(int objectNo) {
 		return;
 	}
 	
-	const MapObject &object = map()->object(objectNo);
-	const MapObject::Kind kind = object.kind();
-	try {
-		setTitle(groupNames.at(kind));
-	} catch (std::out_of_range) {
-		qCWarning(lcObjEd, "can't edit object %d of unit type %hhu", objectNo, object.unitType);
-		setVisible(false);
-		return;
-	}
+	const MapObject &object = _mapController->map()->object(objectNo);
 	
-	switch (kind) {
-	case MapObject::Kind::Player: loadPlayer(); break;
-	case MapObject::Kind::Door: loadDoor(objectNo); break;
-	case MapObject::Kind::Elevator: loadElevator(objectNo); break;
-	case MapObject::Kind::Key: loadKey(objectNo); break;
-	case MapObject::Kind::HiddenObject: loadWeapon(objectNo); break;
-	case MapObject::Kind::Robot: loadRobot(objectNo); break;
-	case MapObject::Kind::TrashCompactor: loadTrashCompactor(objectNo); break;
-	case MapObject::Kind::TransporterPad: loadTransporterPad(objectNo); break;
-	case MapObject::Kind::WaterRaft: loadWaterRaft(objectNo); break;
-	case MapObject::Kind::Invalid: setVisible(false); break;
+	switch (object.unitType) {
+	case MapObject::UnitType::None: setVisible(false); return;
+	case MapObject::UnitType::Player: loadPlayer(object); break;
+	case MapObject::UnitType::HoverbotLR:
+	case MapObject::UnitType::HoverbotUD:
+	case MapObject::UnitType::HoverbotAttack:
+	case MapObject::UnitType::Evilbot:
+	case MapObject::UnitType::RollerbotUD:
+	case MapObject::UnitType::RollerbotLR: loadRobot(object); break;
+	case MapObject::UnitType::TransporterPad: loadTransporterPad(object); break;
+	case MapObject::UnitType::Door: loadDoor(object); break;
+	case MapObject::UnitType::TrashCompactor: loadTrashCompactor(object); break;
+	case MapObject::UnitType::Elevator: loadElevator(object); break;
+	case MapObject::UnitType::WaterRaft: loadWaterRaft(object); break;
+	case MapObject::UnitType::Key: loadKey(object); break;
+	case MapObject::UnitType::TimeBomb:
+	case MapObject::UnitType::EMP:
+	case MapObject::UnitType::Pistol:
+	case MapObject::UnitType::PlasmaGun:
+	case MapObject::UnitType::Medkit:
+	case MapObject::UnitType::Magnet: loadWeapon(object); break;
 	}
 	
 	_objectNo = objectNo;
@@ -176,7 +169,7 @@ void ObjectEditWidget::onCoordinateMapClickRequested(const QString &label) {
 
 
 void ObjectEditWidget::store() {
-	MapObject object = map()->object(_objectNo);
+	MapObject object = _mapController->map()->object(_objectNo);
 	if (_ui.stackedWidget->currentWidget() == _ui.pagePlayer) {
 		object.x = _ui.coordinatesPlayer->x();
 		object.y = _ui.coordinatesPlayer->y();
@@ -236,10 +229,10 @@ void ObjectEditWidget::store() {
 }
 
 
-void ObjectEditWidget::loadDoor(int objectNo) {
+void ObjectEditWidget::loadDoor(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesDoor, _ui.comboDoorOrientation,
 	                               _ui.comboDoorState, _ui.comboDoorLock };
-	const MapObject &object = map()->object(objectNo);
+	setTitle(capitalize(MapObject::toString(object.unitType)));
 	_ui.stackedWidget->setCurrentWidget(_ui.pageDoor);
 	_ui.coordinatesDoor->setXY(object.x, object.y);
 	_ui.comboDoorOrientation->setCurrentIndex(object.a ? 1 : 0);
@@ -248,10 +241,10 @@ void ObjectEditWidget::loadDoor(int objectNo) {
 }
 
 
-void ObjectEditWidget::loadElevator(int objectNo) {
+void ObjectEditWidget::loadElevator(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesElevator, _ui.comboElevatorState,
 	                               _ui.editElevatorFloor, _ui.editElevatorTotalFloors };
-	const MapObject &object = map()->object(objectNo);
+	setTitle(capitalize(MapObject::toString(object.unitType)));
 	_ui.stackedWidget->setCurrentWidget(_ui.pageElevator);
 	_ui.coordinatesElevator->setXY(object.x, object.y);
 	_ui.comboElevatorState->setCurrentIndex(object.b < 6 ? object.b : 5);
@@ -260,11 +253,11 @@ void ObjectEditWidget::loadElevator(int objectNo) {
 }
 
 
-void ObjectEditWidget::loadKey(int objectNo) {
+void ObjectEditWidget::loadKey(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesKey, _ui.radioKeySpade, _ui.radioKeyHeart,
 	                               _ui.radioKeyStar, _ui.editKeyContainerWidth,
 	                               _ui.editKeyContainerHeight };
-	const MapObject &object = map()->object(objectNo);
+	setTitle(capitalize(MapObject::toString(object.unitType)));
 	_ui.stackedWidget->setCurrentWidget(_ui.pageKey);
 	_ui.coordinatesKey->setXY(object.x, object.y);
 	_ui.radioKeySpade->setChecked(object.a == 0);
@@ -275,19 +268,21 @@ void ObjectEditWidget::loadKey(int objectNo) {
 }
 
 
-void ObjectEditWidget::loadPlayer() {
+void ObjectEditWidget::loadPlayer(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesPlayer, _ui.editPlayerHealth };
-	const MapObject &object = map()->object(MapObject::IdPlayer);
+	setTitle(capitalize(MapObject::toString(object.unitType)));
 	_ui.stackedWidget->setCurrentWidget(_ui.pagePlayer);
 	_ui.coordinatesPlayer->setXY(object.x, object.y);
 	_ui.editPlayerHealth->setValue(object.health);
 }
 
 
-void ObjectEditWidget::loadRobot(int objectNo) {
+void ObjectEditWidget::loadRobot(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesRobot, _ui.editRobotHealth,
 	                               _ui.comboRobotType };
-	const MapObject &object = map()->object(objectNo);
+	QString title = capitalize(MapObject::toString(object.group()));
+	if (title.endsWith('s')) { title.chop(1); }
+	setTitle(title);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageRobot);
 	_ui.coordinatesRobot->setXY(object.x, object.y);
 	_ui.editRobotHealth->setValue(object.health);
@@ -308,19 +303,19 @@ void ObjectEditWidget::loadRobot(int objectNo) {
 }
 
 
-void ObjectEditWidget::loadTrashCompactor(int objectNo) {
+void ObjectEditWidget::loadTrashCompactor(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesTrashCompactor };
-	const MapObject &object = map()->object(objectNo);
+	setTitle(capitalize(MapObject::toString(object.unitType)));
 	_ui.stackedWidget->setCurrentWidget(_ui.pageTrashCompactor);
 	_ui.coordinatesTrashCompactor->setXY(object.x, object.y);
 }
 
 
-void ObjectEditWidget::loadTransporterPad(int objectNo) {
+void ObjectEditWidget::loadTransporterPad(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesTransporter, _ui.checkTransporterDisable,
 	                               _ui.radioTransporterEOL, _ui.radioTransporterCoordinates,
 	                               _ui.coordinatesTransporterDest };
-	const MapObject &object = map()->object(objectNo);
+	setTitle(capitalize(MapObject::toString(object.unitType)));
 	_ui.stackedWidget->setCurrentWidget(_ui.pageTransporter);
 	_ui.coordinatesTransporter->setXY(object.x, object.y);
 	_ui.checkTransporterDisable->setChecked(object.a == 1);
@@ -330,11 +325,11 @@ void ObjectEditWidget::loadTransporterPad(int objectNo) {
 }
 
 
-void ObjectEditWidget::loadWaterRaft(int objectNo) {
+void ObjectEditWidget::loadWaterRaft(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesRaft, _ui.radioRaftDirectionLeft,
 	                               _ui.radioRaftDirectionRight, _ui.editRaftLeftTurnaround,
 	                               _ui.editRaftRightTurnaround };
-	const MapObject &object = map()->object(objectNo);
+	setTitle(capitalize(MapObject::toString(object.unitType)));
 	_ui.stackedWidget->setCurrentWidget(_ui.pageRaft);
 	_ui.coordinatesRaft->setXY(object.x, object.y);
 	_ui.radioRaftDirectionLeft->setChecked(object.a == 0);
@@ -344,11 +339,13 @@ void ObjectEditWidget::loadWaterRaft(int objectNo) {
 }
 
 
-void ObjectEditWidget::loadWeapon(int objectNo) {
+void ObjectEditWidget::loadWeapon(const MapObject &object) {
 	MultiSignalBlocker blocker = { _ui.coordinatesWeapon, _ui.comboWeaponType,
 	                               _ui.editWeaponAmount, _ui.editWeaponContainerWidth,
 	                               _ui.editWeaponContainerHeight };
-	const MapObject &object = map()->object(objectNo);
+	QString title = capitalize(MapObject::toString(object.group()));
+	if (title.endsWith('s')) { title.chop(1); }
+	setTitle(title);
 	_ui.stackedWidget->setCurrentWidget(_ui.pageWeapon);
 	_ui.coordinatesWeapon->setXY(object.x, object.y);
 	bool found = false;
@@ -368,10 +365,4 @@ void ObjectEditWidget::loadWeapon(int objectNo) {
 	_ui.editWeaponAmount->setValue(object.a);
 	_ui.editWeaponContainerWidth->setValue(object.c);
 	_ui.editWeaponContainerHeight->setValue(object.d);
-}
-
-
-const Map *ObjectEditWidget::map() const {
-	if (_mapController) { return _mapController->map(); }
-	return nullptr;
 }

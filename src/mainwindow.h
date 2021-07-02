@@ -64,7 +64,7 @@ private:
 	void activateTool(QAction *const action);
 	void copyMap(bool copyTiles, bool copyObjects, bool clear=false);
 	bool doSave(const QString &path);
-	void placeObject(MapObject::Kind kind, const QPoint &position);
+	void placeObject(MapObject::UnitType unitType, const QPoint &position);
 	bool save();
 	bool saveAs();
 	void updateLabelStatusTile();

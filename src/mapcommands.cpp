@@ -1,19 +1,19 @@
 #include "mapcommands.h"
 #include <QRect>
 #include <cstring>
+#include "util.h"
 
 
 enum CommandIds { MoveObjectId = 1 };
 
 
-static QString kindS(const MapObject &object) {
-	QString s = MapObject::toString(object.kind());
-	return s[0].toUpper() + s.mid(1);
+static QString unitTypeS(const MapObject &object) {
+	return capitalize(MapObject::toString(object.unitType));
 }
 
 
 MapCommands::DeleteObject::DeleteObject(Map &map, int objectNo, QUndoCommand *parent)
-    : QUndoCommand("Delete " + kindS(map.object(objectNo)), parent), _map(map), _objectNo(objectNo) {}
+    : QUndoCommand("Delete " + unitTypeS(map.object(objectNo)), parent), _map(map), _objectNo(objectNo) {}
 
 
 void MapCommands::DeleteObject::redo() {
@@ -31,7 +31,7 @@ void MapCommands::DeleteObject::undo() {
 
 MapCommands::ModifyObject::ModifyObject(Map &map, int objectNo, const MapObject &object,
                                         QUndoCommand *parent)
-    : QUndoCommand("Modify " + kindS(object), parent), _map(map), _objectNo(objectNo),
+    : QUndoCommand("Modify " + unitTypeS(object), parent), _map(map), _objectNo(objectNo),
       _object(object) {}
 
 
@@ -48,7 +48,7 @@ void MapCommands::ModifyObject::undo() {
 
 MapCommands::MoveObject::MoveObject(Map &map, int objectNo, const QPoint &pos, int mergeCounter,
                                     QUndoCommand *parent)
-    : QUndoCommand("Move " + kindS(map.object(objectNo)), parent), _map(map), _objectNo(objectNo),
+    : QUndoCommand("Move " + unitTypeS(map.object(objectNo)), parent), _map(map), _objectNo(objectNo),
       _position(pos), _mergeCounter(mergeCounter) {}
 
 
@@ -80,7 +80,7 @@ void MapCommands::MoveObject::undo() {
 
 MapCommands::NewObject::NewObject(Map &map, int objectNo, const MapObject &object,
                                   QUndoCommand *parent)
-    : QUndoCommand("Place " + kindS(object), parent) {
+    : QUndoCommand("Place " + unitTypeS(object), parent) {
 	new ModifyObject(map, objectNo, object, this);
 }
 

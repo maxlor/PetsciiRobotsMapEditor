@@ -12,6 +12,7 @@
 #include "map.h"
 #include "multisignalblocker.h"
 #include "tileset.h"
+#include "util.h"
 
 
 static constexpr char SETTINGS_TILESET_DIRECTORY[] = "General/TilesetDirectory";
@@ -337,8 +338,8 @@ void MainWindow::onPasteTriggered() {
 	bool addedAllObjects = true;
 	for (auto it = _clipboardObjects.begin(); it != _clipboardObjects.end(); ++it) {
 		MapObject object = *it;
-		if (object.kind() == MapObject::Kind::Invalid) { continue; }
-		int objectId = _mapController->map()->nextAvailableObjectId(object.kind());
+		if (object.group() == MapObject::Group::Invalid) { continue; }
+		int objectId = _mapController->map()->nextAvailableObjectId(object.group());
 		if (objectId != MapObject::IdNone) {
 			object.x += rect.left();
 			object.y += rect.top();
@@ -391,23 +392,23 @@ void MainWindow::onTilePressed(const QPoint &tile) {
 	} else if (_ui.actionFloodFill->isChecked()) {
 		_mapController->floodFill(tile, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionPlaceDoor->isChecked()) {
-		placeObject(MapObject::Kind::Door, tile);
+		placeObject(MapObject::UnitType::Door, tile);
 	} else if (_ui.actionPlaceElevator->isChecked()) {
-		placeObject(MapObject::Kind::Elevator, tile);
+		placeObject(MapObject::UnitType::Elevator, tile);
 	} else if (_ui.actionPlaceHiddenItem->isChecked()) {
-		placeObject(MapObject::Kind::HiddenObject, tile);
+		placeObject(MapObject::UnitType::TimeBomb, tile);
 	} else if (_ui.actionPlaceKey->isChecked()) {
-		placeObject(MapObject::Kind::Key, tile);
+		placeObject(MapObject::UnitType::Key, tile);
 	} else if (_ui.actionPlacePlayer->isChecked()) {
-		placeObject(MapObject::Kind::Player, tile);
+		placeObject(MapObject::UnitType::Player, tile);
 	} else if (_ui.actionPlaceRobot->isChecked()) {
-		placeObject(MapObject::Kind::Robot, tile);
+		placeObject(MapObject::UnitType::HoverbotLR, tile);
 	} else if (_ui.actionPlaceTransporterPad->isChecked()) {
-		placeObject(MapObject::Kind::TransporterPad, tile);
+		placeObject(MapObject::UnitType::TransporterPad, tile);
 	} else if (_ui.actionPlaceTrashCompactor->isChecked()) {
-		placeObject(MapObject::Kind::TrashCompactor, tile);
+		placeObject(MapObject::UnitType::TrashCompactor, tile);
 	} else if (_ui.actionPlaceWaterRaft->isChecked()) {
-		placeObject(MapObject::Kind::WaterRaft, tile);
+		placeObject(MapObject::UnitType::WaterRaft, tile);
 	}
 }
 
@@ -615,18 +616,24 @@ bool MainWindow::doSave(const QString &path) {
 }
 
 
-void MainWindow::placeObject(MapObject::Kind kind, const QPoint &position) {
+void MainWindow::placeObject(MapObject::UnitType unitType, const QPoint &position) {
 	QString error;
-	int objectNo = _mapController->newObject(kind, position, &error);
+	MapObject object(unitType);
+	object.x = position.x();
+	object.y = position.y();
+	if (object.unitType == MapObject::UnitType::WaterRaft) {
+		object.b = qMax(0, position.x() - 1);
+		object.c = qMin(_mapController->map()->width() - 1, position.x() + 1);
+	}
+	int objectNo = _mapController->newObject(object, &error);
 	
 	if (error.isNull()) {
 		_ui.actionSelect->trigger();
 		_ui.objectEditor->loadObject(objectNo);
 	} else {
-		QString kindLc = MapObject::toString(kind);
-		QString kindUc = kindLc[0].toUpper() + kindLc.mid(1);
-		QMessageBox::warning(this, "Cannot Place " + kindUc,
-		                     QString("Cannot place %1: %2").arg(kindLc, error));
+		QString unitTypeS = MapObject::toString(unitType);
+		QMessageBox::warning(this, "Cannot Place " + capitalize(unitTypeS),
+		                     QString("Cannot place %1: %2").arg(unitTypeS, error));
 	}
 }
 

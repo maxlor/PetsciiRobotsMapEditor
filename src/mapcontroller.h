@@ -25,7 +25,7 @@ public:
 	
 	void deleteObject(int objectNo);
 	void moveObject(int objectNo, const QPoint &position);
-	int newObject(MapObject::Kind kind, const QPoint &position, QString *error);
+	int newObject(const MapObject &object, QString *error);
 	void setObject(int objectNo, const MapObject &object, bool isNew = false);
 	void incrementMergeCounter();
 	

@@ -332,7 +332,7 @@ void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, MapObjec
 	static const QColor toolColor(255, 255, 100);
 	static const QColor weaponColor(255, 150, 0);
 	static const std::unordered_map<MapObject::UnitType, std::pair<QString, QColor>> textAndColor {
-		{ MapObject::UnitType::Transporter, { "Pad", { 150, 255, 255 }}},
+		{ MapObject::UnitType::TransporterPad, { "Pad", { 150, 255, 255 }}},
 		{ MapObject::UnitType::Door, { "Door", { 140, 190, 255 }}},
 		{ MapObject::UnitType::TrashCompactor, { "TC", { 255, 64, 0 }}},
 		{ MapObject::UnitType::Elevator, { "Lift", { 150, 200, 255 }}},

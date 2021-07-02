@@ -1,9 +1,10 @@
 #ifndef MAPOBJECT_H
 #define MAPOBJECT_H
 
-#include <cstdint>
 #include <QPoint>
 #include <QString>
+#include <cstdint>
+#include <forward_list>
 
 
 class MapObject {
@@ -11,14 +12,13 @@ public:
 	typedef uint8_t unitType_t;
 	typedef int id_t;
 	
-	enum class Kind {
-		Player, Robot, TransporterPad, Door, TrashCompactor, Elevator, WaterRaft, Key,
-		HiddenObject, Invalid
+	enum class Group {
+		Invalid, Player, Robots, MapFeatures, HiddenObjects
 	};
 	
 	enum class UnitType : unitType_t {
 		None = 0, Player = 1, HoverbotLR = 2, HoverbotUD = 3, HoverbotAttack = 4,
-		Transporter = 7, Evilbot = 9, Door = 10, TrashCompactor = 16, RollerbotUD = 17,
+		TransporterPad = 7, Evilbot = 9, Door = 10, TrashCompactor = 16, RollerbotUD = 17,
 		RollerbotLR = 18, Elevator = 19, WaterRaft = 22, Key = 128, TimeBomb = 129,
 		EMP = 130, Pistol = 131, PlasmaGun = 132, Medkit = 133, Magnet = 134
 	};
@@ -40,11 +40,12 @@ public:
 	uint8_t d;
 	uint8_t health;
 	
-	Kind kind() const;
+	Group group() const;
 	QPoint pos() const;
-	static Kind kind(UnitType unitType);
-	static const QString &toString(Kind kind);
-	static const QString &category(Kind kind);
+	static Group group(UnitType unitType);
+	static const QString &toString(UnitType unitType);
+	static const QString &toString(Group group);
+	static const std::forward_list<UnitType> &unitTypes();
 };
 
 #endif // MAPOBJECT_H

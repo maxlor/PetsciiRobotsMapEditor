@@ -163,30 +163,25 @@ int Map::robotCount() const {
 }
 
 
-MapObject::id_t Map::nextAvailableObjectId(MapObject::Kind kind) const {
-	switch (kind) {
-	case MapObject::Kind::Player: return MapObject::IdPlayer;
-	case MapObject::Kind::Robot:
+MapObject::id_t Map::nextAvailableObjectId(MapObject::Group group) const {
+	switch (group) {
+	case MapObject::Group::Invalid: return MapObject::IdNone;
+	case MapObject::Group::Player: return MapObject::IdPlayer;
+	case MapObject::Group::Robots:
 		for (MapObject::id_t i = MapObject::IdRobotMin; i <= MapObject::IdRobotMax; ++i) {
 			if (_objects[i].unitType == MapObject::UnitType::None) { return i; }
 		}
 		return MapObject::IdNone;
-	case MapObject::Kind::TransporterPad:
-	case MapObject::Kind::Door:
-	case MapObject::Kind::TrashCompactor:
-	case MapObject::Kind::Elevator:
-	case MapObject::Kind::WaterRaft:
+	case MapObject::Group::MapFeatures:
 		for (int i = MapObject::IdMapFeatureMin; i <= MapObject::IdMapFeatureMax; ++i) {
 			if (_objects[i].unitType == MapObject::UnitType::None) { return i; }
 		}
 		return MapObject::IdNone;
-	case MapObject::Kind::Key:
-	case MapObject::Kind::HiddenObject:
+	case MapObject::Group::HiddenObjects:
 		for (int i = MapObject::IdHiddenMin; i <= MapObject::IdHiddenMax; ++i) {
 			if (_objects[i].unitType == MapObject::UnitType::None) { return i; }
 		}
 		return MapObject::IdNone;
-	case MapObject::Kind::Invalid: return MapObject::IdNone;
 	}
 }
 
@@ -272,31 +267,6 @@ bool Map::isModified() const {
 
 const QString &Map::path() const {
 	return _path;
-}
-
-
-const std::list<std::pair<MapObject::UnitType, QString> > &Map::unitTypes() {
-	static std::list<std::pair<MapObject::UnitType, QString>> unitTypes = {
-	    { MapObject::UnitType::HoverbotLR, "Hoverbot horizontal patrol" },
-	    { MapObject::UnitType::HoverbotUD, "Hoverbot vertical patrol" },
-	    { MapObject::UnitType::HoverbotAttack, "Hoverbot attack mode" },
-	    { MapObject::UnitType::Evilbot, "Evilbot" },
-	    { MapObject::UnitType::RollerbotUD, "Rollerbot vertical patrol" },
-	    { MapObject::UnitType::RollerbotLR, "Rollerbot horizontal patrol" },
-	    { MapObject::UnitType::Door, "Moving Door" },
-	    { MapObject::UnitType::Key, "Hidden Key" },
-	    { MapObject::UnitType::TimeBomb, "Time Bomb"  },
-	    { MapObject::UnitType::EMP, "EMP" },
-	    { MapObject::UnitType::Pistol, "Pistol" },
-	    { MapObject::UnitType::PlasmaGun, "Plasma Gun" },
-	    { MapObject::UnitType::Medkit, "Medkit" },
-	    { MapObject::UnitType::Magnet, "Magnet" },
-	    { MapObject::UnitType::Transporter, "Transporter Pad" },
-	    { MapObject::UnitType::TrashCompactor, "Trash Compactor" },
-	    { MapObject::UnitType::Elevator, "Elevator" },
-	    { MapObject::UnitType::WaterRaft, "Water Raft" },
-	};
-	return unitTypes;
 }
 
 

@@ -28,7 +28,7 @@ public:
 	int mapFeatureCount() const;
 	int robotCount() const;
 	
-	MapObject::id_t nextAvailableObjectId(MapObject::Kind kind) const;
+	MapObject::id_t nextAvailableObjectId(MapObject::Group group) const;
 	
 	const MapObject &object(MapObject::id_t no) const;
 	void deleteObject(MapObject::id_t no);
@@ -45,8 +45,6 @@ public:
 	bool isModified() const;
 	
 	const QString &path() const;
-	
-	static const std::list<std::pair<MapObject::UnitType, QString> > &unitTypes();
 	
 	void compact();
 	

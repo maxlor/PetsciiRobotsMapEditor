@@ -30,7 +30,8 @@ SOURCES += \
     scrollarea.cpp \
     tile.cpp \
     tileset.cpp \
-    tilewidget.cpp
+    tilewidget.cpp \
+    util.cpp
 
 HEADERS += \
     abstracttilewidget.h \
@@ -48,7 +49,8 @@ HEADERS += \
     scrollarea.h \
     tile.h \
     tileset.h \
-    tilewidget.h
+    tilewidget.h \
+    util.h
 
 FORMS += \
     mainwindow.ui \
