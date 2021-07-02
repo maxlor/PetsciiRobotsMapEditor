@@ -4,36 +4,6 @@
 #include <QColor>
 #include <QImage>
 
-#define PLAYER_OBJ (0)
-#define UNITTYPE_NONE (0)
-#define UNITTYPE_PLAYER (1)
-#define OBJECT_NONE (-1)
-#define OBJECT_MIN (0)
-#define OBJECT_MAX (63)
-#define ROBOT_MIN (1)
-#define ROBOT_MAX (28)
-#define ROBOT_HOVERBOT_LR (2)
-#define ROBOT_HOVERBOT_UD (3)
-#define ROBOT_HOVERBOT_ATTACK (4)
-#define ROBOT_EVILBOT (9)
-#define ROBOT_ROLLERBOT_UD (17)
-#define ROBOT_ROLLERBOT_LR (18)
-#define MAP_FEATURE_MIN (32)
-#define MAP_FEATURE_MAX (47)
-#define HIDDEN_OBJECT_MIN (48)
-#define HIDDEN_OBJECT_MAX (63)
-#define OBJECT_TRANSPORTER (7)
-#define OBJECT_DOOR (10)
-#define OBJECT_TRASH_COMPACTOR (16)
-#define OBJECT_ELEVATOR (19)
-#define OBJECT_WATER_RAFT (22)
-#define OBJECT_KEY (128)
-#define OBJECT_TIME_BOMB (129)
-#define OBJECT_EMP (130)
-#define OBJECT_PISTOL (131)
-#define OBJECT_PLASMA_GUN (132)
-#define OBJECT_MEDKIT (133)
-#define OBJECT_MAGNET (134)
 
 extern const QImage::Format IMAGE_FORMAT;
 

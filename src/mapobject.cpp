@@ -1,11 +1,10 @@
 #include "mapobject.h"
-#include "constants.h"
 
 
-MapObject::MapObject() : MapObject(UNITTYPE_NONE) {}
+MapObject::MapObject() : MapObject(UnitType::None) {}
 
 
-MapObject::MapObject(uint8_t unitType)
+MapObject::MapObject(UnitType unitType)
     : unitType(unitType), x(0), y(0), a(0), b(0), c(0), d(0), health(0) {}
 
 
@@ -19,28 +18,28 @@ QPoint MapObject::pos() const {
 }
 
 
-MapObject::Kind MapObject::kind(uint8_t unitType) {
+MapObject::Kind MapObject::kind(MapObject::UnitType unitType) {
 	switch (unitType) {
-	case 1: return Kind::Player;
-	case 2:
-	case 3:
-	case 4:
-	case 9:
-	case 17:
-	case 18: return Kind::Robot;
-	case 7: return Kind::TransporterPad;
-	case 10: return Kind::Door;
-	case 16: return Kind::TrashCompactor;
-	case 19: return Kind::Elevator;
-	case 22: return Kind::WaterRaft;
-	case 128: return Kind::Key;
-	case 129:
-	case 130:
-	case 131:
-	case 132:
-	case 133:
-	case 134: return Kind::HiddenObject;
-	default: return Kind::Invalid;
+	case UnitType::None: return Kind::Invalid;
+	case UnitType::Player: return Kind::Player;
+	case UnitType::HoverbotLR:
+	case UnitType::HoverbotUD:
+	case UnitType::HoverbotAttack:
+	case UnitType::Evilbot:
+	case UnitType::RollerbotUD:
+	case UnitType::RollerbotLR: return Kind::Robot;
+	case UnitType::Transporter: return Kind::TransporterPad;
+	case UnitType::Door: return Kind::Door;
+	case UnitType::TrashCompactor: return Kind::TrashCompactor;
+	case UnitType::Elevator: return Kind::Elevator;
+	case UnitType::WaterRaft: return Kind::WaterRaft;
+	case UnitType::Key: return Kind::Key;
+	case UnitType::TimeBomb:
+	case UnitType::EMP:
+	case UnitType::Pistol:
+	case UnitType::PlasmaGun:
+	case UnitType::Medkit:
+	case UnitType::Magnet: return Kind::HiddenObject;
 	}
 }
 

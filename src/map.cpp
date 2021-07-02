@@ -1,12 +1,14 @@
 #include "map.h"
 #include <QFile>
 #include <QLoggingCategory>
+#include <QRect>
 #include <cstring>
 #include <forward_list>
 #include <unordered_map>
+#include <utility>
+
 
 Q_LOGGING_CATEGORY(lcMap, "map");
-
 
 static constexpr char MAP_MAGIC[2] = { 0x00, 0x5d };
 static constexpr size_t MAP_BYTES(8962);
@@ -136,8 +138,8 @@ QString Map::save(const QString &path) {
 
 int Map::hiddenItemCount() const {
 	int count = 0;
-	for (int i = HIDDEN_OBJECT_MIN; i <= HIDDEN_OBJECT_MAX; ++i) {
-		if (_objects[i].unitType != UNITTYPE_NONE) { ++count; }
+	for (int i = MapObject::IdHiddenMin; i <= MapObject::IdHiddenMax; ++i) {
+		if (_objects[i].unitType != MapObject::UnitType::None) { ++count; }
 	}
 	return count;
 }
@@ -145,8 +147,8 @@ int Map::hiddenItemCount() const {
 
 int Map::mapFeatureCount() const {
 	int count = 0;
-	for (int i = MAP_FEATURE_MIN; i <= MAP_FEATURE_MAX; ++i) {
-		if (_objects[i].unitType != UNITTYPE_NONE) { ++count; }
+	for (int i = MapObject::IdMapFeatureMin; i <= MapObject::IdMapFeatureMax; ++i) {
+		if (_objects[i].unitType != MapObject::UnitType::None) { ++count; }
 	}
 	return count;
 }
@@ -154,37 +156,37 @@ int Map::mapFeatureCount() const {
 
 int Map::robotCount() const {
 	int count = 0;
-	for (int i = ROBOT_MIN; i <= ROBOT_MAX; ++i) {
-		if (_objects[i].unitType != UNITTYPE_NONE) { ++count; }
+	for (int i = MapObject::IdRobotMin; i <= MapObject::IdRobotMax; ++i) {
+		if (_objects[i].unitType != MapObject::UnitType::None) { ++count; }
 	}
 	return count;
 }
 
 
-int Map::nextAvailableObjectId(MapObject::Kind kind) const {
+MapObject::id_t Map::nextAvailableObjectId(MapObject::Kind kind) const {
 	switch (kind) {
-	case MapObject::Kind::Player: return PLAYER_OBJ;
+	case MapObject::Kind::Player: return MapObject::IdPlayer;
 	case MapObject::Kind::Robot:
-		for (int i = ROBOT_MIN; i <= ROBOT_MAX; ++i) {
-			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
+		for (MapObject::id_t i = MapObject::IdRobotMin; i <= MapObject::IdRobotMax; ++i) {
+			if (_objects[i].unitType == MapObject::UnitType::None) { return i; }
 		}
-		return OBJECT_NONE;
+		return MapObject::IdNone;
 	case MapObject::Kind::TransporterPad:
 	case MapObject::Kind::Door:
 	case MapObject::Kind::TrashCompactor:
 	case MapObject::Kind::Elevator:
 	case MapObject::Kind::WaterRaft:
-		for (int i = MAP_FEATURE_MIN; i <= MAP_FEATURE_MAX; ++i) {
-			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
+		for (int i = MapObject::IdMapFeatureMin; i <= MapObject::IdMapFeatureMax; ++i) {
+			if (_objects[i].unitType == MapObject::UnitType::None) { return i; }
 		}
-		return OBJECT_NONE;
+		return MapObject::IdNone;
 	case MapObject::Kind::Key:
 	case MapObject::Kind::HiddenObject:
-		for (int i = HIDDEN_OBJECT_MIN; i <= HIDDEN_OBJECT_MAX; ++i) {
-			if (_objects[i].unitType == UNITTYPE_NONE) { return i; }
+		for (int i = MapObject::IdHiddenMin; i <= MapObject::IdHiddenMax; ++i) {
+			if (_objects[i].unitType == MapObject::UnitType::None) { return i; }
 		}
-		return OBJECT_NONE;
-	case MapObject::Kind::Invalid: return OBJECT_NONE;
+		return MapObject::IdNone;
+	case MapObject::Kind::Invalid: return MapObject::IdNone;
 	}
 }
 
@@ -194,14 +196,14 @@ const MapObject &Map::object(int no) const {
 }
 
 
-void Map::deleteObject(int no) {
+void Map::deleteObject(MapObject::id_t no) {
 	objectAt(no) = MapObject();
 	compact();
 	emit objectsChanged();
 }
 
 
-void Map::moveObject(int no, const QPoint &pos) {
+void Map::moveObject(MapObject::id_t no, const QPoint &pos) {
 	MapObject &object = objectAt(no);
 	object.x = pos.x();
 	object.y = pos.y();
@@ -209,7 +211,7 @@ void Map::moveObject(int no, const QPoint &pos) {
 }
 
 
-void Map::setObject(int no, const MapObject &object) {
+void Map::setObject(MapObject::id_t no, const MapObject &object) {
 	objectAt(no) = object;
 	emit objectsChanged();
 }
@@ -273,26 +275,26 @@ const QString &Map::path() const {
 }
 
 
-const std::list<std::pair<uint8_t, QString> > &Map::unitTypes() {
-	static std::list<std::pair<uint8_t, QString>> unitTypes = {
-	    { 2, "Hoverbot horizontal patrol" },
-	    { 3, "Hoverbot vertical patrol" },
-	    { 4, "Hoverbot attack mode" },
-	    { 9, "Evilbot" },
-	    { 18, "Rollerbot horizontal patrol" },
-	    { 17, "Rollerbot vertical patrol" },
-	    { 10, "Moving Door" },
-	    { 128, "Hidden Key" },
-	    { 129, "Time Bomb"  },
-	    { 130, "EMP" },
-	    { 131, "Pistol" },
-	    { 132, "Plasma Gun" },
-	    { 133, "Medkit" },
-	    { 134, "Magnet" },
-	    { 7, "Transporter Pad" },
-	    { 16, "Trash Compactor" },
-	    { 19, "Elevator" },
-	    { 22, "Water Raft" },
+const std::list<std::pair<MapObject::UnitType, QString> > &Map::unitTypes() {
+	static std::list<std::pair<MapObject::UnitType, QString>> unitTypes = {
+	    { MapObject::UnitType::HoverbotLR, "Hoverbot horizontal patrol" },
+	    { MapObject::UnitType::HoverbotUD, "Hoverbot vertical patrol" },
+	    { MapObject::UnitType::HoverbotAttack, "Hoverbot attack mode" },
+	    { MapObject::UnitType::Evilbot, "Evilbot" },
+	    { MapObject::UnitType::RollerbotUD, "Rollerbot vertical patrol" },
+	    { MapObject::UnitType::RollerbotLR, "Rollerbot horizontal patrol" },
+	    { MapObject::UnitType::Door, "Moving Door" },
+	    { MapObject::UnitType::Key, "Hidden Key" },
+	    { MapObject::UnitType::TimeBomb, "Time Bomb"  },
+	    { MapObject::UnitType::EMP, "EMP" },
+	    { MapObject::UnitType::Pistol, "Pistol" },
+	    { MapObject::UnitType::PlasmaGun, "Plasma Gun" },
+	    { MapObject::UnitType::Medkit, "Medkit" },
+	    { MapObject::UnitType::Magnet, "Magnet" },
+	    { MapObject::UnitType::Transporter, "Transporter Pad" },
+	    { MapObject::UnitType::TrashCompactor, "Trash Compactor" },
+	    { MapObject::UnitType::Elevator, "Elevator" },
+	    { MapObject::UnitType::WaterRaft, "Water Raft" },
 	};
 	return unitTypes;
 }
@@ -300,17 +302,17 @@ const std::list<std::pair<uint8_t, QString> > &Map::unitTypes() {
 
 void Map::compact() {
 	static const std::forward_list<std::pair<int, int>> ranges = {
-	    { ROBOT_MIN, ROBOT_MAX }, { MAP_FEATURE_MIN, MAP_FEATURE_MAX },
-	    { HIDDEN_OBJECT_MIN, HIDDEN_OBJECT_MAX }};
+	    { MapObject::IdRobotMin, MapObject::IdRobotMax }, { MapObject::IdMapFeatureMin, MapObject::IdMapFeatureMax },
+	    { MapObject::IdHiddenMin, MapObject::IdHiddenMax }};
 	
 	bool changed = false;
 	
 	for (const std::pair<int, int> &range : ranges) {
 		for (int i = range.first; i <= range.second - 1; ++i) {
-			if (_objects[i].unitType != UNITTYPE_NONE) { continue; }
+			if (_objects[i].unitType != MapObject::UnitType::None) { continue; }
 			bool moved = false;
 			for (int j = i + 1; j < range.second; ++j) {
-				if (_objects[j].unitType != UNITTYPE_NONE) {
+				if (_objects[j].unitType != MapObject::UnitType::None) {
 					_objects[i] = _objects[j];
 					_objects[j] = MapObject();
 					++i;
@@ -332,8 +334,8 @@ QByteArray Map::data() const {
 	QByteArray ba(MAP_BYTES, 0);
 	
 	memcpy(ba.data(), MAP_MAGIC, sizeof(MAP_MAGIC));
-	for (int i = OBJECT_MIN; i <= OBJECT_MAX; ++i) {
-		ba[0x002 + i] = _objects[i].unitType;
+	for (int i = MapObject::IdMin; i <= MapObject::IdMax; ++i) {
+		ba[0x002 + i] = MapObject::unitType_t(_objects[i].unitType);
 		ba[0x042 + i] = _objects[i].x;
 		ba[0x082 + i] = _objects[i].y;
 		ba[0x0c2 + i] = _objects[i].a;

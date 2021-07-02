@@ -339,7 +339,7 @@ void MainWindow::onPasteTriggered() {
 		MapObject object = *it;
 		if (object.kind() == MapObject::Kind::Invalid) { continue; }
 		int objectId = _mapController->map()->nextAvailableObjectId(object.kind());
-		if (objectId != OBJECT_NONE) {
+		if (objectId != MapObject::IdNone) {
 			object.x += rect.left();
 			object.y += rect.top();
 			_mapController->setObject(objectId, object);
@@ -467,9 +467,9 @@ void MainWindow::onViewFilterChanged(bool checked) {
 
 
 void MainWindow::updateMapCountLabels() {
-	static constexpr int maxHiddenItemCount = HIDDEN_OBJECT_MAX - HIDDEN_OBJECT_MIN + 1;
-	static constexpr int maxMapFeatureCount = MAP_FEATURE_MAX - MAP_FEATURE_MIN + 1;
-	static constexpr int maxRobotCount = ROBOT_MAX - ROBOT_MIN + 1;
+	static constexpr int maxHiddenItemCount = MapObject::IdHiddenMax - MapObject::IdHiddenMin + 1;
+	static constexpr int maxMapFeatureCount = MapObject::IdMapFeatureMax - MapObject::IdMapFeatureMin + 1;
+	static constexpr int maxRobotCount = MapObject::IdRobotMax - MapObject::IdRobotMin + 1;
 	
 	const Map &map = *_mapController->map();
 	
@@ -590,7 +590,7 @@ void MainWindow::copyMap(bool copyTiles, bool copyObjects, bool clear) {
 		_clipboardTilesValid = true;
 	}
 	if (copyObjects) {
-		for (int objectNo = OBJECT_MAX; objectNo >= OBJECT_MIN; --objectNo) {
+		for (int objectNo = MapObject::IdMax; objectNo >= MapObject::IdMin; --objectNo) {
 			MapObject object = _mapController->map()->object(objectNo);
 			if (rect.contains(object.pos())) {
 				object.x -= rect.left();

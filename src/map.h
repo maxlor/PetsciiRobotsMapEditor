@@ -5,9 +5,6 @@
 #include <QObject>
 #include <QPoint>
 #include <QString>
-#include <list>
-#include <utility>
-#include "constants.h"
 #include "mapobject.h"
 
 
@@ -31,12 +28,12 @@ public:
 	int mapFeatureCount() const;
 	int robotCount() const;
 	
-	int nextAvailableObjectId(MapObject::Kind kind) const;
+	MapObject::id_t nextAvailableObjectId(MapObject::Kind kind) const;
 	
-	const MapObject &object(int no) const;
-	void deleteObject(int no);
-	void moveObject(int no, const QPoint &pos);
-	void setObject(int no, const MapObject &object);
+	const MapObject &object(MapObject::id_t no) const;
+	void deleteObject(MapObject::id_t no);
+	void moveObject(MapObject::id_t no, const QPoint &pos);
+	void setObject(MapObject::id_t no, const MapObject &object);
 	void setObjects(const MapObject objects[]);
 	
 	uint8_t tileNo(const QPoint &tile) const;
@@ -49,7 +46,7 @@ public:
 	
 	const QString &path() const;
 	
-	static const std::list<std::pair<uint8_t, QString> > &unitTypes();
+	static const std::list<std::pair<MapObject::UnitType, QString> > &unitTypes();
 	
 	void compact();
 	

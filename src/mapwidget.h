@@ -6,6 +6,7 @@
 #include <QSize>
 #include <QWidget>
 #include "abstracttilewidget.h"
+#include "mapobject.h"
 
 class Map;
 class Tile;
@@ -57,7 +58,7 @@ private slots:
 	
 private:
 	void drawObject(QPainter &painter, int objectNo);
-	void drawSpecialObject(QPainter &painter, const QRect &rect, int unitType);
+	void drawSpecialObject(QPainter &painter, const QRect &rect, MapObject::UnitType unitType);
 	QSize imageSize() const;
 	void makeTilesImage();
 	void makeImage();

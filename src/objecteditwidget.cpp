@@ -2,7 +2,6 @@
 #include <QLoggingCategory>
 #include <forward_list>
 #include <unordered_map>
-#include "constants.h"
 #include "map.h"
 #include "mapcontroller.h"
 #include "multisignalblocker.h"
@@ -16,10 +15,10 @@ ObjectEditWidget::ObjectEditWidget(QWidget *parent) : QGroupBox(parent){
 	for (const auto &pair : Map::unitTypes()) {
 		switch (MapObject::kind(pair.first)) {
 		case MapObject::Kind::Robot:
-			_ui.comboRobotType->insertItem(_ui.comboRobotType->count(), pair.second, pair.first);
+			_ui.comboRobotType->insertItem(_ui.comboRobotType->count(), pair.second, MapObject::unitType_t(pair.first));
 			break;
 		case MapObject::Kind::HiddenObject:
-			_ui.comboWeaponType->insertItem(_ui.comboWeaponType->count(), pair.second, pair.first);
+			_ui.comboWeaponType->insertItem(_ui.comboWeaponType->count(), pair.second, MapObject::unitType_t(pair.first));
 			break;
 		default:;
 		}
@@ -106,7 +105,7 @@ void ObjectEditWidget::loadObject(int objectNo) {
 	try {
 		setTitle(groupNames.at(kind));
 	} catch (std::out_of_range) {
-		qCWarning(lcObjEd, "can't edit object %d of unit type %d", objectNo, object.unitType);
+		qCWarning(lcObjEd, "can't edit object %d of unit type %hhu", objectNo, object.unitType);
 		setVisible(false);
 		return;
 	}
@@ -162,7 +161,7 @@ void ObjectEditWidget::mapClickCancelled() {
 
 
 void ObjectEditWidget::onObjectsChanged() {
-	if (_objectNo != OBJECT_NONE) {
+	if (_objectNo != MapObject::IdNone) {
 		loadObject(_objectNo);
 	}
 }
@@ -186,11 +185,11 @@ void ObjectEditWidget::store() {
 		object.x = _ui.coordinatesRobot->x();
 		object.y = _ui.coordinatesRobot->y();
 		object.health = _ui.editRobotHealth->value();
-		object.unitType = _ui.comboRobotType->currentData().toInt();
+		object.unitType = MapObject::UnitType(_ui.comboRobotType->currentData().toUInt());
 	} else if (_ui.stackedWidget->currentWidget() == _ui.pageWeapon) {
 		object.x = _ui.coordinatesWeapon->x();
 		object.y = _ui.coordinatesWeapon->y();
-		object.unitType = _ui.comboWeaponType->currentData().toInt();
+		object.unitType = MapObject::UnitType(_ui.comboWeaponType->currentData().toUInt());
 		object.a = _ui.editWeaponAmount->value();
 		object.c = _ui.editWeaponContainerWidth->value();
 		object.d = _ui.editWeaponContainerHeight->value();
@@ -278,7 +277,7 @@ void ObjectEditWidget::loadKey(int objectNo) {
 
 void ObjectEditWidget::loadPlayer() {
 	MultiSignalBlocker blocker = { _ui.coordinatesPlayer, _ui.editPlayerHealth };
-	const MapObject &object = map()->object(PLAYER_OBJ);
+	const MapObject &object = map()->object(MapObject::IdPlayer);
 	_ui.stackedWidget->setCurrentWidget(_ui.pagePlayer);
 	_ui.coordinatesPlayer->setXY(object.x, object.y);
 	_ui.editPlayerHealth->setValue(object.health);
@@ -294,7 +293,7 @@ void ObjectEditWidget::loadRobot(int objectNo) {
 	_ui.editRobotHealth->setValue(object.health);
 	bool found = false;
 	for (int i = 0; i < _ui.comboRobotType->count(); ++i) {
-		if (_ui.comboRobotType->itemData(i).toInt() == object.unitType) {
+		if (MapObject::UnitType(_ui.comboRobotType->itemData(i).toUInt()) == object.unitType) {
 			_ui.comboRobotType->setCurrentIndex(i);
 			found = true;
 			break;
@@ -302,7 +301,7 @@ void ObjectEditWidget::loadRobot(int objectNo) {
 	}
 	if (not found) {
 		_ui.comboRobotType->setCurrentIndex(0);
-		qCInfo(lcObjEd, "robot unit type %d not found, assuming %d (%s)", object.unitType,
+		qCInfo(lcObjEd, "robot unit type %hhu not found, assuming %d (%s)", object.unitType,
 		       _ui.comboRobotType->currentData().toInt(),
 		       _ui.comboRobotType->currentText().toUtf8().constData());
 	}
@@ -354,7 +353,7 @@ void ObjectEditWidget::loadWeapon(int objectNo) {
 	_ui.coordinatesWeapon->setXY(object.x, object.y);
 	bool found = false;
 	for (int i = 0; i < _ui.comboWeaponType->count(); ++i) {
-		if (_ui.comboWeaponType->itemData(i).toInt() == object.unitType) {
+		if (MapObject::UnitType(_ui.comboWeaponType->itemData(i).toUInt()) == object.unitType) {
 			_ui.comboWeaponType->setCurrentIndex(i);
 			found = true;
 			break;
@@ -362,7 +361,7 @@ void ObjectEditWidget::loadWeapon(int objectNo) {
 	}
 	if (not found) {
 		_ui.comboWeaponType->setCurrentIndex(0);
-		qCInfo(lcObjEd, "hidden item unit type %d not found, assuming %d (%s)", object.unitType,
+		qCInfo(lcObjEd, "hidden item unit type %hhu not found, assuming %d (%s)", object.unitType,
 		       _ui.comboWeaponType->currentData().toInt(),
 		       _ui.comboWeaponType->currentText().toUtf8().constData());
 	}

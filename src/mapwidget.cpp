@@ -4,7 +4,6 @@
 #include <QSize>
 #include "constants.h"
 #include "map.h"
-#include "mapobject.h"
 #include "tile.h"
 #include "tileset.h"
 
@@ -83,9 +82,10 @@ void MapWidget::clickEveryTile() {
 		for (int x = 0; x < _map->width(); ++x) {
 			emit tilePressed({x, y});
 			if (_objectsVisible) {
-				for (int i = 0; i <= OBJECT_MAX; ++i) {
+				for (int i = 0; i <= MapObject::IdMax; ++i) {
 					const MapObject &object = _map->object(i);
-					if (object.unitType != UNITTYPE_NONE and object.x == x and object.y == y) {
+					if (object.unitType != MapObject::UnitType::None and
+					        object.x == x and object.y == y) {
 						emit objectClicked(i);
 						break;
 					}
@@ -109,7 +109,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 	
 	if (_objectsVisible) {
 		painter.save();
-		for (int i = 0; i <= OBJECT_MAX; ++i) {
+		for (int i = 0; i <= MapObject::IdMax; ++i) {
 			drawObject(painter, i);
 		}
 		painter.restore();
@@ -184,7 +184,7 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
 			break;
 		case DragMode::Object:
 			emit tileDragged(tilePos);
-			if (_dragObject != OBJECT_NONE) {
+			if (_dragObject != MapObject::IdNone) {
 				emit objectDragged(_dragObject, tilePos);
 			}
 			break;
@@ -212,9 +212,9 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 	case DragMode::Object:
 		if (_objectsVisible) {
 			bool foundObject = false;
-			for (int i = 0; i <= OBJECT_MAX; ++i) {
+			for (int i = 0; i <= MapObject::IdMax; ++i) {
 				const MapObject &object = _map->object(i);
-				if (object.unitType != UNITTYPE_NONE and object.pos() == tilePos) {
+				if (object.unitType != MapObject::UnitType::None and object.pos() == tilePos) {
 					emit objectClicked(i);
 					foundObject = true;
 					_dragObject = i;
@@ -237,7 +237,7 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		event->accept();
-		_dragObject = OBJECT_NONE;
+		_dragObject = MapObject::IdNone;
 		emit released();
 	} else {
 		QWidget::mouseReleaseEvent(event);
@@ -278,18 +278,18 @@ QSize MapWidget::imageSize() const {
 void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	static const QColor playerColor(128, 255, 128);
 	static const QColor robotColor(255, 128, 128);
-	static const std::unordered_map<uint8_t, std::pair<uint8_t, QColor>> objectTiles = {
-	    { UNITTYPE_PLAYER,        {  97, playerColor }},
-	    { ROBOT_HOVERBOT_LR,      {  98, robotColor }},
-	    { ROBOT_HOVERBOT_UD,      {  98, robotColor }},
-	    { ROBOT_HOVERBOT_ATTACK,  {  99, robotColor }},
-	    { ROBOT_EVILBOT,          { 100, robotColor }},
-	    { ROBOT_ROLLERBOT_LR,     { 165, robotColor }},
-	    { ROBOT_ROLLERBOT_UD,     { 164, robotColor }},
+	static const std::unordered_map<MapObject::UnitType, std::pair<uint8_t, QColor>> objectTiles = {
+	    { MapObject::UnitType::Player,         { 97, playerColor }},
+	    { MapObject::UnitType::HoverbotLR,     {  98, robotColor }},
+	    { MapObject::UnitType::HoverbotUD,     {  98, robotColor }},
+	    { MapObject::UnitType::HoverbotAttack, {  99, robotColor }},
+	    { MapObject::UnitType::Evilbot,        { 100, robotColor }},
+	    { MapObject::UnitType::RollerbotUD,    { 164, robotColor }},
+	    { MapObject::UnitType::RollerbotLR,    { 165, robotColor }},
 	};
 	
 	const MapObject &object = _map->object(objectNo);
-	if (object.unitType == UNITTYPE_NONE) { return; }
+	if (object.unitType == MapObject::UnitType::None) { return; }
 	const QRect r = tileRect(object.pos());
 	std::pair<uint8_t, QColor> pair;
 	try {
@@ -307,11 +307,13 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 		painter.setPen(QPen(Qt::white, 2));
 		
 		const QSize ts = tileset()->tileSize();
-		if (object.unitType == ROBOT_HOVERBOT_LR or object.unitType == ROBOT_ROLLERBOT_LR) {
+		if (object.unitType == MapObject::UnitType::HoverbotLR or
+		        object.unitType == MapObject::UnitType::RollerbotLR) {
 			const int y = r.top() + ts.height() / 2;
 			const int third = ts.width() / 3 + 1;
 			painter.drawLine(r.left() + third, y, r.right() - third, y);
-		} else if (object.unitType == ROBOT_HOVERBOT_UD or object.unitType == ROBOT_ROLLERBOT_UD) {
+		} else if (object.unitType == MapObject::UnitType::HoverbotUD or
+		           object.unitType == MapObject::UnitType::RollerbotUD) {
 			const int x = r.left() + ts.width() / 2;
 			const int third = ts.height() / 3 + 1;
 			painter.drawLine(x, r.top() + third, x, r.bottom() - third);
@@ -326,22 +328,22 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 }
 
 
-void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, int unitType) {
+void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, MapObject::UnitType unitType) {
 	static const QColor toolColor(255, 255, 100);
 	static const QColor weaponColor(255, 150, 0);
-	static const std::unordered_map<int, std::pair<QString, QColor>> textAndColor {
-		{ OBJECT_TRANSPORTER, { "Pad", { 150, 255, 255 }}},
-		{ OBJECT_DOOR, { "Door", { 140, 190, 255 }}},
-		{ OBJECT_TRASH_COMPACTOR, { "TC", { 255, 64, 0 }}},
-		{ OBJECT_ELEVATOR, { "Lift", { 150, 200, 255 }}},
-		{ OBJECT_WATER_RAFT, { "Raft", { 150, 200, 255 }}},
-		{ OBJECT_KEY, { "Key", { 80, 130, 255 }}},
-		{ OBJECT_TIME_BOMB, { "Bom", weaponColor }},
-		{ OBJECT_EMP, { "EMP", toolColor }},
-		{ OBJECT_PISTOL, { "Gun", weaponColor }},
-		{ OBJECT_PLASMA_GUN, { "Plas", weaponColor }},
-		{ OBJECT_MEDKIT, { "Med", { 100, 255, 100 }}},
-		{ OBJECT_MAGNET, { "Mag", toolColor }},
+	static const std::unordered_map<MapObject::UnitType, std::pair<QString, QColor>> textAndColor {
+		{ MapObject::UnitType::Transporter, { "Pad", { 150, 255, 255 }}},
+		{ MapObject::UnitType::Door, { "Door", { 140, 190, 255 }}},
+		{ MapObject::UnitType::TrashCompactor, { "TC", { 255, 64, 0 }}},
+		{ MapObject::UnitType::Elevator, { "Lift", { 150, 200, 255 }}},
+		{ MapObject::UnitType::WaterRaft, { "Raft", { 150, 200, 255 }}},
+		{ MapObject::UnitType::Key, { "Key", { 80, 130, 255 }}},
+		{ MapObject::UnitType::TimeBomb, { "Bom", weaponColor }},
+		{ MapObject::UnitType::EMP, { "EMP", toolColor }},
+		{ MapObject::UnitType::Pistol, { "Gun", weaponColor }},
+		{ MapObject::UnitType::PlasmaGun, { "Plas", weaponColor }},
+		{ MapObject::UnitType::Medkit, { "Med", { 100, 255, 100 }}},
+		{ MapObject::UnitType::Magnet, { "Mag", toolColor }},
 	};
 	static const QColor objectBgColor(0, 0, 0, 180);
 	const std::pair<QString, QColor> textAndColorPair = textAndColor.at(unitType);

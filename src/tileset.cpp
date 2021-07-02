@@ -1,5 +1,4 @@
 #include "tileset.h"
-
 #include <QByteArray>
 #include <QFile>
 #include <QPainter>

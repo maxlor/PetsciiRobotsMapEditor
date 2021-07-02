@@ -19,18 +19,18 @@
  * different slot ranges may only contain certain types of objects. Object
  * numbers (generally called \a objectNo) refer to this slot number.
  * 
- * Valid objects have numbers between #OBJECT_MIN and #OBJECT_MAX (inclusive).
- * #OBJECT_NONE is used to designate no object, or failure of an operation.
+ * Valid objects have numbers between #MapObject::IdMin and #MapObject::IdMax (inclusive).
+ * #MapObject::IdNone is used to designate no object, or failure of an operation.
  * The range of valid object numbers comprises these groups:
  * 
  * * #PLAYER_OBJ
  *   : the player object
- * * #ROBOT_MIN – #ROBOT_MAX
+ * * #MapObject::IdRobotMin – #MapObject::IdRobotMax
  *   : for the enemy robots
  * * Reserved objects for weapons fire
- * * #MAP_FEATURE_MIN – #MAP_FEATURE_MAX
+ * * #MapObject::IdMapFeatureMin – #MapObject::IdMapFeatureMax
  *   : for map features, i.e. doors, trash compactors, elevators and water rafts
- * * #HIDDEN_OBJECT_MIN – #HIDDEN_OBJECT_MAX
+ * * #MapObject::IdHiddenMin – #MapObject::IdHiddenMax
  *   : for hidden objects, i.e. keys, time bombs, EMPs, pistols, plasma guns,
  *     medkits and magnets
  */
@@ -107,7 +107,7 @@ QString MapController::save(const QString &path) {
 /// @{
 /** Delete the object in slot \a objectNo. */
 void MapController::deleteObject(int objectNo) {
-	Q_ASSERT(OBJECT_MIN <= objectNo and objectNo <= OBJECT_MAX);
+	Q_ASSERT(MapObject::IdMin <= objectNo and objectNo <= MapObject::IdMax);
 	_undoStack.push(new MapCommands::DeleteObject(*_map, objectNo));
 }
 
@@ -127,21 +127,21 @@ void MapController::moveObject(int objectNo, const QPoint &position) {
  * Creates a new object of the specified kind. The object is created
  * with reasonable default properties.
  * 
- * If the object cannot be created, #OBJECT_NONE is returned and \a error
+ * If the object cannot be created, #MapObject::IdNone is returned and \a error
  * is filled with an explanation, unless it is \c nullptr.
  * 
  * @param kind the kind of object to create
  * @param position the object's position on the map
  * @param[out] error an error explanation will be stored here if not \c nullptr
- * @return the id of the created object, or #OBJECT_NONE on error
+ * @return the id of the created object, or #MapObject::IdNone on error
  */
 int MapController::newObject(MapObject::Kind kind, const QPoint &position, QString *error) {
-	int no = _map->nextAvailableObjectId(kind);
-	if (no == OBJECT_NONE) {
+	MapObject::id_t no = _map->nextAvailableObjectId(kind);
+	if (no == MapObject::IdNone) {
 		if (error) {
 			const QString &category = MapObject::category(kind);
 			*error = QString("the map already contais the maximum number of " + category);
-			return OBJECT_NONE;
+			return MapObject::IdNone;
 		}
 	}
 	
@@ -213,42 +213,42 @@ MapObject defaultObject(MapObject::Kind kind, const QPoint &pos) {
 	MapObject result;
 	switch (kind) {
 	case MapObject::Kind::Player:
-		result.unitType = UNITTYPE_PLAYER;
+		result.unitType = MapObject::UnitType::Player;
 		result.health = 12;
 		break;
 	case MapObject::Kind:: Robot:
-		result.unitType = ROBOT_HOVERBOT_LR;
+		result.unitType = MapObject::UnitType::HoverbotLR;
 		result.health = 10;
 		break;
 	case MapObject::Kind::TransporterPad:
-		result.unitType = OBJECT_TRANSPORTER;
+		result.unitType = MapObject::UnitType::Transporter;
 		result.a = 1;
 		break;
 	case MapObject::Kind::Door:
-		result.unitType = OBJECT_DOOR;
+		result.unitType = MapObject::UnitType::Door;
 		result.b = 5;
 		break;
 	case MapObject::Kind::TrashCompactor:
-		result.unitType = OBJECT_TRASH_COMPACTOR;
+		result.unitType = MapObject::UnitType::TrashCompactor;
 		break;
 	case MapObject::Kind::Elevator:
-		result.unitType = OBJECT_ELEVATOR;
+		result.unitType = MapObject::UnitType::Elevator;
 		result.b = 2;
 		result.c = 1;
 		result.d = 1;
 		break;
 	case MapObject::Kind::WaterRaft:
-		result.unitType = OBJECT_WATER_RAFT;
+		result.unitType = MapObject::UnitType::WaterRaft;
 		result.c = pos.x() - 1;
 		result.d = pos.x() + 1;
 		break;
 	case MapObject::Kind::Key:
-		result.unitType = OBJECT_KEY;
+		result.unitType = MapObject::UnitType::Key;
 		result.c = 1;
 		result.d = 1;
 		break;
 	case MapObject::Kind::HiddenObject:
-		result.unitType = OBJECT_TIME_BOMB;
+		result.unitType = MapObject::UnitType::TimeBomb;
 		result.a = 10;
 		break;
 	case MapObject::Kind::Invalid:

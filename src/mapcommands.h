@@ -19,7 +19,7 @@ public:
 private:
 	Map &_map;
 	const int _objectNo;
-	MapObject _previousState[OBJECT_MAX + 1];
+	MapObject _previousState[MapObject::IdMax + 1];
 };
 
 

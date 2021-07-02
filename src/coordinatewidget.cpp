@@ -2,7 +2,6 @@
 #include <QHBoxLayout>
 #include <QSpinBox>
 #include <QToolButton>
-#include "constants.h"
 
 
 CoordinateWidget::CoordinateWidget(QWidget *parent) : QWidget(parent) {

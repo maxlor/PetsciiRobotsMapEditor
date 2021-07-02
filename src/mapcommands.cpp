@@ -1,4 +1,5 @@
 #include "mapcommands.h"
+#include <QRect>
 #include <cstring>
 
 
@@ -16,7 +17,7 @@ MapCommands::DeleteObject::DeleteObject(Map &map, int objectNo, QUndoCommand *pa
 
 
 void MapCommands::DeleteObject::redo() {
-	for (int i = OBJECT_MIN; i <= OBJECT_MAX; ++i) {
+	for (int i = MapObject::IdMin; i <= MapObject::IdMax; ++i) {
 		_previousState[i] = _map.object(i);
 	}
 	_map.deleteObject(_objectNo);
