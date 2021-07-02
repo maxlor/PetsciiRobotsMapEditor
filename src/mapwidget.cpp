@@ -71,8 +71,8 @@ void MapWidget::setObjectsVisible(bool visible) {
 
 
 void MapWidget::clickEveryTile() {
-	for (int y = 0; y < MAP_HEIGHT; ++y) {
-		for (int x = 0; x < MAP_WIDTH; ++x) {
+	for (int y = 0; y < _map->height(); ++y) {
+		for (int x = 0; x < _map->width(); ++x) {
 			emit tilePressed({x, y});
 			if (_objectsVisible) {
 				for (int i = 0; i <= OBJECT_MAX; ++i) {
@@ -108,8 +108,8 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 	}
 	
 	if (highlightAttribute() != Tile::None) {
-		for (int y = 0; y < MAP_HEIGHT; ++y) {
-			for (int x = 0; x < MAP_WIDTH; ++x) {
+		for (int y = 0; y < _map->height(); ++y) {
+			for (int x = 0; x < _map->width(); ++x) {
 				const QPoint position(x, y);
 				Tile t = tile(position);
 				QRect r = tileRect(position);
@@ -125,11 +125,11 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 	
 	if (_showGridLines) {
 		painter.setPen(QPen(C::colorGrid, 1));
-		for (int i = 1; i < MAP_WIDTH; ++i) {
+		for (int i = 1; i < _map->width(); ++i) {
 			const int x = i * TILE_WIDTH * GLYPH_WIDTH * scale();
 			painter.drawLine(x, 0, x, imageSize().height());
 		}
-		for (int i = 1; i < MAP_HEIGHT; ++i) {
+		for (int i = 1; i < _map->height(); ++i) {
 			const int y = i * TILE_HEIGHT * GLYPH_HEIGHT * scale();
 			painter.drawLine(0, y, imageSize().width(), y);
 		}
@@ -150,8 +150,8 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 
 
 QSize MapWidget::sizeHint() const {
-	static const QSize baseSize(MAP_WIDTH * TILE_WIDTH * GLYPH_WIDTH,
-	                            MAP_HEIGHT * TILE_HEIGHT * GLYPH_HEIGHT);
+	static const QSize baseSize(_map->width() * TILE_WIDTH * GLYPH_WIDTH,
+	                            _map->height() * TILE_HEIGHT * GLYPH_HEIGHT);
 	return baseSize * scale();
 }
 
@@ -262,8 +262,8 @@ void MapWidget::onMapTilesChanged() {
 
 
 QSize MapWidget::imageSize() const {
-	return QSize(MAP_WIDTH * TILE_WIDTH * GLYPH_WIDTH,
-	             MAP_HEIGHT * TILE_HEIGHT * GLYPH_HEIGHT);
+	return QSize(_map->width() * TILE_WIDTH * GLYPH_WIDTH,
+	             _map->height() * TILE_HEIGHT * GLYPH_HEIGHT);
 }
 
 
@@ -350,8 +350,8 @@ void MapWidget::makeTilesImage() {
 	QPainter painter(_tilesImage);
 	painter.setPen(Qt::NoPen);
 	
-	for (int y = 0; y < MAP_HEIGHT; ++y) {
-		for (int x = 0; x < MAP_WIDTH; ++x) {
+	for (int y = 0; y < _map->height(); ++y) {
+		for (int x = 0; x < _map->width(); ++x) {
 			const QPoint position(x, y);
 			const Tile t = tile(position);
 			const QRect r = tileRect(position);
@@ -392,8 +392,8 @@ QRect MapWidget::tileRect(const QPoint &position) const {
 
 QPoint MapWidget::pixelToTile(QPoint pos) {
 	const int x = qBound(0, static_cast<int>(pos.x() / scale() / GLYPH_WIDTH / TILE_WIDTH),
-	                     MAP_WIDTH - 1);
+	                     _map->width() - 1);
 	const int y = qBound(0, static_cast<int>(pos.y() / scale() / GLYPH_HEIGHT / TILE_HEIGHT),
-	                     MAP_HEIGHT - 1);
+	                     _map->height() - 1);
 	return QPoint(x, y);
 }

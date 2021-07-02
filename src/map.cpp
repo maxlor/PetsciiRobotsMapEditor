@@ -195,9 +195,9 @@ void Map::setObjects(const MapObject objects[]) {
 
 
 uint8_t Map::tileNo(const QPoint &tile) const {
-	Q_ASSERT(0 <= tile.x() and tile.x() < MAP_WIDTH);
-	Q_ASSERT(0 <= tile.y() and tile.y() < MAP_HEIGHT);
-	return _tiles[tile.x() + MAP_WIDTH * tile.y()];
+	Q_ASSERT(0 <= tile.x() and tile.x() < width());
+	Q_ASSERT(0 <= tile.y() and tile.y() < height());
+	return _tiles[tile.x() + width() * tile.y()];
 }
 
 
@@ -207,29 +207,29 @@ uint8_t *Map::tiles() {
 
 
 void Map::setTile(const QPoint &position, uint8_t tileNo) {
-	Q_ASSERT(0 <= position.x() and position.x() < MAP_WIDTH);
-	Q_ASSERT(0 <= position.y() and position.y() < MAP_HEIGHT);
-	int oldTileNo = _tiles[position.x() + MAP_WIDTH * position.y()];
+	Q_ASSERT(0 <= position.x() and position.x() < width());
+	Q_ASSERT(0 <= position.y() and position.y() < height());
+	int oldTileNo = _tiles[position.x() + width() * position.y()];
 	if (oldTileNo == tileNo) { return; }
-	_tiles[position.x() + MAP_WIDTH * position.y()] = tileNo;
+	_tiles[position.x() + width() * position.y()] = tileNo;
 	emit tilesChanged();
 }
 
 
 void Map::setTiles(const QRect &rect, uint8_t *tiles) {
-	Q_ASSERT(0 <= rect.left() and rect.right() < MAP_WIDTH);
-	Q_ASSERT(0 <= rect.top() and rect.bottom() < MAP_HEIGHT);
+	Q_ASSERT(0 <= rect.left() and rect.right() < width());
+	Q_ASSERT(0 <= rect.top() and rect.bottom() < height());
 	for (int y = rect.top(); y <= rect.bottom(); ++y) {
-		memcpy(&_tiles[rect.left() + MAP_WIDTH * y], &tiles[rect.width() * (y - rect.top())], rect.width());
+		memcpy(&_tiles[rect.left() + width() * y], &tiles[rect.width() * (y - rect.top())], rect.width());
 	}
 	emit tilesChanged();
 }
 
 
 void Map::floodFill(const QPoint &position, uint8_t tileNo) {
-	Q_ASSERT(0 <= position.x() and position.x() < MAP_WIDTH);
-	Q_ASSERT(0 <= position.y() and position.y() < MAP_HEIGHT);
-	uint8_t oldTileNo = _tiles[position.x() + MAP_WIDTH * position.y()];
+	Q_ASSERT(0 <= position.x() and position.x() < width());
+	Q_ASSERT(0 <= position.y() and position.y() < height());
+	uint8_t oldTileNo = _tiles[position.x() + width() * position.y()];
 	if (oldTileNo == tileNo) { return; }
 	recursiveFloodFill(position, oldTileNo, tileNo);
 	emit tilesChanged();
@@ -339,16 +339,16 @@ MapObject &Map::objectAt(int no) {
 
 
 int Map::recursiveFloodFill(const QPoint &pos, uint8_t oldTile, uint8_t newTile) {
-	Q_ASSERT(_tiles[pos.x() + MAP_WIDTH * pos.y()] == oldTile);
+	Q_ASSERT(_tiles[pos.x() + width() * pos.y()] == oldTile);
 	int left = pos.x();
 	int right = pos.x();
-	while (left > 0 and _tiles[left - 1 + MAP_WIDTH * pos.y()] == oldTile) { --left; }
-	while (right < MAP_WIDTH - 1 and _tiles[right + 1 + MAP_WIDTH * pos.y()] == oldTile) { ++right; }
-	memset(&_tiles[left + MAP_WIDTH * pos.y()], newTile, right - left + 1);
+	while (left > 0 and _tiles[left - 1 + width() * pos.y()] == oldTile) { --left; }
+	while (right < width() - 1 and _tiles[right + 1 + width() * pos.y()] == oldTile) { ++right; }
+	memset(&_tiles[left + width() * pos.y()], newTile, right - left + 1);
 	for (int y2 : { pos.y() - 1, pos.y() + 1}) {
-		if (not (0 <= y2 and y2 < MAP_HEIGHT)) { continue; }
+		if (not (0 <= y2 and y2 < height())) { continue; }
 		for (int x2 = left; x2 <= right; ++x2) {
-			if (_tiles[x2 + MAP_WIDTH * y2] == oldTile) {
+			if (_tiles[x2 + width() * y2] == oldTile) {
 				int right2 = recursiveFloodFill({x2, y2}, oldTile, newTile);
 				x2 = right2;
 			}

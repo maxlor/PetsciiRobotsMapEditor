@@ -18,8 +18,9 @@ class Map : public QObject {
 public:
 	Map(QObject *parent = nullptr);
 	
-	static constexpr int width() { return MAP_WIDTH; };
-	static constexpr int height() { return MAP_HEIGHT; }
+	int width() const { return MAP_WIDTH; };
+	int height() const { return MAP_HEIGHT; }
+	QRect rect() const { return QRect(0, 0, width(), height()); }
 	
 	void clear();
 	QString load(const QString &path);

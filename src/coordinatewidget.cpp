@@ -7,12 +7,7 @@
 
 CoordinateWidget::CoordinateWidget(QWidget *parent) : QWidget(parent) {
 	_editX = new QSpinBox(this);
-	_editX->setMinimum(0);
-	_editX->setMaximum(MAP_WIDTH - 1);
-	
 	_editY = new QSpinBox(this);
-	_editY->setMinimum(0);
-	_editY->setMaximum(MAP_HEIGHT - 1);
 	
 	_buttonGetCoordinates = new QToolButton(this);
 	_buttonGetCoordinates->setIcon(QIcon(":/target.svg"));
@@ -31,6 +26,14 @@ CoordinateWidget::CoordinateWidget(QWidget *parent) : QWidget(parent) {
 	        this, &CoordinateWidget::onValueChanged);
 	connect(_buttonGetCoordinates, &QToolButton::clicked,
 	        this, &CoordinateWidget::onGetCoordinatesClicked);
+}
+
+
+void CoordinateWidget::setRect(const QRect &rect) {
+	_editX->setMinimum(rect.left());
+	_editX->setMaximum(rect.right());
+	_editY->setMinimum(rect.top());
+	_editY->setMaximum(rect.bottom());
 }
 
 

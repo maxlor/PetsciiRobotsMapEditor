@@ -100,15 +100,22 @@ void MapCommands::SetTile::undo() {
 
 
 MapCommands::FloodFill::FloodFill(Map &map, const QPoint &pos, uint8_t tileNo, QUndoCommand *parent)
-    : QUndoCommand("Flood fill", parent), _map(map), _pos(pos), _tileNo(tileNo) {}
+    : QUndoCommand("Flood fill", parent), _map(map), _pos(pos), _tileNo(tileNo) {
+	_previousTiles = new uint8_t[_map.width() * _map.height()];
+}
+
+
+MapCommands::FloodFill::~FloodFill() {
+	delete[] _previousTiles;
+}
 
 
 void MapCommands::FloodFill::redo() {
-	memcpy(_previousTiles, _map.tiles(), sizeof(_previousTiles));
+	memcpy(_previousTiles, _map.tiles(), sizeof(_previousTiles[0]) * _map.width() * _map.height());
 	_map.floodFill(_pos, _tileNo);
 }
 
 
 void MapCommands::FloodFill::undo() {
-	_map.setTiles(QRect(0, 0, MAP_WIDTH, MAP_HEIGHT), _previousTiles);
+	_map.setTiles(_map.rect(), _previousTiles);
 }

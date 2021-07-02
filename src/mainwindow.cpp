@@ -352,7 +352,7 @@ void MainWindow::onPasteTriggered() {
 void MainWindow::onFillTriggered() {
 	QRect rect = _ui.mapWidget->selectedArea();
 	if (rect.isNull()) {
-		rect = QRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+		rect = QRect(0, 0, _mapController->map()->width(), _mapController->map()->height());
 	}
 	
 	for (int y = rect.top(); y <= rect.bottom(); ++y) {

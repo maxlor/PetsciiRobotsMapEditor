@@ -66,6 +66,7 @@ public:
 class FloodFill : public QUndoCommand {
 public:
 	FloodFill(Map &map, const QPoint &pos, uint8_t tileNo, QUndoCommand *parent = nullptr);
+	virtual ~FloodFill();
 	
 	void redo() override;
 	void undo() override;
@@ -74,7 +75,7 @@ private:
 	Map &_map;
 	const QPoint _pos;
 	const uint8_t _tileNo;
-	uint8_t _previousTiles[MAP_WIDTH * MAP_HEIGHT];
+	uint8_t *_previousTiles;
 };
 
 

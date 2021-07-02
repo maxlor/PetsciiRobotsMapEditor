@@ -134,6 +134,16 @@ void ObjectEditWidget::setMapController(MapController *mapController) {
 		_mapController->map()->disconnect(this);
 	}
 	_mapController = mapController;
+	
+	for (QObject *stackedWidgetChild : _ui.stackedWidget->children()) {
+		for (QObject *child : stackedWidgetChild->children()) {
+			CoordinateWidget *coordinateWidget = qobject_cast<CoordinateWidget*>(child);
+			if (coordinateWidget) {
+				coordinateWidget->setRect(_mapController->map()->rect());
+			}
+		}
+	}
+	
 	connect(_mapController->map(), &Map::objectsChanged, this, &ObjectEditWidget::onObjectsChanged);
 }
 

@@ -1,6 +1,7 @@
 #ifndef COORDINATEWIDGET_H
 #define COORDINATEWIDGET_H
 
+#include <QRect>
 #include <QString>
 #include <QWidget>
 
@@ -15,6 +16,8 @@ class CoordinateWidget : public QWidget {
 	Q_PROPERTY(int y READ y WRITE setY NOTIFY valueChanged)
 public:
 	explicit CoordinateWidget(QWidget *parent = nullptr);
+	
+	void setRect(const QRect &rect);
 	
 	const QString &label() const;
 	int x() const;
