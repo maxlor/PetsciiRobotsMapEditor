@@ -355,11 +355,13 @@ void MainWindow::onFillTriggered() {
 		rect = QRect(0, 0, _mapController->map()->width(), _mapController->map()->height());
 	}
 	
+	_mapController->beginUndoGroup();
 	for (int y = rect.top(); y <= rect.bottom(); ++y) {
 		for (int x = rect.left(); x <= rect.right(); ++x) {
 			_mapController->setTile({x, y}, _ui.tileWidget->selectedTile());
 		}
 	}
+	_mapController->endUndoGroup();
 }
 
 
