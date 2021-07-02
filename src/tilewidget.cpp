@@ -97,8 +97,7 @@ void TileWidget::tilesetChanged() {
 
 
 QSize TileWidget::tileSize() const {
-	return QSize(TILE_WIDTH * GLYPH_WIDTH + 2 * TILE_MARGIN,
-	             TILE_HEIGHT * GLYPH_HEIGHT + 2 * TILE_MARGIN);
+	return tileset()->tileSize() + QSize(2 * TILE_MARGIN, 2 * TILE_MARGIN);
 }
 
 

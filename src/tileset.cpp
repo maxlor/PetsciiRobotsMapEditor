@@ -91,6 +91,11 @@ Tile Tileset::tile(uint8_t tileNo) const {
 	return Tile(flags, tileImage(tileNo));
 }
 
+/** Returns the pixel size of a single tile. */
+QSize Tileset::tileSize() const {
+	return { GLYPH_WIDTH * TILE_WIDTH, GLYPH_HEIGHT * TILE_HEIGHT };
+}
+
 
 bool Tileset::isValid() const {
 	return _tileset[0] == 0x00 and _tileset[1] == 0x49;
@@ -135,10 +140,8 @@ void Tileset::readCharacters() {
 
 void Tileset::createTileImage(int tileNo) {
 	Q_ASSERT(0 <= tileNo and tileNo < TILE_COUNT);
-	static constexpr int width = TILE_WIDTH * GLYPH_WIDTH;
-	static constexpr int height = TILE_HEIGHT * GLYPH_HEIGHT;
 	
-	QImage *image = new QImage(width, height, IMAGE_FORMAT);
+	QImage *image = new QImage(tileSize(), IMAGE_FORMAT);
 	_tiles.at(tileNo) = image;
 	
 	QPainter painter(image);

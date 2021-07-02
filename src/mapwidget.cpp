@@ -131,14 +131,16 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 	
 	painter.resetTransform();
 	
+	const QSizeF tileSize = QSizeF(tileset()->tileSize()) * scale();
+	
 	if (_showGridLines) {
 		painter.setPen(QPen(C::colorGrid, 1));
 		for (int i = 1; i < _map->width(); ++i) {
-			const int x = i * TILE_WIDTH * GLYPH_WIDTH * scale();
+			const int x = i * tileSize.width();
 			painter.drawLine(x, 0, x, imageSize().height());
 		}
 		for (int i = 1; i < _map->height(); ++i) {
-			const int y = i * TILE_HEIGHT * GLYPH_HEIGHT * scale();
+			const int y = i * tileSize.height();
 			painter.drawLine(0, y, imageSize().width(), y);
 		}
 	}
@@ -148,19 +150,17 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 		QColor fillColor(C::colorAreaSelection);
 		fillColor.setAlpha(50);
 		painter.setBrush(fillColor);
-		const double left = qMin(_dragAreaBegin.x(), _dragAreaEnd.x()) * TILE_WIDTH * GLYPH_WIDTH * scale();
-		const double right = (qMax(_dragAreaBegin.x(), _dragAreaEnd.x()) + 1) * TILE_WIDTH * GLYPH_WIDTH * scale() - 1;
-		const double top = qMin(_dragAreaBegin.y(), _dragAreaEnd.y()) * TILE_HEIGHT * GLYPH_HEIGHT * scale();
-		const double bottom = (qMax(_dragAreaBegin.y(), _dragAreaEnd.y()) + 1) * TILE_HEIGHT * GLYPH_HEIGHT * scale() - 1;
+		const double left = qMin(_dragAreaBegin.x(), _dragAreaEnd.x()) * tileSize.width();
+		const double right = (qMax(_dragAreaBegin.x(), _dragAreaEnd.x()) + 1) * tileSize.width() - 1;
+		const double top = qMin(_dragAreaBegin.y(), _dragAreaEnd.y()) * tileSize.height();
+		const double bottom = (qMax(_dragAreaBegin.y(), _dragAreaEnd.y()) + 1) * tileSize.height() - 1;
 		painter.drawRect(QRectF(QPointF(left, top), QPointF(right, bottom)));
 	}
 }
 
 
 QSize MapWidget::sizeHint() const {
-	static const QSize baseSize(_map->width() * TILE_WIDTH * GLYPH_WIDTH,
-	                            _map->height() * TILE_HEIGHT * GLYPH_HEIGHT);
-	return baseSize * scale();
+	return imageSize() * scale();
 }
 
 
@@ -270,8 +270,8 @@ void MapWidget::onMapTilesChanged() {
 
 
 QSize MapWidget::imageSize() const {
-	return QSize(_map->width() * TILE_WIDTH * GLYPH_WIDTH,
-	             _map->height() * TILE_HEIGHT * GLYPH_HEIGHT);
+	return QSize(_map->width() * tileset()->tileSize().width(),
+	             _map->height() * tileset()->tileSize().height());
 }
 
 
@@ -305,12 +305,16 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 		painter.drawRect(r);
 		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 		painter.setPen(QPen(Qt::white, 2));
+		
+		const QSize ts = tileset()->tileSize();
 		if (object.unitType == ROBOT_HOVERBOT_LR or object.unitType == ROBOT_ROLLERBOT_LR) {
-			int y = r.top() + 3 * GLYPH_WIDTH / 2;
-			painter.drawLine(r.left() + GLYPH_WIDTH + 1, y, r.left() + 2 * GLYPH_WIDTH - 1, y);
+			const int y = r.top() + ts.height() / 2;
+			const int third = ts.width() / 3 + 1;
+			painter.drawLine(r.left() + third, y, r.right() - third, y);
 		} else if (object.unitType == ROBOT_HOVERBOT_UD or object.unitType == ROBOT_ROLLERBOT_UD) {
-			int x = r.left() + 3 * GLYPH_WIDTH / 2;
-			painter.drawLine(x, r.top() + GLYPH_WIDTH + 1, x, r.top() + 2 * GLYPH_HEIGHT - 1);
+			const int x = r.left() + ts.width() / 2;
+			const int third = ts.height() / 3 + 1;
+			painter.drawLine(x, r.top() + third, x, r.bottom() - third);
 		}
 	}  catch (std::out_of_range) {
 		try {
@@ -393,15 +397,14 @@ Tile MapWidget::tile(QPoint position) const {
 
 
 QRect MapWidget::tileRect(const QPoint &position) const {
-	return QRect(position.x() * TILE_WIDTH * GLYPH_WIDTH, position.y() * TILE_HEIGHT * GLYPH_HEIGHT,
-	             TILE_WIDTH * GLYPH_WIDTH, TILE_HEIGHT * GLYPH_HEIGHT);
+	const QSize ts = tileset()->tileSize();
+	return QRect(QPoint(position.x() * ts.width(), position.y() * ts.height()), ts);
 }
 
 
 QPoint MapWidget::pixelToTile(QPoint pos) {
-	const int x = qBound(0, static_cast<int>(pos.x() / scale() / GLYPH_WIDTH / TILE_WIDTH),
-	                     _map->width() - 1);
-	const int y = qBound(0, static_cast<int>(pos.y() / scale() / GLYPH_HEIGHT / TILE_HEIGHT),
-	                     _map->height() - 1);
+	const QSizeF tileSize = QSizeF(tileset()->tileSize()) * scale();
+	const int x = qBound(0, static_cast<int>(pos.x() / tileSize.width()), _map->width() - 1);
+	const int y = qBound(0, static_cast<int>(pos.y() / tileSize.height()), _map->height() - 1);
 	return QPoint(x, y);
 }

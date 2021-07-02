@@ -3,6 +3,7 @@
 
 #include <QImage>
 #include <QObject>
+#include <QSize>
 #include <QString>
 #include <vector>
 
@@ -27,6 +28,8 @@ public:
 	 */
 	QString load(const QString &path);
 	Tile tile(uint8_t tileNo) const;
+	
+	QSize tileSize() const;
 	
 	bool isValid() const;
 	
