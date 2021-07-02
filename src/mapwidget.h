@@ -27,6 +27,7 @@ public:
 	
 public slots:
 	void clearSelection();
+	void selectAll();
 	void setShowGridLines(bool enable);
 	void setObjectsVisible(bool visible);
 	void clickEveryTile(); // TODO: remove

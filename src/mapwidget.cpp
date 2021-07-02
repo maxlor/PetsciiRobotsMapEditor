@@ -56,6 +56,14 @@ void MapWidget::clearSelection() {
 }
 
 
+void MapWidget::selectAll() {
+	setDragMode(DragMode::Area);
+	_dragAreaBegin = _map->rect().topLeft();
+	_dragAreaEnd = _map->rect().bottomRight();
+	update();
+}
+
+
 void MapWidget::setShowGridLines(bool enable) {
 	if (_showGridLines != enable) {
 		_showGridLines = enable;

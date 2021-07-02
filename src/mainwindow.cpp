@@ -104,6 +104,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionSaveAs, &QAction::triggered, this, &MainWindow::onSaveAsTriggered);
 	connect(_ui.actionLoadTileset, &QAction::triggered, this, &MainWindow::onLoadTileset);
 	connect(_ui.actionQuit, &QAction::triggered, this, &MainWindow::onQuit);
+	connect(_ui.actionSelectAll, &QAction::triggered, this, &MainWindow::onSelectAll);
 	connect(_ui.actionCopyArea, &QAction::triggered, this, &MainWindow::onCopyAreaTriggered);
 	connect(_ui.actionCopyObjects, &QAction::triggered, this, &MainWindow::onCopyObjectsTriggered);
 	connect(_ui.actionCutArea, &QAction::triggered, this, &MainWindow::onCutAreaTriggered);
@@ -286,6 +287,12 @@ void MainWindow::onSaveTriggered() {
 
 void MainWindow::onSaveAsTriggered() {
 	saveAs();
+}
+
+
+void MainWindow::onSelectAll() {
+	activateTool(_ui.actionSelectArea);
+	_ui.mapWidget->selectAll();
 }
 
 

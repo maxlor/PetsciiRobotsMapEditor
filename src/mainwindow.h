@@ -32,16 +32,20 @@ private slots:
 	void onObjectClicked(int objectNo);
 	void onObjectDragged(int objectNo, QPoint pos);
 	void onObjectEditMapClickRequested(const QString &label);
+	
 	void onNewTriggered();
 	void onOpenTriggered();
 	void onSaveTriggered();
 	void onSaveAsTriggered();
+	
+	void onSelectAll();
 	void onCopyAreaTriggered();
 	void onCopyObjectsTriggered();
 	void onCutAreaTriggered();
 	void onCutObjectsTriggered();
 	void onPasteTriggered();
 	void onFillTriggered();
+	
 	void onShowObjectsToggled(bool checked);
 	
 	void onTilePressed(const QPoint &tile);

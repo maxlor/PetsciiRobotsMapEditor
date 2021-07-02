@@ -6,6 +6,7 @@ Version 1.1.0
 Released: not yet released
 
 * New feature: undo/redo
+* New feature: select all
 * Bugfixes: crash when trying to add a door and the map already has 16
   features.
 

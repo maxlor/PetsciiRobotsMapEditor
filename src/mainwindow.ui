@@ -230,6 +230,7 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <addaction name="actionSelectAll"/>
     <addaction name="actionCopyArea"/>
     <addaction name="actionCopyObjects"/>
     <addaction name="actionCutArea"/>
@@ -752,6 +753,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="text">
+    <string>Select &amp;All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
  </widget>
