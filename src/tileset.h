@@ -29,6 +29,7 @@ public:
 	QString load(const QString &path);
 	Tile tile(uint8_t tileNo) const;
 	
+	size_t tileCount() const;
 	QSize tileSize() const;
 	
 	bool isValid() const;
@@ -39,8 +40,8 @@ signals:
 private:
 	QImage characterImage(uint8_t c) const;
 	void readCharacters();
-	void createTileImage(int tileNo);
-	const QImage &tileImage(int tileNo) const;
+	void createTileImage(uint8_t tileNo);
+	const QImage &tileImage(uint8_t tileNo) const;
 	
 	QImage _characters;
 	uint8_t _tileset[0xB01];

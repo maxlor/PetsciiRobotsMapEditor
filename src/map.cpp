@@ -7,21 +7,50 @@
 
 Q_LOGGING_CATEGORY(lcMap, "map");
 
+
 static constexpr char MAP_MAGIC[2] = { 0x00, 0x5d };
+static constexpr size_t MAP_BYTES(8962);
+static constexpr int MAP_WIDTH(128);
+static constexpr int MAP_HEIGHT(64);
+static constexpr size_t OBJECT_COUNT(64);
+static constexpr size_t TILE_COUNT(MAP_WIDTH * MAP_HEIGHT);
 
 
 Map::Map(QObject *parent) : QObject(parent) {
-	memset(_tiles, 0, sizeof(_tiles));
-	memset(_objects, 0, sizeof(_objects));
+	_objects = new MapObject[OBJECT_COUNT];
+	_tiles = new uint8_t[TILE_COUNT];
+	memset(_objects, 0, sizeof(_objects[0]) * OBJECT_COUNT);
+	memset(_tiles, 0, sizeof(_tiles[0]) * TILE_COUNT);
 	
 	connect(this, &Map::objectsChanged, &Map::setModifiedFlag);
 	connect(this, &Map::tilesChanged, &Map::setModifiedFlag);
 }
 
 
+Map::~Map() {
+	delete[] _tiles;
+	delete[] _objects;
+}
+
+
+int Map::width() const {
+	return MAP_WIDTH;
+}
+
+
+int Map::height() const {
+	return MAP_HEIGHT;
+}
+
+
+QRect Map::rect() const {
+	return QRect(0, 0, width(), height()); 
+}
+
+
 void Map::clear() {
-	memset(_objects, 0, sizeof(_objects));
-	memset(_tiles, 0, sizeof(_tiles));
+	memset(_objects, 0, sizeof(_objects[0]) * OBJECT_COUNT);
+	memset(_tiles, 0, sizeof(_tiles[0]) * TILE_COUNT);
 	
 	_modified = true; // make sure only one modifiedChanged signal is emitted	
 	setPath(QString());
@@ -32,8 +61,6 @@ void Map::clear() {
 
 
 QString Map::load(const QString &path) {
-	memset(_tiles, 0, sizeof(_tiles));
-	
 	QFile file(path);
 	if (not file.exists()) {
 		return QString("file \"%1\" does not exist").arg(path);
@@ -189,7 +216,7 @@ void Map::setObject(int no, const MapObject &object) {
 
 
 void Map::setObjects(const MapObject objects[]) {
-	memcpy(_objects, objects, sizeof(MapObject) * (OBJECT_MAX + 1));
+	memcpy(_objects, objects, sizeof(_objects[0]) * OBJECT_COUNT);
 	emit objectsChanged();
 }
 
@@ -320,7 +347,7 @@ QByteArray Map::data() const {
 	// those bytes are all set to either 0x00 or 0xAA.
 	
 	Q_ASSERT(0x302 + sizeof(_tiles) == MAP_BYTES);
-	memcpy(ba.data() + 0x302, _tiles, sizeof(_tiles));
+	memcpy(ba.data() + 0x302, _tiles, sizeof(_tiles[0]) * TILE_COUNT);
 	
 	return ba;
 }

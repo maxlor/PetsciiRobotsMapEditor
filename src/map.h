@@ -17,10 +17,11 @@ class Map : public QObject {
 	Q_PROPERTY(QString path READ path NOTIFY pathChanged)
 public:
 	Map(QObject *parent = nullptr);
+	virtual ~Map();
 	
-	int width() const { return MAP_WIDTH; };
-	int height() const { return MAP_HEIGHT; }
-	QRect rect() const { return QRect(0, 0, width(), height()); }
+	int width() const;
+	int height() const;
+	QRect rect() const;
 	
 	void clear();
 	QString load(const QString &path);
@@ -69,8 +70,8 @@ private:
 	void setModified(bool modified);
 	void setPath(const QString &path);
 	
-	MapObject _objects[64];
-	uint8_t _tiles[MAP_WIDTH * MAP_HEIGHT];
+	MapObject *_objects;
+	uint8_t *_tiles;
 	bool _modified = false;
 	QString _path;
 };

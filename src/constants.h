@@ -4,15 +4,6 @@
 #include <QColor>
 #include <QImage>
 
-#define MAP_BYTES (8962)
-#define MAP_WIDTH (128)
-#define MAP_HEIGHT (64)
-#define TILE_WIDTH (3)
-#define TILE_HEIGHT (3)
-#define GLYPH_WIDTH (8)
-#define GLYPH_HEIGHT (8)
-#define TILE_COUNT (256)
-
 #define PLAYER_OBJ (0)
 #define UNITTYPE_NONE (0)
 #define UNITTYPE_PLAYER (1)

@@ -8,6 +8,11 @@
 #include "tile.h"
 
 
+static constexpr size_t TILE_COUNT(256);
+static constexpr size_t TILE_WIDTH(3);
+static constexpr size_t TILE_HEIGHT(3);
+static constexpr size_t GLYPH_WIDTH(8);
+static constexpr size_t GLYPH_HEIGHT(8);
 static constexpr char TILESET_PET_MAGIC[2] = { 0x00, 0x49 };
 static constexpr Tile::Attribute TILE_ATTRIBUTES[] = {
     Tile::Walkable, Tile::Hoverable, Tile::Movable, Tile::Destructible,
@@ -73,7 +78,7 @@ QString Tileset::load(const QString &path) {
 	memcpy(_tileset, magicBuffer, sizeof(magicBuffer));
 	memcpy(&_tileset[sizeof(magicBuffer)], restBuffer, sizeof(restBuffer));
 	
-	for (int i = 0; i < TILE_COUNT; ++i) {
+	for (size_t i = 0; i < TILE_COUNT; ++i) {
 		createTileImage(i);
 	}
 	
@@ -90,6 +95,12 @@ Tile Tileset::tile(uint8_t tileNo) const {
 	}
 	return Tile(flags, tileImage(tileNo));
 }
+
+
+size_t Tileset::tileCount() const {
+	return TILE_COUNT;
+}
+
 
 /** Returns the pixel size of a single tile. */
 QSize Tileset::tileSize() const {
@@ -138,15 +149,13 @@ void Tileset::readCharacters() {
 }
 
 
-void Tileset::createTileImage(int tileNo) {
-	Q_ASSERT(0 <= tileNo and tileNo < TILE_COUNT);
-	
+void Tileset::createTileImage(uint8_t tileNo) {
 	QImage *image = new QImage(tileSize(), IMAGE_FORMAT);
 	_tiles.at(tileNo) = image;
 	
 	QPainter painter(image);
-	for (int row = 0; row < TILE_HEIGHT; ++row) {
-		for (int col = 0; col < TILE_WIDTH; ++col) {
+	for (size_t row = 0; row < TILE_HEIGHT; ++row) {
+		for (size_t col = 0; col < TILE_WIDTH; ++col) {
 			Q_ASSERT(TILE_WIDTH == 3 and TILE_HEIGHT == 3);
 			const size_t index = 0x202 + col * 0x100 + row * 0x300 + tileNo;
 			const uint8_t c = index < sizeof(_tileset) ? _tileset[index] : ' ';
@@ -157,7 +166,7 @@ void Tileset::createTileImage(int tileNo) {
 }
 
 
-const QImage &Tileset::tileImage(int tileNo) const {
+const QImage &Tileset::tileImage(uint8_t tileNo) const {
 	const QImage *pImage = _tiles.at(tileNo);
 	if (pImage) {
 		return *pImage;

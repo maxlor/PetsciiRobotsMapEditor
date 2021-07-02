@@ -103,7 +103,7 @@ QSize TileWidget::tileSize() const {
 
 QSize TileWidget::imageSize() const {
 	const int horiTiles = tileColumns() * TILES_PER_ROW;
-	const int vertTiles = (TILE_COUNT + (TILES_PER_ROW - 1)) / horiTiles;
+	const int vertTiles = (tileset()->tileCount() + (TILES_PER_ROW - 1)) / horiTiles;
 	return QSize(horiTiles * tileSize().width(), vertTiles * tileSize().height());
 }
 
@@ -130,7 +130,7 @@ int TileWidget::tileColumns() const {
 
 
 int TileWidget::rowsPerColumn() const {
-	static constexpr int rows = (TILE_COUNT + TILES_PER_ROW - 1) / TILES_PER_ROW;
+	const int rows = (tileset()->tileCount() + TILES_PER_ROW - 1) / TILES_PER_ROW;
 	return (rows + tileColumns() - 1) / tileColumns();
 }
 
