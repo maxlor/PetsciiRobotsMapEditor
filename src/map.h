@@ -60,7 +60,7 @@ private slots:
 	void setModifiedFlag();
 	
 private:
-	MapObject &objectAt(int no);
+	MapObject &objectAt(MapObject::id_t no);
 	int recursiveFloodFill(const QPoint &position, uint8_t oldTile, uint8_t newTile);
 	void setModified(bool modified);
 	void setPath(const QString &path);

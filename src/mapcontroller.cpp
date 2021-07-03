@@ -17,7 +17,7 @@
  * 
  * Attack of the PETSCII Robots has a fixed number of slots for objects, and
  * different slot ranges may only contain certain types of objects. Object
- * numbers (generally called \a objectNo) refer to this slot number.
+ * Ids (generally called \a objectId) refer to this slot number.
  * 
  * Valid objects have numbers between #MapObject::IdMin and #MapObject::IdMax (inclusive).
  * #MapObject::IdNone is used to designate no object, or failure of an operation.
@@ -102,10 +102,10 @@ QString MapController::save(const QString &path) {
 
 
 /// @{
-/** Delete the object in slot \a objectNo. */
-void MapController::deleteObject(int objectNo) {
-	Q_ASSERT(MapObject::IdMin <= objectNo and objectNo <= MapObject::IdMax);
-	_undoStack.push(new MapCommands::DeleteObject(*_map, objectNo));
+/** Delete the object in slot \a objectId. */
+void MapController::deleteObject(MapObject::id_t objectId) {
+	Q_ASSERT(MapObject::IdMin <= objectId and objectId <= MapObject::IdMax);
+	_undoStack.push(new MapCommands::DeleteObject(*_map, objectId));
 }
 
 
@@ -115,8 +115,8 @@ void MapController::deleteObject(int objectNo) {
  * the moves are merged into a single undo action by default. To interrupt
  * the merging, call #incrementMergeCounter() after each group of moves.
  */
-void MapController::moveObject(int objectNo, const QPoint &position) {
-	_undoStack.push(new MapCommands::MoveObject(*_map, objectNo, position, _mergeCounter));
+void MapController::moveObject(MapObject::id_t objectId, const QPoint &position) {
+	_undoStack.push(new MapCommands::MoveObject(*_map, objectId, position, _mergeCounter));
 }
 
 
@@ -130,7 +130,7 @@ void MapController::moveObject(int objectNo, const QPoint &position) {
  * @param[out] error an error explanation will be stored here if not \c nullptr
  * @return the id of the created object, or #MapObject::IdNone on error
  */
-int MapController::newObject(const MapObject &object, QString *error) {
+MapObject::id_t MapController::newObject(const MapObject &object, QString *error) {
 	const MapObject::id_t id = _map->nextAvailableObjectId(object.group());
 	if (id == MapObject::IdNone) {
 		if (error) {
@@ -147,15 +147,15 @@ int MapController::newObject(const MapObject &object, QString *error) {
 
 
 /**
- * Put \a object into slot \a objectNo.
+ * Put \a object into slot \a objectId.
  * 
  * \a isNew only influences how this action is shown in the undo stack.
  */
-void MapController::setObject(int objectNo, const MapObject &object, bool isNew) {
+void MapController::setObject(MapObject::id_t objectId, const MapObject &object, bool isNew) {
 	if (isNew) {
-		_undoStack.push(new MapCommands::NewObject(*_map, objectNo, object));
+		_undoStack.push(new MapCommands::NewObject(*_map, objectId, object));
 	} else {
-		_undoStack.push(new MapCommands::ModifyObject(*_map, objectNo, object));
+		_undoStack.push(new MapCommands::ModifyObject(*_map, objectId, object));
 	}
 }
 

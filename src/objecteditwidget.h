@@ -13,7 +13,7 @@ class ObjectEditWidget : public QGroupBox {
 public:
 	explicit ObjectEditWidget(QWidget *parent = nullptr);
 	
-	void loadObject(int objectNo);
+	void loadObject(MapObject::id_t objectId);
 	void setMapController(MapController *mapController);
 	
 public slots:
@@ -41,7 +41,7 @@ private:
 	
 	Ui::ObjectEditWidget _ui;
 	MapController *_mapController = nullptr;
-	int _objectNo = -1;
+	MapObject::id_t _objectId = MapObject::IdNone;
 	CoordinateWidget *_mapClickRequester = nullptr;
 };
 

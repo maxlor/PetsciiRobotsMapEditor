@@ -38,8 +38,8 @@ signals:
 	void tileDragged(const QPoint &tile);
 	void released();
 	void mouseOverTile(const QPoint &tile);
-	void objectClicked(int objectNo);
-	void objectDragged(int objectNo, const QPoint &tile);
+	void objectClicked(MapObject::id_t objectId);
+	void objectDragged(MapObject::id_t objectId, const QPoint &tile);
 	
 protected:
 	void paintEvent(QPaintEvent *event) override;
@@ -57,7 +57,7 @@ private slots:
 	void onMapTilesChanged();
 	
 private:
-	void drawObject(QPainter &painter, int objectNo);
+	void drawObject(QPainter &painter, MapObject::id_t objectId);
 	void drawSpecialObject(QPainter &painter, const QRect &rect, MapObject::UnitType unitType);
 	QSize imageSize() const;
 	void makeTilesImage();
@@ -73,7 +73,7 @@ private:
 	bool _redrawTiles = false;
 	bool _redrawImage = false;
 	bool _showGridLines = false;
-	int _dragObject = -1;
+	MapObject::id_t _dragObject = MapObject::IdNone;
 	DragMode _dragMode = DragMode::Object;
 	QPoint _dragAreaBegin = QPoint(-1, -1);
 	QPoint _dragAreaEnd;

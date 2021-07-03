@@ -4,7 +4,6 @@
 #include <QRect>
 #include <cstring>
 #include <forward_list>
-#include <unordered_map>
 #include <utility>
 
 
@@ -138,7 +137,7 @@ QString Map::save(const QString &path) {
 
 int Map::hiddenItemCount() const {
 	int count = 0;
-	for (int i = MapObject::IdHiddenMin; i <= MapObject::IdHiddenMax; ++i) {
+	for (MapObject::id_t i = MapObject::IdHiddenMin; i <= MapObject::IdHiddenMax; ++i) {
 		if (_objects[i].unitType != MapObject::UnitType::None) { ++count; }
 	}
 	return count;
@@ -147,7 +146,7 @@ int Map::hiddenItemCount() const {
 
 int Map::mapFeatureCount() const {
 	int count = 0;
-	for (int i = MapObject::IdMapFeatureMin; i <= MapObject::IdMapFeatureMax; ++i) {
+	for (MapObject::id_t i = MapObject::IdMapFeatureMin; i <= MapObject::IdMapFeatureMax; ++i) {
 		if (_objects[i].unitType != MapObject::UnitType::None) { ++count; }
 	}
 	return count;
@@ -156,7 +155,7 @@ int Map::mapFeatureCount() const {
 
 int Map::robotCount() const {
 	int count = 0;
-	for (int i = MapObject::IdRobotMin; i <= MapObject::IdRobotMax; ++i) {
+	for (MapObject::id_t i = MapObject::IdRobotMin; i <= MapObject::IdRobotMax; ++i) {
 		if (_objects[i].unitType != MapObject::UnitType::None) { ++count; }
 	}
 	return count;
@@ -271,17 +270,18 @@ const QString &Map::path() const {
 
 
 void Map::compact() {
-	static const std::forward_list<std::pair<int, int>> ranges = {
-	    { MapObject::IdRobotMin, MapObject::IdRobotMax }, { MapObject::IdMapFeatureMin, MapObject::IdMapFeatureMax },
+	static const std::forward_list<std::pair<MapObject::id_t, MapObject::id_t>> ranges = {
+	    { MapObject::IdRobotMin, MapObject::IdRobotMax },
+	    { MapObject::IdMapFeatureMin, MapObject::IdMapFeatureMax },
 	    { MapObject::IdHiddenMin, MapObject::IdHiddenMax }};
 	
 	bool changed = false;
 	
-	for (const std::pair<int, int> &range : ranges) {
-		for (int i = range.first; i <= range.second - 1; ++i) {
+	for (const std::pair<MapObject::id_t, MapObject::id_t> &range : ranges) {
+		for (MapObject::id_t i = range.first; i <= range.second - 1; ++i) {
 			if (_objects[i].unitType != MapObject::UnitType::None) { continue; }
 			bool moved = false;
-			for (int j = i + 1; j < range.second; ++j) {
+			for (MapObject::id_t j = i + 1; j < range.second; ++j) {
 				if (_objects[j].unitType != MapObject::UnitType::None) {
 					_objects[i] = _objects[j];
 					_objects[j] = MapObject();
@@ -304,7 +304,7 @@ QByteArray Map::data() const {
 	QByteArray ba(MAP_BYTES, 0);
 	
 	memcpy(ba.data(), MAP_MAGIC, sizeof(MAP_MAGIC));
-	for (int i = MapObject::IdMin; i <= MapObject::IdMax; ++i) {
+	for (MapObject::id_t i = MapObject::IdMin; i <= MapObject::IdMax; ++i) {
 		ba[0x002 + i] = MapObject::unitType_t(_objects[i].unitType);
 		ba[0x042 + i] = _objects[i].x;
 		ba[0x082 + i] = _objects[i].y;
@@ -330,7 +330,7 @@ void Map::setModifiedFlag() {
 }
 
 
-MapObject &Map::objectAt(int no) {
+MapObject &Map::objectAt(MapObject::id_t no) {
 	Q_ASSERT_X(0 <= no and no <= 63, Q_FUNC_INFO,
 	           QString("Can't get object no %1").arg(no).toUtf8().constData());
 	return _objects[no];

@@ -226,18 +226,18 @@ void MainWindow::onMouseOverTile(const QPoint &tile) {
 }
 
 
-void MainWindow::onObjectClicked(int objectNo) {
+void MainWindow::onObjectClicked(MapObject::id_t objectId) {
 	if (_ui.actionSelect->isChecked() and not _objectEditMapClickRequested) {
-		_ui.objectEditor->loadObject(objectNo);
-	} else if (_ui.actionDeleteObject->isChecked()) {
-		_mapController->deleteObject(objectNo);
+		_ui.objectEditor->loadObject(objectId);
+	} else if (_ui.actionDeleteObject->isChecked() and objectId != MapObject::IdNone) {
+		_mapController->deleteObject(objectId);
 	}
 }
 
 
-void MainWindow::onObjectDragged(int objectNo, QPoint pos) { 
+void MainWindow::onObjectDragged(MapObject::id_t objectId, QPoint pos) {
 	if (_ui.actionSelect->isChecked()) {
-		_mapController->moveObject(objectNo, pos);
+		_mapController->moveObject(objectId, pos);
 	}
 }
 
@@ -339,7 +339,7 @@ void MainWindow::onPasteTriggered() {
 	for (auto it = _clipboardObjects.begin(); it != _clipboardObjects.end(); ++it) {
 		MapObject object = *it;
 		if (object.group() == MapObject::Group::Invalid) { continue; }
-		int objectId = _mapController->map()->nextAvailableObjectId(object.group());
+		MapObject::id_t objectId = _mapController->map()->nextAvailableObjectId(object.group());
 		if (objectId != MapObject::IdNone) {
 			object.x += rect.left();
 			object.y += rect.top();
@@ -557,7 +557,7 @@ void MainWindow::activateTool(QAction *const action) {
 	updateLabelStatusTile();
 	_labelStatusTile->setVisible(showTileSelected);
 	
-	if (not _ui.actionSelect->isChecked()) { _ui.objectEditor->loadObject(-1); }
+	if (not _ui.actionSelect->isChecked()) { _ui.objectEditor->loadObject(MapObject::IdNone); }
 	
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
@@ -591,13 +591,13 @@ void MainWindow::copyMap(bool copyTiles, bool copyObjects, bool clear) {
 		_clipboardTilesValid = true;
 	}
 	if (copyObjects) {
-		for (int objectNo = MapObject::IdMax; objectNo >= MapObject::IdMin; --objectNo) {
-			MapObject object = _mapController->map()->object(objectNo);
+		for (MapObject::id_t objectId = MapObject::IdMax; objectId >= MapObject::IdMin; --objectId) {
+			MapObject object = _mapController->map()->object(objectId);
 			if (rect.contains(object.pos())) {
 				object.x -= rect.left();
 				object.y -= rect.top();
 				_clipboardObjects.push_front(object);
-				if (clear) { _mapController->deleteObject(objectNo); }
+				if (clear) { _mapController->deleteObject(objectId); }
 			}
 		}
 	}
@@ -625,11 +625,11 @@ void MainWindow::placeObject(MapObject::UnitType unitType, const QPoint &positio
 		object.b = qMax(0, position.x() - 1);
 		object.c = qMin(_mapController->map()->width() - 1, position.x() + 1);
 	}
-	int objectNo = _mapController->newObject(object, &error);
+	MapObject::id_t objectId = _mapController->newObject(object, &error);
 	
 	if (error.isNull()) {
 		_ui.actionSelect->trigger();
-		_ui.objectEditor->loadObject(objectNo);
+		_ui.objectEditor->loadObject(objectId);
 	} else {
 		QString unitTypeS = MapObject::toString(unitType);
 		QMessageBox::warning(this, "Cannot Place " + capitalize(unitTypeS),

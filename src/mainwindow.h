@@ -29,8 +29,8 @@ private slots:
 	void onAbout();
 	void onLoadTileset();
 	void onMouseOverTile(const QPoint &tile);
-	void onObjectClicked(int objectNo);
-	void onObjectDragged(int objectNo, QPoint pos);
+	void onObjectClicked(MapObject::id_t objectId);
+	void onObjectDragged(MapObject::id_t objectId, QPoint pos);
 	void onObjectEditMapClickRequested(const QString &label);
 	
 	void onNewTriggered();
@@ -78,7 +78,7 @@ private:
 	Tileset *_tileset = nullptr;
 	std::forward_list<QAction*> _viewFilterActions;
 	std::forward_list<QAction*> _toolActions;
-	int _currentObject = -1;
+	MapObject::id_t _currentObject = MapObject::IdNone;
 	bool _objectEditMapClickRequested = false;
 	IconFactory _iconFactory;
 	

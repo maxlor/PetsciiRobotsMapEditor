@@ -2,6 +2,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QSize>
+#include <unordered_map>
 #include "constants.h"
 #include "map.h"
 #include "tile.h"
@@ -80,19 +81,20 @@ void MapWidget::setObjectsVisible(bool visible) {
 void MapWidget::clickEveryTile() {
 	for (int y = 0; y < _map->height(); ++y) {
 		for (int x = 0; x < _map->width(); ++x) {
-			emit tilePressed({x, y});
-			if (_objectsVisible) {
-				for (int i = 0; i <= MapObject::IdMax; ++i) {
-					const MapObject &object = _map->object(i);
-					if (object.unitType != MapObject::UnitType::None and
-					        object.x == x and object.y == y) {
-						emit objectClicked(i);
-						break;
-					}
+			const QPoint pos(x, y);
+			emit tilePressed(pos);
+
+			if (not _objectsVisible) { continue; }
+			
+			for (MapObject::id_t id = MapObject::IdMin; id <= MapObject::IdMax; ++id) {
+				const MapObject &object = _map->object(id);
+				if (object.unitType != MapObject::UnitType::None and object.pos() == pos) {
+					emit objectClicked(id);
+					break;
 				}
-				
-				emit objectClicked(-1);
 			}
+			
+			emit objectClicked(MapObject::IdNone);
 		}
 	}
 }
@@ -109,8 +111,8 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 	
 	if (_objectsVisible) {
 		painter.save();
-		for (int i = 0; i <= MapObject::IdMax; ++i) {
-			drawObject(painter, i);
+		for (MapObject::id_t id = MapObject::IdMin; id <= MapObject::IdMax; ++id) {
+			drawObject(painter, id);
 		}
 		painter.restore();
 	}
@@ -212,18 +214,18 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 	case DragMode::Object:
 		if (_objectsVisible) {
 			bool foundObject = false;
-			for (int i = 0; i <= MapObject::IdMax; ++i) {
-				const MapObject &object = _map->object(i);
+			for (MapObject::id_t id = MapObject::IdMin; id <= MapObject::IdMax; ++id) {
+				const MapObject &object = _map->object(id);
 				if (object.unitType != MapObject::UnitType::None and object.pos() == tilePos) {
-					emit objectClicked(i);
+					emit objectClicked(id);
 					foundObject = true;
-					_dragObject = i;
+					_dragObject = id;
 					break;
 				}
 			}
 			
 			if (not foundObject) {
-				emit objectClicked(-1);
+				emit objectClicked(MapObject::IdNone);
 			}
 		}
 		
@@ -275,7 +277,7 @@ QSize MapWidget::imageSize() const {
 }
 
 
-void MapWidget::drawObject(QPainter &painter, int objectNo) {
+void MapWidget::drawObject(QPainter &painter, MapObject::id_t objectId) {
 	static const QColor playerColor(128, 255, 128);
 	static const QColor robotColor(255, 128, 128);
 	static const std::unordered_map<MapObject::UnitType, std::pair<uint8_t, QColor>> objectTiles = {
@@ -288,7 +290,7 @@ void MapWidget::drawObject(QPainter &painter, int objectNo) {
 	    { MapObject::UnitType::RollerbotLR,    { 165, robotColor }},
 	};
 	
-	const MapObject &object = _map->object(objectNo);
+	const MapObject &object = _map->object(objectId);
 	if (object.unitType == MapObject::UnitType::None) { return; }
 	const QRect r = tileRect(object.pos());
 	std::pair<uint8_t, QColor> pair;

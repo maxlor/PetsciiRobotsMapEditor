@@ -12,15 +12,15 @@ static QString unitTypeS(const MapObject &object) {
 }
 
 
-MapCommands::DeleteObject::DeleteObject(Map &map, int objectNo, QUndoCommand *parent)
-    : QUndoCommand("Delete " + unitTypeS(map.object(objectNo)), parent), _map(map), _objectNo(objectNo) {}
+MapCommands::DeleteObject::DeleteObject(Map &map, MapObject::id_t objectId, QUndoCommand *parent)
+    : QUndoCommand("Delete " + unitTypeS(map.object(objectId)), parent), _map(map), _objectId(objectId) {}
 
 
 void MapCommands::DeleteObject::redo() {
-	for (int i = MapObject::IdMin; i <= MapObject::IdMax; ++i) {
-		_previousState[i] = _map.object(i);
+	for (MapObject::id_t id = MapObject::IdMin; id <= MapObject::IdMax; ++id) {
+		_previousState[id] = _map.object(id);
 	}
-	_map.deleteObject(_objectNo);
+	_map.deleteObject(_objectId);
 }
 
 
@@ -29,26 +29,26 @@ void MapCommands::DeleteObject::undo() {
 }
 
 
-MapCommands::ModifyObject::ModifyObject(Map &map, int objectNo, const MapObject &object,
+MapCommands::ModifyObject::ModifyObject(Map &map, MapObject::id_t objectId, const MapObject &object,
                                         QUndoCommand *parent)
-    : QUndoCommand("Modify " + unitTypeS(object), parent), _map(map), _objectNo(objectNo),
+    : QUndoCommand("Modify " + unitTypeS(object), parent), _map(map), _objectId(objectId),
       _object(object) {}
 
 
 void MapCommands::ModifyObject::redo() {
-	_previousObject = _map.object(_objectNo);
-	_map.setObject(_objectNo, _object);
+	_previousObject = _map.object(_objectId);
+	_map.setObject(_objectId, _object);
 }
 
 
 void MapCommands::ModifyObject::undo() {
-	_map.setObject(_objectNo, _previousObject);
+	_map.setObject(_objectId, _previousObject);
 }
 
 
-MapCommands::MoveObject::MoveObject(Map &map, int objectNo, const QPoint &pos, int mergeCounter,
+MapCommands::MoveObject::MoveObject(Map &map, MapObject::id_t objectId, const QPoint &pos, int mergeCounter,
                                     QUndoCommand *parent)
-    : QUndoCommand("Move " + unitTypeS(map.object(objectNo)), parent), _map(map), _objectNo(objectNo),
+    : QUndoCommand("Move " + unitTypeS(map.object(objectId)), parent), _map(map), _objectId(objectId),
       _position(pos), _mergeCounter(mergeCounter) {}
 
 
@@ -59,7 +59,7 @@ int MapCommands::MoveObject::id() const {
 
 bool MapCommands::MoveObject::mergeWith(const QUndoCommand *command) {
 	const MoveObject *other = dynamic_cast<const MoveObject*>(command);
-	if (other->_objectNo == _objectNo and other->_mergeCounter == _mergeCounter) {
+	if (other->_objectId == _objectId and other->_mergeCounter == _mergeCounter) {
 		_position = other->_position;
 		return true;
 	}
@@ -68,20 +68,20 @@ bool MapCommands::MoveObject::mergeWith(const QUndoCommand *command) {
 
 
 void MapCommands::MoveObject::redo() {
-	_previousPosition = _map.object(_objectNo).pos();
-	_map.moveObject(_objectNo, _position);
+	_previousPosition = _map.object(_objectId).pos();
+	_map.moveObject(_objectId, _position);
 }
 
 
 void MapCommands::MoveObject::undo() {
-	_map.moveObject(_objectNo, _previousPosition);
+	_map.moveObject(_objectId, _previousPosition);
 }
 
 
-MapCommands::NewObject::NewObject(Map &map, int objectNo, const MapObject &object,
+MapCommands::NewObject::NewObject(Map &map, MapObject::id_t objectId, const MapObject &object,
                                   QUndoCommand *parent)
     : QUndoCommand("Place " + unitTypeS(object), parent) {
-	new ModifyObject(map, objectNo, object, this);
+	new ModifyObject(map, objectId, object, this);
 }
 
 

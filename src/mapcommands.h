@@ -12,27 +12,27 @@ namespace MapCommands {
 
 class DeleteObject : public QUndoCommand {
 public:
-	DeleteObject(Map &map, int objectNo, QUndoCommand *parent = nullptr);
+	DeleteObject(Map &map, MapObject::id_t objectId, QUndoCommand *parent = nullptr);
 	
 	void redo() override;
 	void undo() override;
 private:
 	Map &_map;
-	const int _objectNo;
+	const MapObject::id_t _objectId;
 	MapObject _previousState[MapObject::IdMax + 1];
 };
 
 
 class ModifyObject : public QUndoCommand {
 public:
-	ModifyObject(Map &map, int objectNo, const MapObject &object, QUndoCommand *parent = nullptr);
+	ModifyObject(Map &map, MapObject::id_t objectId, const MapObject &object, QUndoCommand *parent = nullptr);
 	
 	void redo() override;
 	void undo() override;
 	
 private:
 	Map &_map;
-	const int _objectNo;
+	const MapObject::id_t _objectId;
 	const MapObject _object;
 	MapObject _previousObject;
 };
@@ -40,7 +40,7 @@ private:
 
 class MoveObject : public QUndoCommand {
 public:
-	MoveObject(Map &map, int objectNo, const QPoint &pos, int mergeCounter,
+	MoveObject(Map &map, MapObject::id_t objectId, const QPoint &pos, int mergeCounter,
 	           QUndoCommand *parent = nullptr);
 	
 	int id() const override;
@@ -50,7 +50,7 @@ public:
 	
 private:
 	Map &_map;
-	const int _objectNo;
+	const MapObject::id_t _objectId;
 	QPoint _position;
 	QPoint _previousPosition;
 	int _mergeCounter;
@@ -59,7 +59,7 @@ private:
 
 class NewObject : public QUndoCommand {
 public:
-	NewObject(Map &map, int objectNo, const MapObject &object, QUndoCommand *parent = nullptr);
+	NewObject(Map &map, MapObject::id_t objectId, const MapObject &object, QUndoCommand *parent = nullptr);
 };
 
 

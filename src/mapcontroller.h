@@ -23,10 +23,10 @@ public:
 	QString load(const QString &path);
 	QString save(const QString &path);
 	
-	void deleteObject(int objectNo);
-	void moveObject(int objectNo, const QPoint &position);
-	int newObject(const MapObject &object, QString *error);
-	void setObject(int objectNo, const MapObject &object, bool isNew = false);
+	void deleteObject(MapObject::id_t objectId);
+	void moveObject(MapObject::id_t objectId, const QPoint &position);
+	MapObject::id_t newObject(const MapObject &object, QString *error);
+	void setObject(MapObject::id_t objectId, const MapObject &object, bool isNew = false);
 	void incrementMergeCounter();
 	
 	void beginUndoGroup();

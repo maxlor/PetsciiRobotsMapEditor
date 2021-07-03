@@ -1,7 +1,5 @@
 #include "objecteditwidget.h"
 #include <QLoggingCategory>
-#include <forward_list>
-#include <unordered_map>
 #include "map.h"
 #include "mapcontroller.h"
 #include "multisignalblocker.h"
@@ -77,8 +75,8 @@ ObjectEditWidget::ObjectEditWidget(QWidget *parent) : QGroupBox(parent){
 }
 
 
-void ObjectEditWidget::loadObject(int objectNo) {
-	_objectNo = -1;
+void ObjectEditWidget::loadObject(MapObject::id_t objectId) {
+	_objectId = MapObject::IdNone;
 	
 	if (not _mapController) {
 		qCWarning(lcObjEd, "can't edit object, _mapController not set");
@@ -86,12 +84,12 @@ void ObjectEditWidget::loadObject(int objectNo) {
 		return;
 	}
 	
-	if (objectNo == -1) {
+	if (objectId == -1) {
 		setVisible(false);
 		return;
 	}
 	
-	const MapObject &object = _mapController->map()->object(objectNo);
+	const MapObject &object = _mapController->map()->object(objectId);
 	
 	switch (object.unitType) {
 	case MapObject::UnitType::None: setVisible(false); return;
@@ -116,7 +114,7 @@ void ObjectEditWidget::loadObject(int objectNo) {
 	case MapObject::UnitType::Magnet: loadWeapon(object); break;
 	}
 	
-	_objectNo = objectNo;
+	_objectId = objectId;
 	setVisible(true);
 }
 
@@ -154,8 +152,8 @@ void ObjectEditWidget::mapClickCancelled() {
 
 
 void ObjectEditWidget::onObjectsChanged() {
-	if (_objectNo != MapObject::IdNone) {
-		loadObject(_objectNo);
+	if (_objectId != MapObject::IdNone) {
+		loadObject(_objectId);
 	}
 }
 
@@ -169,7 +167,7 @@ void ObjectEditWidget::onCoordinateMapClickRequested(const QString &label) {
 
 
 void ObjectEditWidget::store() {
-	MapObject object = _mapController->map()->object(_objectNo);
+	MapObject object = _mapController->map()->object(_objectId);
 	if (_ui.stackedWidget->currentWidget() == _ui.pagePlayer) {
 		object.x = _ui.coordinatesPlayer->x();
 		object.y = _ui.coordinatesPlayer->y();
@@ -225,7 +223,7 @@ void ObjectEditWidget::store() {
 	} else {
 		Q_ASSERT(false);
 	}
-	_mapController->setObject(_objectNo, object);
+	_mapController->setObject(_objectId, object);
 }
 
 
