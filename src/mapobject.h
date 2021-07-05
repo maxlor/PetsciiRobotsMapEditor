@@ -43,6 +43,7 @@ public:
 	Group group() const;
 	QPoint pos() const;
 	static Group group(UnitType unitType);
+	static Group group(id_t objectId);
 	static const QString &toString(UnitType unitType);
 	static const QString &toString(Group group);
 	static const std::forward_list<UnitType> &unitTypes();

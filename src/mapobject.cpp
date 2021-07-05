@@ -1,9 +1,21 @@
 #include "mapobject.h"
 
 
+/** @class MapObject
+ * Represents objects on the game map.
+ * 
+ * This includes the player, robots, map features like doors or transporter
+ * pads, and hidden items like keys and weapons.
+ */
+
+
+/** Create a map object of unit type #UnitType::None, will all fields set to 0. */
 MapObject::MapObject() : MapObject(UnitType::None) {}
 
 
+/** Create a map object of of the given \a unitType, with fields set to
+ * reasonable default values.
+ */
 MapObject::MapObject(UnitType unitType)
     : unitType(unitType), x(0), y(0), a(0), b(0), c(0), d(0), health(0) {
 	// set default attributes
@@ -64,6 +76,21 @@ MapObject::Group MapObject::group(MapObject::UnitType unitType) {
 	case UnitType::PlasmaGun:
 	case UnitType::Medkit:
 	case UnitType::Magnet: return Group::HiddenObjects;
+	}
+}
+
+
+MapObject::Group MapObject::group(MapObject::id_t objectId) {
+	if (objectId == ObjectId::IdPlayer) {
+		return Group::Player;
+	} else if (ObjectId::IdRobotMin <= objectId and objectId <= ObjectId::IdRobotMax) {
+		return Group::Robots;
+	} else if (ObjectId::IdMapFeatureMin <= objectId and objectId <= ObjectId::IdMapFeatureMax) {
+		return Group::MapFeatures;
+	} else if (ObjectId::IdHiddenMin <= objectId and objectId <= ObjectId::IdHiddenMax) {
+		return Group::HiddenObjects;
+	} else {
+		return Group::Invalid;
 	}
 }
 

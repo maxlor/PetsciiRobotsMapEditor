@@ -21,6 +21,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
+    mapcheck.cpp \
     mapcommands.cpp \
     mapcontroller.cpp \
     mapobject.cpp \
@@ -40,6 +41,7 @@ HEADERS += \
     iconfactory.h \
     mainwindow.h \
     map.h \
+    mapcheck.h \
     mapcommands.h \
     mapcontroller.h \
     mapobject.h \
