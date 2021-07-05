@@ -10,9 +10,11 @@
 #include <QStringList>
 #include "iconfactory.h"
 #include "map.h"
+#include "mapcheck.h"
 #include "multisignalblocker.h"
 #include "tileset.h"
 #include "util.h"
+#include "validationdialog.h"
 
 
 static constexpr char SETTINGS_TILESET_DIRECTORY[] = "General/TilesetDirectory";
@@ -116,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	for (QAction *action : _viewFilterActions) {
 		connect(action, &QAction::triggered, this, &MainWindow::onViewFilterChanged);
 	}
+	connect(_ui.actionValidateMap, &QAction::triggered, this, &MainWindow::validateMap);
 	connect(_ui.actionZoomIn, &QAction::triggered, _ui.tileWidget, &TileWidget::zoomIn);
 	connect(_ui.actionZoomOut, &QAction::triggered, _ui.tileWidget, &TileWidget::zoomOut);
 	connect(_ui.actionZoomIn, &QAction::triggered, _ui.mapWidget, &MapWidget::zoomIn);
@@ -229,6 +232,7 @@ void MainWindow::onMouseOverTile(const QPoint &tile) {
 void MainWindow::onObjectClicked(MapObject::id_t objectId) {
 	if (_ui.actionSelect->isChecked() and not _objectEditMapClickRequested) {
 		_ui.objectEditor->loadObject(objectId);
+		_ui.mapWidget->markObject(objectId);
 	} else if (_ui.actionDeleteObject->isChecked() and objectId != MapObject::IdNone) {
 		_mapController->deleteObject(objectId);
 	}
@@ -464,6 +468,21 @@ void MainWindow::onViewFilterChanged(bool checked) {
 	            static_cast<Tile::Attribute>(senderAction->data().toUInt()) : Tile::None;
 	_ui.mapWidget->setHighlightAttribute(highlightAttribute);
 	_ui.tileWidget->setHighlightAttribute(highlightAttribute);
+}
+
+
+void MainWindow::validateMap() {
+	MapCheck mapCheck(*_mapController);
+	mapCheck.fixSilent();
+	if (mapCheck.problems().empty()) {
+		QMessageBox::information(this, "No Problems Found", "No problems have been found.");
+	} else {
+		ValidationDialog dialog(mapCheck, this);
+		connect(&dialog, &ValidationDialog::requestSelectObject, this, &MainWindow::onObjectClicked);
+		if (dialog.exec() == QDialog::Accepted) {
+			mapCheck.fixAll();
+		}
+	}
 }
 
 

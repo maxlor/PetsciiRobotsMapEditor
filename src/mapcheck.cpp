@@ -6,20 +6,58 @@
 
 
 MapCheck::MapCheck(MapController &mapController) : _mapController(mapController) {
+	check();
+}
+
+
+void MapCheck::check() {
+	_problems.clear();
 	checkPlayerExists();
 	checkPlayerInBounds();
 	checkUnitTypes();
 	checkHealth();
+	checkDoors();
 }
 
 
-const std::list<MapCheck::Problem> MapCheck::problems() const {
+void MapCheck::fixAll() {
+	bool fixed;
+	do {
+		fixed = false;
+		
+		for (const Problem &problem : _problems) {
+			if (problem.fix) {
+				problem.fix();
+				check();
+				fixed = true;
+				break;
+			}
+		}
+		
+	} while (fixed);
+}
+
+
+void MapCheck::fixSilent() {
+	for (const Problem &problem : _silentProblems) {
+		problem.fix();
+	}
+	_silentProblems.clear();
+}
+
+
+const std::vector<MapCheck::Problem> &MapCheck::problems() const {
 	return _problems;
 }
 
 
+const std::vector<MapCheck::Problem> &MapCheck::silentProblems() const {
+	return _silentProblems;
+}
+
+
 void MapCheck::silent(MapObject::id_t id, const QString &text, std::function<void ()> fix) {
-	addProblem(Severity::Silent, id, text, fix);
+	_silentProblems.push_back(Problem{Severity::Silent, id, text, fix});
 }
 
 
@@ -100,10 +138,12 @@ void MapCheck::checkHealth() {
 		_mapController.setObject(MapObject::IdPlayer, object);
 	};
 	
-	if (player.health == 0) {
-		error(playerId, "player's health set to 0", fixPlayer);
-	} else if (player.health > 12) {
-		warn(playerId, "player's health is set to more than 12", fixPlayer);
+	if (player.unitType == MapObject::UnitType::Player) {
+		if (player.health == 0) {
+			error(playerId, "player's health set to 0", fixPlayer);
+		} else if (player.health > 12) {
+			warn(playerId, "player's health is set to more than 12", fixPlayer);
+		}
 	}
 	
 	for (MapObject::id_t id = MapObject::IdRobotMin; id <= MapObject::IdRobotMax; ++id) {
@@ -139,7 +179,6 @@ void MapCheck::checkDoors() {
 		const uint8_t tileNo = _mapController.map()->tileNo(object.pos());
 		if (HORIZONTAL_DOOR_TILES.find(tileNo) != HORIZONTAL_DOOR_TILES.end()) {
 			if (object.a != 0) {
-				error(id, "door should be set to horizontal, but isn't", setAttribute(id, A, 0));
 			}
 		} else if (VERTICAL_DOOR_TILES.find(tileNo) != VERTICAL_DOOR_TILES.end()) {
 			if (object.a != 1) {

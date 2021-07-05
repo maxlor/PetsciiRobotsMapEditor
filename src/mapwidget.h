@@ -27,7 +27,8 @@ public:
 	QRect selectedArea() const;
 	
 public slots:
-	void clearSelection();
+	void clearSelection();	
+	void markObject(MapObject::id_t objectId);
 	void selectAll();
 	void setShowGridLines(bool enable);
 	void setObjectsVisible(bool visible);
@@ -73,8 +74,9 @@ private:
 	bool _redrawTiles = false;
 	bool _redrawImage = false;
 	bool _showGridLines = false;
-	MapObject::id_t _dragObject = MapObject::IdNone;
 	DragMode _dragMode = DragMode::Object;
+	MapObject::id_t _dragObject = MapObject::IdNone;
+	MapObject::id_t _selectedObject = MapObject::IdNone;
 	QPoint _dragAreaBegin = QPoint(-1, -1);
 	QPoint _dragAreaEnd;
 };

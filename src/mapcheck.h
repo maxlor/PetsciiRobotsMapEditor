@@ -4,7 +4,7 @@
 #include <QRect>
 #include <QString>
 #include <functional>
-#include <list>
+#include <vector>
 #include "mapobject.h"
 
 class MapController;
@@ -25,7 +25,12 @@ public:
 	
 	MapCheck(MapController &mapController);
 	
-	const std::list<Problem> problems() const;
+	void check();
+	void fixAll();
+	void fixSilent();
+	
+	const std::vector<Problem> &problems() const;
+	const std::vector<Problem> &silentProblems() const;
 	
 private:
 	enum Attribute { A, B, C, D, HEALTH };
@@ -46,7 +51,8 @@ private:
 	std::function<void()> setAttribute(MapObject::id_t id, Attribute attribute, uint8_t value);
 	
 	MapController &_mapController;
-	std::list<Problem> _problems;
+	std::vector<Problem> _problems;
+	std::vector<Problem> _silentProblems;
 };
 
 #endif // MAPCHECK_H

@@ -32,7 +32,8 @@ SOURCES += \
     tile.cpp \
     tileset.cpp \
     tilewidget.cpp \
-    util.cpp
+    util.cpp \
+    validationdialog.cpp
 
 HEADERS += \
     abstracttilewidget.h \
@@ -52,11 +53,13 @@ HEADERS += \
     tile.h \
     tileset.h \
     tilewidget.h \
-    util.h
+    util.h \
+    validationdialog.h
 
 FORMS += \
     mainwindow.ui \
-    objecteditwidget.ui
+    objecteditwidget.ui \
+    validationdialog.ui
     
 RESOURCES += \
     ../res/res.qrc

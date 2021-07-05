@@ -225,6 +225,7 @@
     <addaction name="actionPlaceWaterRaft"/>
     <addaction name="actionDeleteObject"/>
     <addaction name="separator"/>
+    <addaction name="actionValidateMap"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -761,6 +762,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionValidateMap">
+   <property name="text">
+    <string>&amp;Validate Map</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
  </widget>

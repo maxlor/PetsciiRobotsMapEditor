@@ -56,6 +56,7 @@ private slots:
 	void onQuit();
 	void onViewFilterChanged(bool checked);
 	
+	void validateMap();
 	void updateMapCountLabels();
 	
 private:

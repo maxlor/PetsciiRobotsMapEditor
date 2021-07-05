@@ -56,6 +56,28 @@ void MapWidget::clearSelection() {
 }
 
 
+void MapWidget::markObject(MapObject::id_t objectId) {
+	auto setSelectedObject = [&](MapObject::id_t id) {
+		if (_selectedObject != id) {
+			_selectedObject = id;
+			update();
+		}
+	};
+	
+	if (objectId < MapObject::IdMin or objectId > MapObject::IdMax) {
+		setSelectedObject(MapObject::IdNone);
+		return;
+	}
+	
+	const MapObject &object = _map->object(objectId);
+	if (object.unitType == MapObject::UnitType::None) {
+		setSelectedObject(MapObject::IdNone);
+	} else {
+		setSelectedObject(objectId);
+	}
+}
+
+
 void MapWidget::selectAll() {
 	setDragMode(DragMode::Area);
 	_dragAreaBegin = _map->rect().topLeft();
@@ -326,7 +348,13 @@ void MapWidget::drawObject(QPainter &painter, MapObject::id_t objectId) {
 		} catch (std::out_of_range) {
 			// draw nothing
 		}
-	}	
+	}
+	
+	if (objectId == _selectedObject) {
+		painter.setPen(Qt::NoPen);
+		painter.setBrush(C::colorTileSelection);
+		drawMargin(painter, tileRect(object.pos()), 2);
+	}
 }
 
 

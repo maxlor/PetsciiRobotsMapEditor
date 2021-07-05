@@ -24,7 +24,7 @@ public:
 	};
 	
 	enum ObjectId : id_t {
-		IdNone = -1, IdPlayer = 0, IdMin = 1, IdRobotMin = 1, IdRobotMax = 28, IdMapFeatureMin = 32,
+		IdNone = -1, IdPlayer = 0, IdMin = 0, IdRobotMin = 1, IdRobotMax = 28, IdMapFeatureMin = 32,
 		IdMapFeatureMax = 47, IdHiddenMin = 48, IdHiddenMax = 63, IdMax = 63
 	};
 	
