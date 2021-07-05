@@ -8,8 +8,9 @@ Released: not yet released
 * New feature: undo/redo
 * New feature: select all
 * New feature: validation checks
-* Bugfix: crash when trying to add a door and the map already has 16 features.
-* Bugfix: crash when clicking on empty space with the delete tool.
+* Bugfix: crash when trying to add a door and the map already has 16 features
+* Bugfix: crash when clicking on empty space with the delete tool
+* Bugfix: container sizes were stored as one unit too large
 
 
 Version 1.0.0

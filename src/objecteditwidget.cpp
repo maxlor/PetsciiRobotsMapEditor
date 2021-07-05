@@ -182,8 +182,8 @@ void ObjectEditWidget::store() {
 		object.y = _ui.coordinatesWeapon->y();
 		object.unitType = MapObject::UnitType(_ui.comboWeaponType->currentData().toUInt());
 		object.a = _ui.editWeaponAmount->value();
-		object.c = _ui.editWeaponContainerWidth->value();
-		object.d = _ui.editWeaponContainerHeight->value();
+		object.c = _ui.editWeaponContainerWidth->value() - 1;
+		object.d = _ui.editWeaponContainerHeight->value() - 1;
 	} else if (_ui.stackedWidget->currentWidget() == _ui.pageDoor) {
 		object.x = _ui.coordinatesDoor->x();
 		object.y = _ui.coordinatesDoor->y();
@@ -361,6 +361,6 @@ void ObjectEditWidget::loadWeapon(const MapObject &object) {
 		       _ui.comboWeaponType->currentText().toUtf8().constData());
 	}
 	_ui.editWeaponAmount->setValue(object.a);
-	_ui.editWeaponContainerWidth->setValue(object.c);
-	_ui.editWeaponContainerHeight->setValue(object.d);
+	_ui.editWeaponContainerWidth->setValue(object.c + 1);
+	_ui.editWeaponContainerHeight->setValue(object.d + 1);
 }
