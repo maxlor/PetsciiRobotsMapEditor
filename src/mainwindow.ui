@@ -765,6 +765,10 @@
    </property>
   </action>
   <action name="actionValidateMap">
+   <property name="icon">
+    <iconset resource="../res/res.qrc">
+     <normaloff>:/caution.svg</normaloff>:/caution.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Validate Map</string>
    </property>

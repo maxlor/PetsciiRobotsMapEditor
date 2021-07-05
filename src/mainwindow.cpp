@@ -472,8 +472,7 @@ void MainWindow::onViewFilterChanged(bool checked) {
 
 
 void MainWindow::validateMap() {
-	MapCheck mapCheck(*_mapController);
-	mapCheck.fixSilent();
+	MapCheck mapCheck(*_mapController, *_tileset);
 	if (mapCheck.problems().empty()) {
 		QMessageBox::information(this, "No Problems Found", "No problems have been found.");
 	} else {

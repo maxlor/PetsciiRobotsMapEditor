@@ -8,6 +8,7 @@
 #include "mapobject.h"
 
 class MapController;
+class Tileset;
 
 
 class MapCheck {
@@ -23,7 +24,7 @@ public:
 		std::function<void()> fix;
 	};
 	
-	MapCheck(MapController &mapController);
+	MapCheck(MapController &mapController, const Tileset &tileset);
 	
 	void check();
 	void fixAll();
@@ -33,7 +34,7 @@ public:
 	const std::vector<Problem> &silentProblems() const;
 	
 private:
-	enum Attribute { A, B, C, D, HEALTH };
+	enum Attribute { A, B, C, D, X, Y, HEALTH };
 	void silent(MapObject::id_t id, const QString &text, std::function<void()> fix = nullptr);
 	void info(MapObject::id_t id, const QString &text, std::function<void()> fix = nullptr);
 	void warn(MapObject::id_t id, const QString &text, std::function<void()> fix = nullptr);
@@ -43,14 +44,25 @@ private:
 	void checkPlayerExists();
 	void checkPlayerInBounds();
 	void checkUnitTypes();
-	void checkHealth();
+	void checkPlayerAndRobotsHealthABCD();
+	void checkPlayerAndRobotsOnWalkable();
+	void checkPositionBounds();
+	void checkTransporterPads();
 	void checkDoors();
+	void checkTrashCompactors();
+	void checkWaterRafts();
+	void checkKeys();
+	void checkWeapons();
+	void checkSearchAreas();
+	
+	void checkUnused(MapObject::id_t id, bool a, bool b, bool c, bool d, bool health);
 	
 	QRect walkableRect() const;
 	
 	std::function<void()> setAttribute(MapObject::id_t id, Attribute attribute, uint8_t value);
 	
 	MapController &_mapController;
+	const Tileset &_tileset;
 	std::vector<Problem> _problems;
 	std::vector<Problem> _silentProblems;
 };
