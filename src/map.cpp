@@ -318,7 +318,7 @@ QByteArray Map::data() const {
 	// I don't know what the range 0x202-0x301 is for, in the original maps
 	// those bytes are all set to either 0x00 or 0xAA.
 	
-	Q_ASSERT(0x302 + sizeof(_tiles) == MAP_BYTES);
+	Q_ASSERT(0x302 + sizeof(_tiles[0]) * TILE_COUNT == MAP_BYTES);
 	memcpy(ba.data() + 0x302, _tiles, sizeof(_tiles[0]) * TILE_COUNT);
 	
 	return ba;
