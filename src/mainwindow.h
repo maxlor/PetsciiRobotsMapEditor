@@ -27,7 +27,8 @@ protected:
 	
 private slots:
 	void onAbout();
-	void onLoadTileset();
+	void onLoadPetTileset();
+	void onLoadTilesetFromFile();
 	void onMouseOverTile(const QPoint &tile);
 	void onObjectClicked(MapObject::id_t objectId);
 	void onObjectDragged(MapObject::id_t objectId, QPoint pos);
@@ -64,7 +65,11 @@ private slots:
 	
 private:
 	bool askSaveChanges();
+	
 	void autoLoadTileset();
+	QString pickTileset();
+	QString tilesetPetPath() const;
+	
 	void activateTool(QAction *const action);
 	void copyMap(bool copyTiles, bool copyObjects, bool clear=false);
 	bool doSave(const QString &path);

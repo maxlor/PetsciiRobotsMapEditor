@@ -193,8 +193,6 @@
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
-    <addaction name="actionLoadTileset"/>
-    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -492,9 +490,9 @@
     <string>G</string>
    </property>
   </action>
-  <action name="actionLoadTileset">
+  <action name="actionLoadTilesetFromFile">
    <property name="text">
-    <string>Load &amp;Tileset...</string>
+    <string>Load Tileset from &amp;File...</string>
    </property>
   </action>
   <action name="actionPlacePlayer">
@@ -796,6 +794,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+D</string>
+   </property>
+  </action>
+  <action name="actionLoadPetTileset">
+   <property name="text">
+    <string>Load Built-in PET Tileset</string>
+   </property>
+   <property name="toolTip">
+    <string>Load the built-in tileset from the PET version of the game</string>
    </property>
   </action>
  </widget>

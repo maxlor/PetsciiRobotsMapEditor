@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QFontMetrics>
 #include <QKeyEvent>
+#include <QMenu>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStringList>
@@ -52,6 +53,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.actionPlaceWaterRaft->setIcon(_iconFactory.icon("Raft"));
 	_ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
 	
+	QMenu *loadTilesetMenu = new QMenu("Load Tileset", _ui.menuFile);
+	_ui.menuFile->insertMenu(_ui.actionQuit, loadTilesetMenu);
+	_ui.menuFile->insertSeparator(_ui.actionQuit);
+	loadTilesetMenu->addAction(_ui.actionLoadPetTileset);
+	loadTilesetMenu->addAction(_ui.actionLoadTilesetFromFile);
 	QMenu *randomizeMenu = _ui.menuEdit->addMenu("Randomize");
 	randomizeMenu->addAction(_ui.actionRandomizeDirt);
 	randomizeMenu->addAction(_ui.actionRandomizeGrass);
@@ -109,7 +115,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionOpen, &QAction::triggered, this, &MainWindow::onOpenTriggered);
 	connect(_ui.actionSave, &QAction::triggered, this, &MainWindow::onSaveTriggered);
 	connect(_ui.actionSaveAs, &QAction::triggered, this, &MainWindow::onSaveAsTriggered);
-	connect(_ui.actionLoadTileset, &QAction::triggered, this, &MainWindow::onLoadTileset);
+	connect(_ui.actionLoadPetTileset, &QAction::triggered, this, &MainWindow::onLoadPetTileset);
+	connect(_ui.actionLoadTilesetFromFile, &QAction::triggered, this, &MainWindow::onLoadTilesetFromFile);
 	connect(_ui.actionQuit, &QAction::triggered, this, &MainWindow::onQuit);
 	connect(_ui.actionSelectAll, &QAction::triggered, this, &MainWindow::onSelectAll);
 	connect(_ui.actionCopyArea, &QAction::triggered, this, &MainWindow::onCopyAreaTriggered);
@@ -207,26 +214,35 @@ void MainWindow::onAbout() {
 }
 
 
-void MainWindow::onLoadTileset() {
+void MainWindow::onLoadPetTileset() {
+	const QString path = tilesetPetPath();
+	
+	if (path.isEmpty()) {
+		QMessageBox::critical(this, "Error Loading Tileset",
+		                      "Cannot find the bundled tileset (tileset.pet).");
+		return;
+	}
+	
+	QString error = _tileset->load(path);
+	if (error.isNull()) {
+		QSettings().remove(SETTINGS_TILESET_PATH);
+	} else {
+		QMessageBox::critical(this, "Error Loading Tileset",
+		                      "Could not load the tileset: " + error);
+	}
+}
+
+
+void MainWindow::onLoadTilesetFromFile() {
 	QSettings settings;
-	QString directory = settings.value(SETTINGS_TILESET_DIRECTORY, QDir::homePath()).toString();
-	QFileDialog dialog(this, "Load Tileset...", directory);
-	dialog.setAcceptMode(QFileDialog::AcceptOpen);
-	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setNameFilters({ "tileset.pet", "Any file (*)"});
-	int result = dialog.exec();
-	if (result == QFileDialog::Accepted) {
-		if (dialog.selectedFiles().size() > 0) {
-			const QString path = dialog.selectedFiles().at(0);
-			settings.setValue(SETTINGS_TILESET_DIRECTORY, dialog.directory().canonicalPath());
-			QString error = _tileset->load(path);
-			if (error.isNull()) {
-				settings.setValue(SETTINGS_TILESET_PATH, path);
-			} else {
-				QMessageBox::critical(this, "Error Loading Tileset",
-				                      QString("Cannot load tileset: %1").arg(error));
-			}
-		}
+	QString path = pickTileset();
+	if (path.isNull()) { return; }
+	QString error = _tileset->load(path);
+	if (error.isNull()) {
+		settings.setValue(SETTINGS_TILESET_PATH, path);
+	} else {
+		QMessageBox::critical(this, "Error Loading Tileset",
+		                      QString("Cannot load tileset: %1").arg(error));
 	}
 }
 
@@ -549,21 +565,7 @@ void MainWindow::autoLoadTileset() {
 	if (settings.contains(SETTINGS_TILESET_PATH)) {
 		path = settings.value(SETTINGS_TILESET_PATH).toString();
 	} else {
-		QStringList directories = {
-#ifdef Q_OS_UNIX
-			QString("%1/../share/%2").arg(QApplication::applicationDirPath(),
-			                              QFileInfo(QApplication::applicationFilePath()).baseName()),
-		    QString("%1/../share").arg(QApplication::applicationDirPath()),
-#endif
-			QApplication::applicationDirPath(),
-		};
-		for (const QString &dir : directories) {
-			const QString maybePath = dir + "/tileset.pet";
-			if (QFile::exists(maybePath)) {
-				path = maybePath;
-				break;
-			}
-		}
+		path = tilesetPetPath();
 	}
 	
 	if (path.isEmpty()) {
@@ -582,6 +584,44 @@ void MainWindow::autoLoadTileset() {
 								  "Could not load the tileset: " + error);
 		}, Qt::QueuedConnection);
 	}
+}
+
+
+QString MainWindow::pickTileset() {
+	QSettings settings;
+	QString directory = settings.value(SETTINGS_TILESET_DIRECTORY, QDir::homePath()).toString();
+	QFileDialog dialog(this, "Load Tileset...", directory);
+	dialog.setAcceptMode(QFileDialog::AcceptOpen);
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setNameFilters({ "tileset.pet", "Any file (*)"});
+	int result = dialog.exec();
+	if (result == QFileDialog::Accepted) {
+		if (dialog.selectedFiles().size() > 0) {
+			settings.setValue(SETTINGS_TILESET_DIRECTORY, dialog.directory().canonicalPath());
+			const QString path = dialog.selectedFiles().at(0);
+			return path;
+		}
+	}
+	return QString();
+}
+
+
+QString MainWindow::tilesetPetPath() const {
+	QStringList directories = {
+#ifdef Q_OS_UNIX
+		QString("%1/../share/%2").arg(QApplication::applicationDirPath(),
+		                              QFileInfo(QApplication::applicationFilePath()).baseName()),
+	    QString("%1/../share").arg(QApplication::applicationDirPath()),
+#endif
+		QApplication::applicationDirPath(),
+	};
+	for (const QString &dir : directories) {
+		const QString path = dir + "/tileset.pet";
+		if (QFile::exists(path)) {
+			return path;
+		}
+	}
+	return QString();
 }
 
 
