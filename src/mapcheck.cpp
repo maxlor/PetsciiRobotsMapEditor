@@ -198,7 +198,8 @@ void MapCheck::checkPlayerAndRobotsOnWalkable() {
 	const Map &map = *_mapController.map();
 	for (MapObject::id_t id = MapObject::IdPlayer; id <= MapObject::IdRobotMax; ++id) {
 		const MapObject &object = map.object(id);
-		if (id != MapObject::IdPlayer and object.group() != MapObject::Group::Robots) { continue; }
+		const MapObject::Group g = object.group();
+		if (g != MapObject::Group::Player and g != MapObject::Group::Robots) { continue; }
 		
 		bool hoverbot = false;
 		switch (object.unitType) {
