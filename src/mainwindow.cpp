@@ -52,6 +52,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.actionPlaceWaterRaft->setIcon(_iconFactory.icon("Raft"));
 	_ui.actionAbout->setIcon(QIcon::fromTheme("help-about"));
 	
+	QMenu *randomizeMenu = _ui.menuEdit->addMenu("Randomize");
+	randomizeMenu->addAction(_ui.actionRandomizeDirt);
+	randomizeMenu->addAction(_ui.actionRandomizeGrass);
+	
 	QFontMetrics fm(QApplication::font());
 	_labelHiddenObjectsCount = new QLabel(this);
 	_labelMapFeatureCount = new QLabel(this);
@@ -114,6 +118,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionCutObjects, &QAction::triggered, this, &MainWindow::onCutObjectsTriggered);
 	connect(_ui.actionPaste, &QAction::triggered, this, &MainWindow::onPasteTriggered);
 	connect(_ui.actionFill, &QAction::triggered, this, &MainWindow::onFillTriggered);
+	connect(_ui.actionRandomizeDirt, &QAction::triggered, this, &MainWindow::onRandomizeDirt);
+	connect(_ui.actionRandomizeGrass, &QAction::triggered, this, &MainWindow::onRandomizeGrass);
 	
 	for (QAction *action : _viewFilterActions) {
 		connect(action, &QAction::triggered, this, &MainWindow::onViewFilterChanged);
@@ -363,10 +369,7 @@ void MainWindow::onPasteTriggered() {
 
 
 void MainWindow::onFillTriggered() {
-	QRect rect = _ui.mapWidget->selectedArea();
-	if (rect.isNull()) {
-		rect = QRect(0, 0, _mapController->map()->width(), _mapController->map()->height());
-	}
+	QRect rect = workRect();
 	
 	_mapController->beginUndoGroup();
 	for (int y = rect.top(); y <= rect.bottom(); ++y) {
@@ -375,6 +378,16 @@ void MainWindow::onFillTriggered() {
 		}
 	}
 	_mapController->endUndoGroup();
+}
+
+
+void MainWindow::onRandomizeDirt() {
+	_mapController->randomizeDirt(workRect());
+}
+
+
+void MainWindow::onRandomizeGrass() {
+	_mapController->randomizeGrass(workRect());
 }
 
 
@@ -703,4 +716,13 @@ bool MainWindow::saveAs() {
 void MainWindow::updateLabelStatusTile() {
 	_labelStatusTile->setText(QString("Selected Tile: 0x%1")
 	                          .arg(_ui.tileWidget->selectedTile(), 2, 16, QChar('0')));
+}
+
+
+QRect MainWindow::workRect() const {
+	QRect r = _ui.mapWidget->selectedArea();
+	if (r.isNull()) {
+		r = _mapController->map()->rect();
+	}
+	return r;
 }

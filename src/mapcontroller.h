@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QPoint>
 #include <QUndoStack>
+#include <unordered_set>
 #include "mapobject.h"
 
 class Map;
@@ -29,12 +30,18 @@ public:
 	void setObject(MapObject::id_t objectId, const MapObject &object, bool isNew = false);
 	void incrementMergeCounter();
 	
-	void beginUndoGroup();
+	void beginUndoGroup(const QString &description = QString());
 	void endUndoGroup();
 	void floodFill(const QPoint &position, uint8_t tileNo);
 	void setTile(const QPoint &position, uint8_t tileNo);
 	
+public slots:
+	void randomizeDirt(const QRect &rect);
+	void randomizeGrass(const QRect &rect);
+	
 private:
+	void randomize(const QRect &rect, const std::unordered_set<uint8_t> tiles);
+	
 	Map *_map;
 	QAction *_redoAction = nullptr;
 	QAction *_undoAction = nullptr;

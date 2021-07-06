@@ -45,6 +45,8 @@ private slots:
 	void onCutObjectsTriggered();
 	void onPasteTriggered();
 	void onFillTriggered();
+	void onRandomizeDirt();
+	void onRandomizeGrass();
 	
 	void onShowObjectsToggled(bool checked);
 	
@@ -70,6 +72,7 @@ private:
 	bool save();
 	bool saveAs();
 	void updateLabelStatusTile();
+	QRect workRect() const;
 	
 	Ui::MainWindow _ui;
 	QLabel *_labelHiddenObjectsCount;

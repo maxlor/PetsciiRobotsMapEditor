@@ -1,6 +1,7 @@
 #include "mapcontroller.h"
 #include <QAction>
 #include <QKeySequence>
+#include <random>
 #include "map.h"
 #include "mapcommands.h"
 #include "mapobject.h"
@@ -169,11 +170,11 @@ void MapController::incrementMergeCounter() {
 
 /// @{
 /** Call this before a group of related #setTile() calls. */
-void MapController::beginUndoGroup() {
+void MapController::beginUndoGroup(const QString &description) {
 	if (_inMacro) {
 		_undoStack.endMacro();
 	}
-	_undoStack.beginMacro("Set Tiles");
+	_undoStack.beginMacro(description.isNull() ? "Set Tiles" : description);
 	_inMacro = true;
 }
 
@@ -206,5 +207,41 @@ void MapController::floodFill(const QPoint &position, uint8_t tileNo) {
  */
 void MapController::setTile(const QPoint &position, uint8_t tileNo) {
 	_undoStack.push(new MapCommands::SetTile(*_map, position, tileNo));
+}
+
+
+void MapController::randomizeDirt(const QRect &rect) {
+	beginUndoGroup("Randomize Dirt");
+	randomize(rect, { 0xce, 0xcf });
+	endUndoGroup();
+}
+
+
+void MapController::randomizeGrass(const QRect &rect) {
+	beginUndoGroup("Randomize Grass");
+	randomize(rect, { 0xd0, 0xd1 });
+	endUndoGroup();
+}
+
+
+void MapController::randomize(const QRect &rect, const std::unordered_set<uint8_t> tiles) {
+	static std::mt19937 gen;
+	std::uniform_int_distribution<size_t> randDist(0, tiles.size() - 1);
+	auto randomTile = [&]() -> uint8_t {
+		size_t i = randDist(gen);
+		auto it = tiles.begin();
+		while (i-- > 0) { ++it; }
+		return *it;
+	};
+	
+	for (int y = rect.top(); y <= rect.bottom(); ++y) {
+		for (int x = rect.left(); x <= rect.right(); ++x) {
+			const QPoint position(x, y);
+			int tileNo = _map->tileNo(position);
+			if (tiles.find(tileNo) != tiles.end()) {
+				setTile(position, randomTile());
+			}
+		}
+	}
 }
 /// @}

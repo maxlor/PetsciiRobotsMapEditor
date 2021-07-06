@@ -776,6 +776,28 @@
     <string>F5</string>
    </property>
   </action>
+  <action name="actionRandomizeGrass">
+   <property name="text">
+    <string>Randomize Grass</string>
+   </property>
+   <property name="toolTip">
+    <string>Randomizes light grass to look less uniform.</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+G</string>
+   </property>
+  </action>
+  <action name="actionRandomizeDirt">
+   <property name="text">
+    <string>Randomize Dirt</string>
+   </property>
+   <property name="toolTip">
+    <string>Randomizes dirt to look less uniform</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+D</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
