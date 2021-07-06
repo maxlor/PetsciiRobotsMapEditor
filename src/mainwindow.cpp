@@ -137,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.mapWidget, &MapWidget::mouseOverTile, this, &MainWindow::onMouseOverTile);
 	connect(_ui.mapWidget, &MapWidget::objectClicked, this, &MainWindow::onObjectClicked);
 	connect(_ui.mapWidget, &MapWidget::objectDragged, this, &MainWindow::onObjectDragged);
+	connect(_ui.mapWidget, &MapWidget::tileCopied, this, &MainWindow::onTileCopied);
 	connect(_ui.mapWidget, &MapWidget::tilePressed, this, &MainWindow::onTilePressed);
 	connect(_ui.mapWidget, &MapWidget::tileDragged, this, &MainWindow::onTileDragged);
 	connect(_ui.mapWidget, &MapWidget::released, this, &MainWindow::onReleased);
@@ -385,6 +386,20 @@ void MainWindow::onShowObjectsToggled(bool checked) {
 }
 
 
+void MainWindow::onTileCopied(uint8_t tileNo) {
+	if (_objectEditMapClickRequested) {
+		_ui.statusbar->clearMessage();
+		_ui.objectEditor->mapClickCancelled();
+		_objectEditMapClickRequested = false;
+	}
+	
+	if (not (_ui.actionDrawTiles->isChecked() or _ui.actionFloodFill->isChecked())) {
+		activateTool(_ui.actionDrawTiles);
+	}
+	_ui.tileWidget->selectTile(tileNo);
+}
+
+
 void MainWindow::onTilePressed(const QPoint &tile) {
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
@@ -566,7 +581,7 @@ void MainWindow::activateTool(QAction *const action) {
 	        action == _ui.actionSelectArea;
 	
 	_ui.mapWidget->setDragMode(action == _ui.actionSelectArea ? 
-	                           MapWidget::DragMode::Area : MapWidget::DragMode::Object);
+	                           MapWidget::DragMode::Area : MapWidget::DragMode::Single);
 	_ui.mapWidget->setShowSelected(action == _ui.actionSelect);
 	_ui.mapWidget->clearSelection();
 	_ui.tileWidget->setShowSelected(showTileSelected);

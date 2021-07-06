@@ -30,6 +30,15 @@ uint8_t TileWidget::selectedTile() const {
 }
 
 
+void TileWidget::selectTile(uint8_t tileNo) {
+	if (_selectedTile != tileNo) {
+		_selectedTile = tileNo;
+		update();
+		emit tileSelected(_selectedTile);
+	}
+}
+
+
 void TileWidget::mousePressEvent(QMouseEvent *event) {
 	const QPoint p = (event->pos() - QPoint(OUTER_MARGIN, OUTER_MARGIN));
 	if (p.x() < 0 or p.y() < 0) { return; }

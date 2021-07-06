@@ -170,13 +170,20 @@ void MapController::incrementMergeCounter() {
 /// @{
 /** Call this before a group of related #setTile() calls. */
 void MapController::beginUndoGroup() {
+	if (_inMacro) {
+		_undoStack.endMacro();
+	}
 	_undoStack.beginMacro("Set Tiles");
+	_inMacro = true;
 }
 
 
 /** Call this after a group of related #setTile() calls. */
 void MapController::endUndoGroup() {
-	_undoStack.endMacro();
+	if (_inMacro) {
+		_undoStack.endMacro();
+		_inMacro = false;
+	}
 }
 
 

@@ -8,6 +8,8 @@ Released: not yet released
 * New feature: undo/redo
 * New feature: select all
 * New feature: validation checks
+* New feature: Control-click on map to switch to the clicked tile in the tile
+  palette
 * Bugfix: crash when trying to add a door and the map already has 16 features
 * Bugfix: crash when clicking on empty space with the delete tool
 * Bugfix: container sizes were stored as one unit too large

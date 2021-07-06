@@ -40,6 +40,7 @@ private:
 	QAction *_undoAction = nullptr;
 	QUndoStack _undoStack;
 	int _mergeCounter = 0;
+	bool _inMacro = false;
 };
 
 #endif // MAPCONTROLLER_H

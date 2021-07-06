@@ -206,7 +206,7 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
 			_dragAreaEnd = tilePos;
 			update();
 			break;
-		case DragMode::Object:
+		case DragMode::Single:
 			emit tileDragged(tilePos);
 			if (_dragObject != MapObject::IdNone) {
 				emit objectDragged(_dragObject, tilePos);
@@ -233,7 +233,7 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 		_dragAreaEnd = tilePos;
 		update();
 		break;
-	case DragMode::Object:
+	case DragMode::Single:
 		if (_objectsVisible) {
 			bool foundObject = false;
 			for (MapObject::id_t id = MapObject::IdMin; id <= MapObject::IdMax; ++id) {
@@ -251,7 +251,11 @@ void MapWidget::mousePressEvent(QMouseEvent *event) {
 			}
 		}
 		
-		emit tilePressed(tilePos);
+		if (event->modifiers().testFlag(Qt::ControlModifier)) {
+			emit tileCopied(_map->tileNo(tilePos));
+		} else {
+			emit tilePressed(tilePos);
+		}
 		emit mouseOverTile(tilePos);
 		break;
 	}

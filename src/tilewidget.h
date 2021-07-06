@@ -18,6 +18,7 @@ public:
 	virtual ~TileWidget();
 	
 	uint8_t selectedTile() const;
+	void selectTile(uint8_t tileNo);
 	
 signals:
 	void tileSelected(uint8_t tileNo);
