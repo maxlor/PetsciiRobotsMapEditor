@@ -575,7 +575,10 @@ void MainWindow::activateTool(QAction *const action) {
 	updateLabelStatusTile();
 	_labelStatusTile->setVisible(showTileSelected);
 	
-	if (not _ui.actionSelect->isChecked()) { _ui.objectEditor->loadObject(MapObject::IdNone); }
+	if (not _ui.actionSelect->isChecked()) {
+		_ui.objectEditor->loadObject(MapObject::IdNone);
+		_ui.mapWidget->markObject(MapObject::IdNone);
+	}
 	
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
@@ -648,6 +651,7 @@ void MainWindow::placeObject(MapObject::UnitType unitType, const QPoint &positio
 	if (error.isNull()) {
 		_ui.actionSelect->trigger();
 		_ui.objectEditor->loadObject(objectId);
+		_ui.mapWidget->markObject(objectId);
 	} else {
 		QString unitTypeS = MapObject::toString(unitType);
 		QMessageBox::warning(this, "Cannot Place " + capitalize(unitTypeS),
