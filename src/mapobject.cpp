@@ -33,13 +33,13 @@ MapObject::MapObject(UnitType unitType)
 	case UnitType::TrashCompactor: break;
 	case UnitType::Elevator: b = 2; c = 1; d = 1; break;
 	case UnitType::WaterRaft: break;
-	case UnitType::Key: c = 1; d = 1; break;
-	case UnitType::TimeBomb: a = 10; c = 1; d = 1; break;
-	case UnitType::EMP: a = 10; c = 1; d = 1; break;
-	case UnitType::Pistol: a = 10; c = 1; d = 1; break;
-	case UnitType::PlasmaGun: a = 10; c = 1; d = 1; break;
-	case UnitType::Medkit: a = 10; c = 1; d = 1; break;
-	case UnitType::Magnet: a = 10; c = 1; d = 1; break;
+	case UnitType::Key: break;
+	case UnitType::TimeBomb: a = 10; break;
+	case UnitType::EMP: a = 10; break;
+	case UnitType::Pistol: a = 10; break;
+	case UnitType::PlasmaGun: a = 10; break;
+	case UnitType::Medkit: a = 10; break;
+	case UnitType::Magnet: a = 10; break;
 	}
 }
 

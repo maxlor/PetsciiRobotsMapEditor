@@ -196,8 +196,8 @@ void ObjectEditWidget::store() {
 		if (_ui.radioKeyHeart->isChecked()) { object.a = 1; }
 		else if (_ui.radioKeyStar->isChecked()) { object.a = 2; }
 		else { object.a = 0; }
-		object.c = _ui.editKeyContainerWidth->value();
-		object.d = _ui.editKeyContainerHeight->value();
+		object.c = _ui.editKeyContainerWidth->value() - 1;
+		object.d = _ui.editKeyContainerHeight->value() - 1;
 	} else if (_ui.stackedWidget->currentWidget() == _ui.pageTrashCompactor) {
 		object.x = _ui.coordinatesTrashCompactor->x();
 		object.y = _ui.coordinatesTrashCompactor->y();
@@ -261,8 +261,8 @@ void ObjectEditWidget::loadKey(const MapObject &object) {
 	_ui.radioKeySpade->setChecked(object.a == 0);
 	_ui.radioKeyHeart->setChecked(object.a == 1);
 	_ui.radioKeyStar->setChecked(object.a == 2);
-	_ui.editKeyContainerWidth->setValue(object.c);
-	_ui.editKeyContainerHeight->setValue(object.d);
+	_ui.editKeyContainerWidth->setValue(object.c + 1);
+	_ui.editKeyContainerHeight->setValue(object.d + 1);
 }
 
 
