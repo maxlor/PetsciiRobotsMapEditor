@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=PETSCII Robots Map Editor
+GenericName=Map editor for Attack of the PETSCII Robots
+Comment=Map editor for Attack of the PETSCII Robots
+Icon=PetsciiRobotsMapEditor
+TryExec=PetsciiRobotsMapEditor
+Exec=PetsciiRobotsMapEditor
+Terminal=false
+Categories=Game
+Keywords=petscii;robots;map editor

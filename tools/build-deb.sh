@@ -36,7 +36,11 @@ main() {
 	mkdir -p "$DEB_DIR/usr/bin"
 	ln -f "$PROGRAM_PATH" "$DEB_DIR/usr/bin/"
 	mkdir -p "$DEB_DIR/usr/share/$PROGRAM"
-	ln -f "$BUILD_DIR/tileset.pet" "$DEB_DIR/usr/share/$PROGRAM/"
+	ln -f "$PROJECT_DIR/res/tileset.pet" "$DEB_DIR/usr/share/$PROGRAM/"
+	mkdir -p "$DEB_DIR/usr/share/applications"
+	ln -f "$PROJECT_DIR/tools/PetsciiRobotsMapEditor.desktop" "$DEB_DIR/usr/share/applications/"
+	mkdir -p "$DEB_DIR/usr/share/icons/hicolor/32x32/apps"
+	ln -f "$PROJECT_DIR/res/robot-32.png" "$DEB_DIR/usr/share/icons/hicolor/32x32/apps/PetsciiRobotsMapEditor.png"
 	
 	export SIZE=`du --apparent-size -ks "$DEB_DIR" | awk '{print $1}'`
 	export ARCHITECTURE=`dpkg-architecture -q DEB_TARGET_ARCH`
