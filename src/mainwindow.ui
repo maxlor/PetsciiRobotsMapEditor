@@ -199,6 +199,7 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actionHowToUse"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuTools">
@@ -802,6 +803,17 @@
    </property>
    <property name="toolTip">
     <string>Load the built-in tileset from the PET version of the game</string>
+   </property>
+  </action>
+  <action name="actionHowToUse">
+   <property name="text">
+    <string>&amp;How To Use</string>
+   </property>
+   <property name="toolTip">
+    <string>Show an explanation of how to use the map editor</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
    </property>
   </action>
  </widget>

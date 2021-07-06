@@ -18,5 +18,6 @@
         <file>caution.svg</file>
         <file>info.svg</file>
         <file>stop.svg</file>
+        <file>help.html</file>
     </qresource>
 </RCC>

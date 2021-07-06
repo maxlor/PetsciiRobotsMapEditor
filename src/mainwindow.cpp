@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -9,6 +10,8 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QStringList>
+#include <QTextBrowser>
+#include <QVBoxLayout>
 #include "iconfactory.h"
 #include "map.h"
 #include "mapcheck.h"
@@ -144,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 		connect(action, &QAction::triggered, this, &MainWindow::onToolActionTriggered);
 	}
 	
+	connect(_ui.actionHowToUse, &QAction::triggered, this, &MainWindow::showHowToUse);
 	connect(_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAbout);
 	connect(_ui.actionClickEveryTile, &QAction::triggered, _ui.mapWidget, &MapWidget::clickEveryTile);
 	
@@ -512,6 +516,45 @@ void MainWindow::onViewFilterChanged(bool checked) {
 	            static_cast<Tile::Attribute>(senderAction->data().toUInt()) : Tile::None;
 	_ui.mapWidget->setHighlightAttribute(highlightAttribute);
 	_ui.tileWidget->setHighlightAttribute(highlightAttribute);
+}
+
+
+void MainWindow::showHowToUse() {
+	if (_howToUseDialog == nullptr) {
+		_howToUseDialog = new QDialog(this);
+		_howToUseDialog->setWindowTitle("Browser");
+		
+		QVBoxLayout *layout = new QVBoxLayout();
+		_howToUseDialog->setLayout(layout);
+		
+		QTextBrowser *browser = new QTextBrowser(_howToUseDialog);
+		browser->setReadOnly(true);
+		browser->setOpenExternalLinks(true);
+		layout->addWidget(browser, 1);
+		
+		QFile file(":/help.html");
+		if (file.open(QFile::ReadOnly)) {
+			browser->setHtml(file.readAll());
+		} else {
+			browser->setPlainText("cannot load help: " + file.errorString());
+		}
+		file.close();
+		_howToUseDialog->setWindowTitle(browser->documentTitle());
+		
+		QDialogButtonBox *buttons = new QDialogButtonBox(_howToUseDialog);
+		buttons->addButton(QDialogButtonBox::Close);
+		connect(buttons, &QDialogButtonBox::rejected, _howToUseDialog, &QDialog::hide);
+		layout->addWidget(buttons);
+		
+		static const int width = 800;
+		static const int height = 600;
+		const QRect &parentGeom = geometry();
+		int x = qMax(0, parentGeom.x() + (parentGeom.width() - width) / 2);
+		int y = qMax(0, parentGeom.y() + (parentGeom.height() - height) / 2);
+		_howToUseDialog->setGeometry(x, y, width, height);
+	}
+	
+	_howToUseDialog->show();
 }
 
 

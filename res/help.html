@@ -1,0 +1,76 @@
+<html>
+ <head>
+  <title>PETSCII Robots Map Editor Help</title>
+ </head>
+ <body>
+  <h3>PETSCII Robots Map Editor Help</h3>
+  <h4>Usage Notes</h4>
+  <ul>
+   <li>Press the <b>left mouse button</b> to use tools, and the
+	<b>right mouse button</b> to pan the map.</li>
+   <li>To use <b>copy</b>, <b>cut</b> and <b>paste</b>, select an area
+	using the <img src=":/dashed_rectangle.svg" width="16" height="16">
+	<i>Select Area</i> tool first.</li>
+   <li>Hold <b>Control</b>/<b>Command</b> while left clicking on a map tile
+    to select that tile in the
+    <img src=":/paintbrush.svg" width="16" height="16"> <i>Draw Tiles</i>
+    tool.</li>
+  </ul>
+  
+  <h4>Creating a Map</h4>
+  <ul>
+   <li>A map needs at least a player spawn point.</li>
+   <li>To be able to exit the map, a transporter pad with a destination of
+    <i>End of Map</i> is required.</li>
+   <li>The game doesn't let the player walk so close to the border that he'd
+    be able to look outside the map. So 5 tiles from the left and right border
+    and 3 tiles from the top and bottom border of the map are inaccessible.</li>
+   <li>Hidden items (keys, weapons, tools, medkits) need to be placed on a tile
+    that is searchable or the player won't be able to pick them up. Press the
+    <b>7</b> key to highlight searchable tiles.</li>
+   <li>Doors, elevators and trash compactors need to be placed on specific
+    tiles to work properly, otherwise they will look messed up in the game.</li>
+  </ul>
+  <p>The <img src=":/caution.svg" width="16" height="16"> <i>Validate Map</i>
+   tool can identify and fix many problems; do make use of it.</p>
+   
+  <h4>Playing a Map</h4>
+  <p>For the game to load a map, the map file needs to be stored as one of
+   <i>level-a</i> ... <i>level-i</i> on the game disk. This means that you'll
+   need to replace one of the standard maps to try yours. The map titles are
+   hardcoded in the game and cannot be changed.</p>
+  <p>We'll open the new map in the Commodore emulator 
+   <a href="https://vice-emu.sourceforge.io/">VICE</a>. Setting up VICE is
+   outside the scope of this documentation.</p>
+   <p>We'll assume you have a disk image of the game called
+   <tt>petrobots.d64</tt> and that your new map is called <tt>mymap.petmap</tt>.
+   Follow these steps to replace a map file on it:</p>
+  <ol>
+   <li>Create a back up of <tt>petrobots.d64</tt>, since we're going to
+    overwrite one of its files.</li>
+   <li>Move <tt>petrobots.d64</tt> and <tt>mymap.petmap</tt> into the same
+    directory.</li>
+   <li>VICE comes with a disk editing program called <tt>c1541</tt>, it runs
+    on the command line. Therefore, open a terminal/command prompt and navigate
+    to the directory that contains <tt>petrobots.d64</tt> and
+    <tt>mymap.petmap</tt>.</li>
+   <li>Open the disk image by typing the command:
+	<p style="margin-left: 20px"><tt><b>c1541 petrobots.d64</b></tt></p>
+	<p>c1541 will answer with some text and finally the prompt <tt>c1541 #8></tt>.
+	To check that the disk has actually loaded, use the <tt><b>dir</b></tt> command
+	(type only the bold part):</p>
+	<p style="margin-left: 20px"><tt>c1541 #8> <b>dir</b></tt></p>
+   </li>
+   <li>Delete one of the existing maps:
+    <p style="margin-left: 20px"><tt>c1541 #8> <b>delete level-a</b></tt></p>
+   </li>
+   <li>Insert your own map in its place:
+    <p style="margin-left: 20px"><tt>c1541 #8> <b>write mymap.pet level-a</b></tt></p>
+   </li>
+   <li>Now exit c1541:
+	<p style="margin-left: 20px"><tt>c1541 #8> <b>exit</b></tt></p>
+   </li>
+  </ol>
+  <p>And that's it, <tt>petrobots.d64</tt> now contains your map.</p>
+ </body>
+</html>

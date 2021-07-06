@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "ui_mainwindow.h"
+#include <QDialog>
 #include <QLabel>
 #include <QMainWindow>
 #include <QSignalMapper>
@@ -60,6 +61,7 @@ private slots:
 	void onQuit();
 	void onViewFilterChanged(bool checked);
 	
+	void showHowToUse();
 	void validateMap();
 	void updateMapCountLabels();
 	
@@ -80,6 +82,7 @@ private:
 	QRect workRect() const;
 	
 	Ui::MainWindow _ui;
+	QDialog *_howToUseDialog = nullptr;
 	QLabel *_labelHiddenObjectsCount;
 	QLabel *_labelMapFeatureCount;
 	QLabel *_labelRobotCount;
