@@ -21,7 +21,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName} {#MyAppVersion}
+DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users.)
