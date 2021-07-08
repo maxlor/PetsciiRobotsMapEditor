@@ -3,7 +3,7 @@ Changelog for PETSCII Robots Map Editor
 
 Version 1.1.0
 -------------
-Released: not yet released
+Released: 2021-07-08
 
 * New feature: undo/redo
 * New feature: select all

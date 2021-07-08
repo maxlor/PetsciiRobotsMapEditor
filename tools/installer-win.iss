@@ -1,5 +1,5 @@
 #define MyAppName "PETSCII Robots Map Editor"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Benjamin Lutz"
 #define MyAppURL "https://github.com/maxlor/PetsciiRobotsMapEditor"
 #define MyAppExeName "PetsciiRobotsMapEditor.exe"

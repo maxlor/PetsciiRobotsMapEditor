@@ -4,7 +4,7 @@ CONFIG += c++17
 CONFIG -= debug_and_release_target
 GITREV = $$system(git --git-dir=$$PWD/../.git describe --always --abbrev=0)
 GITCOUNT = $$system(git --git-dir=$$PWD/../.git rev-list HEAD --count)
-APP_VERSION = 1.0.0
+APP_VERSION = 1.1.0
 VERSION = $${APP_VERSION}.$${GITCOUNT}
 macx {
     TARGET = "PETSCII Robots Map Editor"
