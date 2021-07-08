@@ -77,7 +77,12 @@ OTHER_FILES += \
     ../res/tileset.pet
 
 win32:contains(QMAKE_CXX, cl) {
-    QMAKE_CXXFLAGS += -permissive-
+    # permissive-: enables alternative operator names
+	# disable C4715: cot all control paths return a value. This is triggered when going through
+	#    a switch() of an enum class objects, even when all possible enum class values are
+	#    handled. Clang on Linux does this properly, so rely on that in this case.
+	# disable C4267: conversion from size_t to uint8_t, possible loss of data.
+	QMAKE_CXXFLAGS += -permissive- -wd4715 -wd4267
 }
 
 # copies the given files to the destination directory
