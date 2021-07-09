@@ -12,13 +12,11 @@
 MapWidget::MapWidget(QWidget *parent) : AbstractTileWidget(parent) {
 	setMouseTracking(true);
 	
-	_image = new QImage(imageSize(), IMAGE_FORMAT);
 	_tilesImage = new QImage(imageSize(), IMAGE_FORMAT);
 }
 
 
 MapWidget::~MapWidget() {
-	delete _image;
 	delete _tilesImage;
 }
 
@@ -34,7 +32,7 @@ void MapWidget::setMap(const Map *map) {
 	connect(_map, &Map::tilesChanged, this, &MapWidget::onMapTilesChanged);
 	connect(_map, &Map::objectsChanged, this,
 	        static_cast<void(MapWidget::*)()>(&MapWidget::update));
-	_redrawImage = _redrawTiles = true;
+	_redrawTiles = true;
 	update();
 }
 
@@ -124,19 +122,16 @@ void MapWidget::clickEveryTile() {
 
 void MapWidget::paintEvent(QPaintEvent *event) {
 	Q_UNUSED(event);
-	
-	if (_redrawImage) { makeImage(); }
+	if (_redrawTiles) { makeTilesImage(); }
 	
 	QPainter painter(this);
 	painter.scale(scale(), scale());
-	painter.drawImage(0, 0, *_image);
+	painter.drawImage(0, 0, *_tilesImage);
 	
 	if (_objectsVisible) {
-		painter.save();
 		for (MapObject::id_t id = MapObject::IdMin; id <= MapObject::IdMax; ++id) {
-			drawObject(painter, id);
+			drawMapObject(painter, id);
 		}
-		painter.restore();
 	}
 	
 	if (highlightAttribute() != Tile::None) {
@@ -189,7 +184,6 @@ QSize MapWidget::sizeHint() const {
 
 
 void MapWidget::highlightAttributeChanged() {
-	_redrawImage = true;
 	update();
 }
 
@@ -279,7 +273,8 @@ void MapWidget::scaleChanged() {
 
 
 void MapWidget::tilesetChanged() {
-	_redrawImage = _redrawTiles = true;
+	_redrawTiles = true;
+	makeObjectImages();
 	update();
 }
 
@@ -292,7 +287,7 @@ void MapWidget::onMapObjectsChanged() {
 
 
 void MapWidget::onMapTilesChanged() {
-	_redrawImage = _redrawTiles = true;
+	_redrawTiles = true;
 	update();
 }
 
@@ -303,7 +298,22 @@ QSize MapWidget::imageSize() const {
 }
 
 
-void MapWidget::drawObject(QPainter &painter, MapObject::id_t objectId) {
+void MapWidget::drawMapObject(QPainter &painter, MapObject::id_t objectId) {
+	const MapObject &object = _map->object(objectId);
+	if (object.unitType == MapObject::UnitType::None) { return; }
+	const QRect r = tileRect(object.pos());
+	
+	painter.drawImage(r, _objectImages.at(object.unitType));
+	
+	if (objectId == _selectedObject) {
+		painter.setPen(Qt::NoPen);
+		painter.setBrush(C::colorTileSelection);
+		drawMargin(painter, tileRect(object.pos()), 2);
+	}
+}
+
+
+void MapWidget::drawObject(QPainter &painter, const QRect &rect, MapObject::UnitType unitType) {
 	static const QColor playerColor(128, 255, 128);
 	static const QColor robotColor(255, 128, 128);
 	static const std::unordered_map<MapObject::UnitType, std::pair<uint8_t, QColor>> objectTiles = {
@@ -316,22 +326,19 @@ void MapWidget::drawObject(QPainter &painter, MapObject::id_t objectId) {
 	    { MapObject::UnitType::RollerbotLR,    { 165, robotColor }},
 	};
 	
-	const MapObject &object = _map->object(objectId);
-	if (object.unitType == MapObject::UnitType::None) { return; }
-	const QRect r = tileRect(object.pos());
 	std::pair<uint8_t, QColor> pair;
 	try {
-		pair = objectTiles.at(object.unitType);
+		pair = objectTiles.at(unitType);
 		
 		const uint8_t &tileNo = pair.first;
 		const QColor &color = pair.second;
 		
 		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-		painter.drawImage(r, tileset()->tile(tileNo).image());
+		painter.drawImage(rect, tileset()->tile(tileNo).image());
 		if (not tileset()->haveColor()) {
 			painter.setCompositionMode(QPainter::CompositionMode_Darken);
 			painter.setBrush(color);
-			painter.drawRect(r);
+			painter.drawRect(rect);
 			painter.setPen(QPen(Qt::white, 2));
 		} else {
 			painter.setPen(QPen(QColor(0xFFBB66), 2));
@@ -339,29 +346,23 @@ void MapWidget::drawObject(QPainter &painter, MapObject::id_t objectId) {
 		
 		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 		const QSize ts = tileset()->tileSize();
-		if (object.unitType == MapObject::UnitType::HoverbotLR or
-		        object.unitType == MapObject::UnitType::RollerbotLR) {
-			const int y = r.top() + ts.height() / 2;
+		if (unitType == MapObject::UnitType::HoverbotLR or
+		        unitType == MapObject::UnitType::RollerbotLR) {
+			const int y = rect.top() + ts.height() / 2;
 			const int third = ts.width() / 3 + 1;
-			painter.drawLine(r.left() + third, y, r.right() - third, y);
-		} else if (object.unitType == MapObject::UnitType::HoverbotUD or
-		           object.unitType == MapObject::UnitType::RollerbotUD) {
-			const int x = r.left() + ts.width() / 2;
+			painter.drawLine(rect.left() + third, y, rect.right() - third, y);
+		} else if (unitType == MapObject::UnitType::HoverbotUD or
+		           unitType == MapObject::UnitType::RollerbotUD) {
+			const int x = rect.left() + ts.width() / 2;
 			const int third = ts.height() / 3 + 1;
-			painter.drawLine(x, r.top() + third, x, r.bottom() - third);
+			painter.drawLine(x, rect.top() + third, x, rect.bottom() - third);
 		}
 	}  catch (std::out_of_range) {
 		try {
-			drawSpecialObject(painter, r, object.unitType);
+			drawSpecialObject(painter, rect, unitType);
 		} catch (std::out_of_range) {
 			// draw nothing
 		}
-	}
-	
-	if (objectId == _selectedObject) {
-		painter.setPen(Qt::NoPen);
-		painter.setBrush(C::colorTileSelection);
-		drawMargin(painter, tileRect(object.pos()), 2);
 	}
 }
 
@@ -398,35 +399,43 @@ void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, MapObjec
 
 
 void MapWidget::makeTilesImage() {
+	static constexpr int Bpp(4); // bytes per pixel
 	if (_map == nullptr or tileset() == nullptr) { return; }
 	QPainter painter(_tilesImage);
 	painter.setPen(Qt::NoPen);
 	
+	uchar *dst = _tilesImage->bits();
 	for (int y = 0; y < _map->height(); ++y) {
 		for (int x = 0; x < _map->width(); ++x) {
 			const QPoint position(x, y);
-			const Tile t = tile(position);
+			const QImage &tileImage = tile(position).image();
 			const QRect r = tileRect(position);
-			painter.drawImage(r, t.image());
+#if 1
+			const uchar *src = tileImage.bits();
+			for (int py = 0; py < r.height(); ++py) {
+				memcpy(&dst[(r.top() + py) * _tilesImage->bytesPerLine() + r.left() * Bpp],
+				       &src[py * tileImage.bytesPerLine()],
+				       tileImage.bytesPerLine());
+			}
+#else
+			painter.drawImage(r, tileImage);
+#endif
 		}
 	}
 	_redrawTiles = false;
-	_redrawImage = true;
 }
 
 
-void MapWidget::makeImage() {
-	if (_map == nullptr or tileset() == nullptr) {
-		_image->fill(Qt::black);
-		return;
+void MapWidget::makeObjectImages() {
+	for (MapObject::UnitType unitType : MapObject::unitTypes()) {
+		auto emplaceResult = _objectImages.try_emplace(unitType, tileset()->tileSize() * 2, IMAGE_FORMAT);
+		QImage &image = emplaceResult.first->second;
+		image.fill(Qt::transparent);
+		QPainter painter(&image);
+		painter.scale(2, 2);
+		
+		drawObject(painter, tileRect({0, 0}), unitType);
 	}
-	
-	if (_redrawTiles) { makeTilesImage(); }
-//	if (_redrawObjects and _objectsVisible) { makeObjectsImage(); }
-	
-	QPainter painter(_image);
-	painter.setPen(Qt::NoPen);
-	painter.drawImage(0, 0, *_tilesImage);
 }
 
 

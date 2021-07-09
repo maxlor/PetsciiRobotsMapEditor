@@ -5,6 +5,7 @@
 #include <QRect>
 #include <QSize>
 #include <QWidget>
+#include <unordered_map>
 #include "abstracttilewidget.h"
 #include "mapobject.h"
 
@@ -59,11 +60,12 @@ private slots:
 	void onMapTilesChanged();
 	
 private:
-	void drawObject(QPainter &painter, MapObject::id_t objectId);
+	void drawMapObject(QPainter &painter, MapObject::id_t objectId);
+	void drawObject(QPainter &painter, const QRect & rect, MapObject::UnitType unitType);
 	void drawSpecialObject(QPainter &painter, const QRect &rect, MapObject::UnitType unitType);
 	QSize imageSize() const;
 	void makeTilesImage();
-	void makeImage();
+	void makeObjectImages();
 	Tile tile(QPoint position) const;
 	QRect tileRect(const QPoint &position) const;
 	QPoint pixelToTile(QPoint pos);
@@ -71,9 +73,8 @@ private:
 	bool _objectsVisible = true;
 	const Map *_map = nullptr;
 	QImage *_tilesImage = nullptr;
-	QImage *_image = nullptr;
+	std::unordered_map<MapObject::UnitType, QImage> _objectImages;
 	bool _redrawTiles = false;
-	bool _redrawImage = false;
 	bool _showGridLines = false;
 	DragMode _dragMode = DragMode::Single;
 	MapObject::id_t _dragObject = MapObject::IdNone;
