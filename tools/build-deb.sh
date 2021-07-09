@@ -36,6 +36,7 @@ main() {
 	mkdir -p "$DEB_DIR/usr/bin"
 	ln -f "$PROGRAM_PATH" "$DEB_DIR/usr/bin/"
 	mkdir -p "$DEB_DIR/usr/share/$PROGRAM"
+	ln -f "$PROJECT_DIR/res/tileset.c64" "$DEB_DIR/usr/share/$PROGRAM/"
 	ln -f "$PROJECT_DIR/res/tileset.pet" "$DEB_DIR/usr/share/$PROGRAM/"
 	mkdir -p "$DEB_DIR/usr/share/applications"
 	ln -f "$PROJECT_DIR/tools/PetsciiRobotsMapEditor.desktop" "$DEB_DIR/usr/share/applications/"

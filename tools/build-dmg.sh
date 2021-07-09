@@ -18,6 +18,7 @@ main() {
     local DMG="PetsciiRobotsMapEditor-$VERSION.dmg"
 
     local DIR=`dirname "$APP"`
+    cp "$DIR/tileset.c64" "$APP/Contents/MacOS"
     cp "$DIR/tileset.pet" "$APP/Contents/MacOS"
     cp "$DIR/NimbusSansNarrow-Bold.otf" "$APP/Contents/MacOS"
     cp "$DIR/NimbusSansNarrow-Bold.otf.license" "$APP/Contents/MacOS"

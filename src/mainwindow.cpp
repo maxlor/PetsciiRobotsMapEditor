@@ -6,7 +6,6 @@
 #include <QFileInfo>
 #include <QFontMetrics>
 #include <QKeyEvent>
-#include <QMenu>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStringList>
@@ -23,6 +22,8 @@
 
 static constexpr char SETTINGS_TILESET_DIRECTORY[] = "General/TilesetDirectory";
 static constexpr char SETTINGS_TILESET_PATH[] = "General/TilesetPath";
+static constexpr char SETTINGS_COLOR_PETSCII_TILESET[] = "General/ColorPetsciiTileset";
+static constexpr char SETTINGS_COLOR_PALETTE[] = "General/ColorPalette";
 static constexpr char SETTINGS_WINDOW_GEOMETRY[] = "General/WindowGeometry";
 static constexpr char SETTINGS_WINDOW_MAXIMIZED[] = "General/WindowMaximized";
 static constexpr char SETTINGS_MAP_DIRECTORY[] = "General/MapDirectory";
@@ -30,6 +31,8 @@ static constexpr char SETTINGS_MAP_PATH[] = "General/MapPath";
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+	const QSettings settings;
+	
 	_ui.setupUi(this);
 	_ui.actionSelect->setChecked(true);
 	_ui.toolBar->toggleViewAction()->setEnabled(false);
@@ -60,10 +63,29 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	_ui.menuFile->insertMenu(_ui.actionQuit, loadTilesetMenu);
 	_ui.menuFile->insertSeparator(_ui.actionQuit);
 	loadTilesetMenu->addAction(_ui.actionLoadPetTileset);
+	loadTilesetMenu->addAction(_ui.actionLoadColorPetsciiTileset);
 	loadTilesetMenu->addAction(_ui.actionLoadTilesetFromFile);
 	QMenu *randomizeMenu = _ui.menuEdit->addMenu("Randomize");
 	randomizeMenu->addAction(_ui.actionRandomizeDirt);
 	randomizeMenu->addAction(_ui.actionRandomizeGrass);
+	
+	_paletteMenu = new QMenu("Color Palette", _ui.menuView);
+	_ui.menuView->insertSeparator(nullptr);
+	_ui.menuView->insertMenu(nullptr, _paletteMenu);
+	int currentPaletteValue = settings.value(SETTINGS_COLOR_PALETTE, -1).toInt();
+	const Tileset::Palette currentPalette = Tileset::paletteFromInt(currentPaletteValue);
+	currentPaletteValue = int(currentPalette);
+	for (Tileset::Palette palette : Tileset::palettes()) {
+		QAction *action = new QAction(Tileset::toString(palette));
+		action->setData(int(palette));
+		action->setCheckable(true);
+		if (palette == currentPalette) {
+			action->setChecked(true);
+		}
+		_paletteActions.push_front(action);
+		_paletteMenu->insertAction(nullptr, action);
+		connect(action, &QAction::triggered, this, &MainWindow::onPaletteActionTriggered);
+	}
 	
 	QFontMetrics fm(QApplication::font());
 	_labelHiddenObjectsCount = new QLabel(this);
@@ -89,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	
 	_tileset = new Tileset();
 	autoLoadTileset();
+	onTilesetChanged();
 	_ui.mapWidget->setTileset(_tileset);
 	_ui.tileWidget->setTileset(_tileset);
 	
@@ -119,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.actionSave, &QAction::triggered, this, &MainWindow::onSaveTriggered);
 	connect(_ui.actionSaveAs, &QAction::triggered, this, &MainWindow::onSaveAsTriggered);
 	connect(_ui.actionLoadPetTileset, &QAction::triggered, this, &MainWindow::onLoadPetTileset);
+	connect(_ui.actionLoadColorPetsciiTileset, &QAction::triggered, this, &MainWindow::onLoadColorPetsciiTileset);
 	connect(_ui.actionLoadTilesetFromFile, &QAction::triggered, this, &MainWindow::onLoadTilesetFromFile);
 	connect(_ui.actionQuit, &QAction::triggered, this, &MainWindow::onQuit);
 	connect(_ui.actionSelectAll, &QAction::triggered, this, &MainWindow::onSelectAll);
@@ -161,9 +185,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(_ui.tileWidget, &TileWidget::tileSelected, this, &MainWindow::onTileWidgetTileSelected);
 	connect(_ui.objectEditor, &ObjectEditWidget::mapClickRequested, this, &MainWindow::onObjectEditMapClickRequested);
 	
+	connect(_tileset, &Tileset::changed, this, &MainWindow::onTilesetChanged);
 	connect(_mapController->map(), &Map::objectsChanged, this, &MainWindow::updateMapCountLabels);
 	
-	const QSettings settings;
 	const QRect geometry = settings.value(SETTINGS_WINDOW_GEOMETRY).toRect();
 	if (geometry.isValid()) { setGeometry(geometry); }
 	const bool maximized = settings.value(SETTINGS_WINDOW_MAXIMIZED).toBool();
@@ -219,17 +243,40 @@ void MainWindow::onAbout() {
 
 
 void MainWindow::onLoadPetTileset() {
-	const QString path = tilesetPetPath();
+	const QString path = tilesetPetPath(false);
 	
 	if (path.isEmpty()) {
 		QMessageBox::critical(this, "Error Loading Tileset",
-		                      "Cannot find the bundled tileset (tileset.pet).");
+		                      "Cannot find the bundled PET tileset (tileset.pet)");
 		return;
 	}
 	
 	QString error = _tileset->load(path);
 	if (error.isNull()) {
-		QSettings().remove(SETTINGS_TILESET_PATH);
+		QSettings settings;
+		settings.remove(SETTINGS_TILESET_PATH);
+		settings.remove(SETTINGS_COLOR_PETSCII_TILESET);
+	} else {
+		QMessageBox::critical(this, "Error Loading Tileset",
+		                      "Could not load the tileset: " + error);
+	}
+}
+
+
+void MainWindow::onLoadColorPetsciiTileset() {
+	const QString path = tilesetPetPath(true);
+	
+	if (path.isEmpty()) {
+		QMessageBox::critical(this, "Error Loading Tileset",
+		                      "Cannot find the bundled color PETSCII tileset (tileset.c64)");
+		return;
+	}
+	
+	QString error = _tileset->load(path);
+	if (error.isNull()) {
+		QSettings settings;
+		settings.remove(SETTINGS_TILESET_PATH);
+		settings.setValue(SETTINGS_COLOR_PETSCII_TILESET, true);
 	} else {
 		QMessageBox::critical(this, "Error Loading Tileset",
 		                      "Could not load the tileset: " + error);
@@ -519,6 +566,22 @@ void MainWindow::onViewFilterChanged(bool checked) {
 }
 
 
+void MainWindow::onPaletteActionTriggered() {
+	QAction *action = qobject_cast<QAction*>(sender());
+	Q_ASSERT(action);
+	Tileset::Palette palette = Tileset::paletteFromInt(action->data().toInt());
+	for (QAction *action : _paletteActions) {
+		action->setChecked(action->data().toInt() == int(palette));
+	}
+	_tileset->setPalette(palette);
+}
+
+
+void MainWindow::onTilesetChanged() {
+	_paletteMenu->setEnabled(_tileset->haveColor());
+}
+
+
 void MainWindow::showHowToUse() {
 	if (_howToUseDialog == nullptr) {
 		_howToUseDialog = new QDialog(this);
@@ -608,7 +671,7 @@ void MainWindow::autoLoadTileset() {
 	if (settings.contains(SETTINGS_TILESET_PATH)) {
 		path = settings.value(SETTINGS_TILESET_PATH).toString();
 	} else {
-		path = tilesetPetPath();
+		path = tilesetPetPath(settings.value(SETTINGS_COLOR_PETSCII_TILESET).toBool());
 	}
 	
 	if (path.isEmpty()) {
@@ -649,7 +712,7 @@ QString MainWindow::pickTileset() {
 }
 
 
-QString MainWindow::tilesetPetPath() const {
+QString MainWindow::tilesetPetPath(bool color) const {
 	QStringList directories = {
 #ifdef Q_OS_UNIX
 		QString("%1/../share/%2").arg(QApplication::applicationDirPath(),
@@ -659,7 +722,7 @@ QString MainWindow::tilesetPetPath() const {
 		QApplication::applicationDirPath(),
 	};
 	for (const QString &dir : directories) {
-		const QString path = dir + "/tileset.pet";
+		const QString path = dir + "/tileset." + (color ? "c64" : "pet");
 		if (QFile::exists(path)) {
 			return path;
 		}

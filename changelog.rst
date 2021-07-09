@@ -1,6 +1,12 @@
 Changelog for PETSCII Robots Map Editor
 =======================================
 
+Version 1.2.0
+-------------
+Released: not released yet
+
+* New feature: support for color PETSCII tileset, with different palettes
+
 Version 1.1.0
 -------------
 Released: 2021-07-08

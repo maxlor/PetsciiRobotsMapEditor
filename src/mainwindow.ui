@@ -799,10 +799,13 @@
   </action>
   <action name="actionLoadPetTileset">
    <property name="text">
-    <string>Load Built-in PET Tileset</string>
+    <string>Load Bundled PET Tileset</string>
    </property>
    <property name="toolTip">
-    <string>Load the built-in tileset from the PET version of the game</string>
+    <string>Load the bundled tileset from the PET version of the game</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
    </property>
   </action>
   <action name="actionHowToUse">
@@ -814,6 +817,17 @@
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="actionLoadColorPetsciiTileset">
+   <property name="text">
+    <string>Load Bundled Color PETSCII Tileset</string>
+   </property>
+   <property name="toolTip">
+    <string>Load the bundled tileset from the Color PESCII version of the game</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
    </property>
   </action>
  </widget>

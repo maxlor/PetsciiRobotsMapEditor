@@ -328,12 +328,16 @@ void MapWidget::drawObject(QPainter &painter, MapObject::id_t objectId) {
 		
 		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 		painter.drawImage(r, tileset()->tile(tileNo).image());
-		painter.setCompositionMode(QPainter::CompositionMode_Darken);
-		painter.setBrush(color);
-		painter.drawRect(r);
-		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-		painter.setPen(QPen(Qt::white, 2));
+		if (not tileset()->haveColor()) {
+			painter.setCompositionMode(QPainter::CompositionMode_Darken);
+			painter.setBrush(color);
+			painter.drawRect(r);
+			painter.setPen(QPen(Qt::white, 2));
+		} else {
+			painter.setPen(QPen(QColor(0xFFBB66), 2));
+		}
 		
+		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 		const QSize ts = tileset()->tileSize();
 		if (object.unitType == MapObject::UnitType::HoverbotLR or
 		        object.unitType == MapObject::UnitType::RollerbotLR) {

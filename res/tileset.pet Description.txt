@@ -22,4 +22,27 @@ Offset 0x602-0x701: middle character of each tile
 Offset 0x702-0x801: middle right character of each tile
 Offset 0x802-0x901: lower left character of each tile
 Offset 0x902-0xA01: lower middle character of each tile
-Offset 0xA02-0xB01: lower right character of each tile
+Offset 0xA02-0xB00: lower right character of each tile
+                    (last character is missing)
+
+tileset.c64 Format
+------------------
+The first 0xB01 bytes are the same as the tileset.pet format, so see above. The
+tileset.c64 file adds the missing character in 0xB01, and then contains
+additional information for each character in a tile stored in a byte.
+
+That byte has the color in the lower nibble, and currently unknown information
+in the upper nibble. The color is used as a foreground color only.
+
+Offset 0x0B01: character missing in tileset.pet.
+
+Offset 0x0B02-0x0C01: color of upper left character of each tile
+Offset 0x0C02-0x0D01: color of upper middle character of each tile
+Offset 0x0D02-0x0E01: color of upper right character of each tile
+Offset 0x0E02-0x0F01: color of middle left character of each tile
+Offset 0x0F02-0xA001: color of middle character of each tile
+Offset 0X1002-0X1101: color of middle right character of each tile
+Offset 0X1102-0X1201: color of lower left character of each tile
+Offset 0X1202-0X1301: color of lower middle character of each tile
+Offset 0X1302-0X1400: color of lower right character of each tile
+                      (last character is missing)

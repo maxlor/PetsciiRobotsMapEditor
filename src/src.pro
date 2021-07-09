@@ -4,7 +4,7 @@ CONFIG += c++17
 CONFIG -= debug_and_release_target
 GITREV = $$system(git --git-dir=$$PWD/../.git describe --always --abbrev=0)
 GITCOUNT = $$system(git --git-dir=$$PWD/../.git rev-list HEAD --count)
-APP_VERSION = 1.1.0
+APP_VERSION = 1.2.0
 VERSION = $${APP_VERSION}.$${GITCOUNT}
 macx {
     TARGET = "PETSCII Robots Map Editor"
@@ -74,6 +74,7 @@ RESOURCES += \
 OTHER_FILES += \
     ../res/NimbusSansNarrow-Bold.otf \
     ../res/NimbusSansNarrow-Bold.otf.license \
+    ../res/tileset.c64 \
     ../res/tileset.pet
 
 win32:contains(QMAKE_CXX, cl) {

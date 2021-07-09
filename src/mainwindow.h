@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QLabel>
 #include <QMainWindow>
+#include <QMenu>
 #include <QSignalMapper>
 #include <QSize>
 #include <forward_list>
@@ -29,6 +30,7 @@ protected:
 private slots:
 	void onAbout();
 	void onLoadPetTileset();
+	void onLoadColorPetsciiTileset();
 	void onLoadTilesetFromFile();
 	void onMouseOverTile(const QPoint &tile);
 	void onObjectClicked(MapObject::id_t objectId);
@@ -60,6 +62,9 @@ private slots:
 	void onToolActionTriggered();
 	void onQuit();
 	void onViewFilterChanged(bool checked);
+	void onPaletteActionTriggered();
+	
+	void onTilesetChanged();
 	
 	void showHowToUse();
 	void validateMap();
@@ -70,7 +75,7 @@ private:
 	
 	void autoLoadTileset();
 	QString pickTileset();
-	QString tilesetPetPath() const;
+	QString tilesetPetPath(bool color) const;
 	
 	void activateTool(QAction *const action);
 	void copyMap(bool copyTiles, bool copyObjects, bool clear=false);
@@ -88,8 +93,10 @@ private:
 	QLabel *_labelRobotCount;
 	QLabel *_labelStatusCoords;
 	QLabel *_labelStatusTile;
+	QMenu *_paletteMenu;
 	Tileset *_tileset = nullptr;
 	std::forward_list<QAction*> _viewFilterActions;
+	std::forward_list<QAction*> _paletteActions;
 	std::forward_list<QAction*> _toolActions;
 	MapObject::id_t _currentObject = MapObject::IdNone;
 	bool _objectEditMapClickRequested = false;

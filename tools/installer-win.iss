@@ -1,5 +1,5 @@
 #define MyAppName "PETSCII Robots Map Editor"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Benjamin Lutz"
 #define MyAppURL "https://github.com/maxlor/PetsciiRobotsMapEditor"
 #define MyAppExeName "PetsciiRobotsMapEditor.exe"
@@ -49,6 +49,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#BuildDir}\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BuildDir}\src\NimbusSansNarrow-Bold.otf"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BuildDir}\src\NimbusSansNarrow-Bold.otf.license"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#BuildDir}\src\tileset.c64"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BuildDir}\src\tileset.pet"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#QtDir}\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#QtDir}\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion

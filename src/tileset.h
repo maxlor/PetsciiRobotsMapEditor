@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QSize>
 #include <QString>
+#include <forward_list>
 #include <vector>
 
 class Tile;
@@ -18,6 +19,7 @@ class Tile;
 class Tileset : public QObject {
 	Q_OBJECT
 public:
+	enum class Palette { CoCo, Colodore, RGB };
 	Tileset(QObject *parent = nullptr);
 	virtual ~Tileset();
 	
@@ -32,20 +34,32 @@ public:
 	size_t tileCount() const;
 	QSize tileSize() const;
 	
+	bool haveColor() const;
 	bool isValid() const;
+	
+	Palette palette() const;
+	void setPalette(Palette palette);
+	
+	static Palette paletteFromInt(int value);
+	static std::forward_list<Palette> palettes();
+	static QString toString(Palette palette);
 	
 signals:
 	void changed();
 	
 private:
+	const QRgb *colors() const;
+	
 	QImage characterImage(uint8_t c) const;
 	void readCharacters();
 	void createTileImage(uint8_t tileNo);
 	const QImage &tileImage(uint8_t tileNo) const;
 	
 	QImage _characters;
-	uint8_t _tileset[0xB01];
+	uint8_t *_tileset = nullptr;
+	size_t _tilesetSize;
 	std::vector<const QImage*> _tiles;
+	Palette _palette = Palette::CoCo;
 };
 
 #endif // TILESET_H
