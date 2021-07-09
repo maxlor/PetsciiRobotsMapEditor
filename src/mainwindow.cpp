@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	randomizeMenu->addAction(_ui.actionRandomizeDirt);
 	randomizeMenu->addAction(_ui.actionRandomizeGrass);
 	
-	_paletteMenu = new QMenu("Color Palette", _ui.menuView);
+	_paletteMenu = new QMenu("&Color Palette", _ui.menuView);
 	_ui.menuView->insertSeparator(nullptr);
 	_ui.menuView->insertMenu(nullptr, _paletteMenu);
 	int currentPaletteValue = settings.value(SETTINGS_COLOR_PALETTE, -1).toInt();
@@ -111,7 +111,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	
 	_tileset = new Tileset();
 	autoLoadTileset();
-	onTilesetChanged();
+	_tileset->setPalette(Tileset::paletteFromInt(settings.value(SETTINGS_COLOR_PALETTE).toInt()));
+	_paletteMenu->setEnabled(_tileset->haveColor());
 	_ui.mapWidget->setTileset(_tileset);
 	_ui.tileWidget->setTileset(_tileset);
 	
@@ -579,6 +580,7 @@ void MainWindow::onPaletteActionTriggered() {
 
 void MainWindow::onTilesetChanged() {
 	_paletteMenu->setEnabled(_tileset->haveColor());
+	QSettings().setValue(SETTINGS_COLOR_PALETTE, int(_tileset->palette()));
 }
 
 
@@ -699,7 +701,7 @@ QString MainWindow::pickTileset() {
 	QFileDialog dialog(this, "Load Tileset...", directory);
 	dialog.setAcceptMode(QFileDialog::AcceptOpen);
 	dialog.setFileMode(QFileDialog::ExistingFile);
-	dialog.setNameFilters({ "tileset.pet", "Any file (*)"});
+	dialog.setNameFilters({ "PET Tileset (*.pet)", "Color PETSCII Tileset (*.c64)", "Any file (*)"});
 	int result = dialog.exec();
 	if (result == QFileDialog::Accepted) {
 		if (dialog.selectedFiles().size() > 0) {
