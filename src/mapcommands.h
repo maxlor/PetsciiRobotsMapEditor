@@ -31,9 +31,11 @@ public:
 	void undo() override;
 	
 private:
+	void applyWaterRaftConstraints();
+	
 	Map &_map;
 	const MapObject::id_t _objectId;
-	const MapObject _object;
+	MapObject _object;
 	MapObject _previousObject;
 };
 
@@ -49,10 +51,16 @@ public:
 	void undo() override;
 	
 private:
+	void redoWaterRaft();
+	void undoWaterRaft();
+	
 	Map &_map;
 	const MapObject::id_t _objectId;
 	QPoint _position;
 	QPoint _previousPosition;
+	uint8_t _previousA;
+	uint8_t _previousB;
+	uint8_t _previousC;
 	int _mergeCounter;
 };
 

@@ -32,7 +32,11 @@ void MapCommands::DeleteObject::undo() {
 MapCommands::ModifyObject::ModifyObject(Map &map, MapObject::id_t objectId, const MapObject &object,
                                         QUndoCommand *parent)
     : QUndoCommand("Modify " + unitTypeS(object), parent), _map(map), _objectId(objectId),
-      _object(object) {}
+      _object(object) {
+	if (object.unitType == MapObject::UnitType::WaterRaft) {
+		applyWaterRaftConstraints();
+	}
+}
 
 
 void MapCommands::ModifyObject::redo() {
@@ -43,6 +47,29 @@ void MapCommands::ModifyObject::redo() {
 
 void MapCommands::ModifyObject::undo() {
 	_map.setObject(_objectId, _previousObject);
+}
+
+
+void MapCommands::ModifyObject::applyWaterRaftConstraints() {
+	Q_ASSERT(_object.unitType == MapObject::UnitType::WaterRaft);
+	int offB = int(_object.b) - _object.x;
+	int offC = int(_object.c) - _object.x;
+	// If the new position is right at the map border, force the direction
+	// towards the map.
+	if (_object.x == 0) {
+		_object.a = 1;
+	} else if (_object.x == _map.width() - 1) {
+		_object.a = 0;
+	}
+	if (_object.a == 0) {
+		offB = qMin(-1, offB);
+		offC = qMax(0, offC);
+	} else {
+		offB = qMin(0, offB);
+		offC = qMax(1, offC);
+	}
+	_object.b = qMax(0, _object.x + offB);
+	_object.c = qMin(_map.width() - 1, _object.x + offC);
 }
 
 
@@ -68,13 +95,62 @@ bool MapCommands::MoveObject::mergeWith(const QUndoCommand *command) {
 
 
 void MapCommands::MoveObject::redo() {
-	_previousPosition = _map.object(_objectId).pos();
-	_map.moveObject(_objectId, _position);
+	if (_map.object(_objectId).unitType == MapObject::UnitType::WaterRaft) {
+		redoWaterRaft();
+	} else {
+		_previousPosition = _map.object(_objectId).pos();
+		_map.moveObject(_objectId, _position);
+	}
 }
 
 
 void MapCommands::MoveObject::undo() {
-	_map.moveObject(_objectId, _previousPosition);
+	if (_map.object(_objectId).unitType == MapObject::UnitType::WaterRaft) {
+		undoWaterRaft();
+	} else {
+		_map.moveObject(_objectId, _previousPosition);
+	}
+}
+
+
+void MapCommands::MoveObject::redoWaterRaft() {
+	MapObject object = _map.object(_objectId);
+	_previousPosition = object.pos();
+	_previousA = object.a;
+	_previousB = object.b;
+	_previousC = object.c;
+	int offB = _previousB - _previousPosition.x();
+	int offC = _previousC - _previousPosition.x();
+	object.x = _position.x();
+	object.y = _position.y();
+	// If the new position is right at the map border, force the direction
+	// towards the map.
+	if (_position.x() == 0) {
+		object.a = 1;
+	} else if (_position.x() == _map.width() - 1) {
+		object.a = 0;
+	}
+	if (object.a == 0) {
+		offB = qMin(-1, offB);
+		offC = qMax(0, offC);
+	} else {
+		offB = qMin(0, offB);
+		offC = qMax(1, offC);
+	}
+	object.b = qMax(0, _position.x() + offB);
+	object.c = qMin(_map.width() - 1, _position.x() + offC);
+	_map.setObject(_objectId, object);
+}
+
+
+void MapCommands::MoveObject::undoWaterRaft() {
+	MapObject object = _map.object(_objectId);
+	object.x = _previousPosition.x();
+	object.y = _previousPosition.y();
+	object.a = _previousA;
+	object.b = _previousB;
+	object.c = _previousC;
+	_map.setObject(_objectId, object);
 }
 
 
