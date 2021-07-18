@@ -416,6 +416,18 @@ void MapCheck::checkWaterRafts() {
 			      setAttribute(id, B, c - 1));
 		}
 		
+		for (uint8_t x = object.b; x <= object.c; ++x) {
+			static const uint8_t Water = 0xcc;
+			static const uint8_t Raft = 0xf2;
+			const uint8_t tileNo = _mapController.map()->tileNo(QPoint(x, object.y));
+			
+			if (not ((x == object.x and tileNo == Raft) or (tileNo == Water))) {
+				warn(id, "Water raft's path passes over non-water tiles. They will be turned into "
+				         "water by the raft.");
+				break;
+			}
+		}
+		
 		checkUnused(id, false, false, false, true, true);
 	}
 }
