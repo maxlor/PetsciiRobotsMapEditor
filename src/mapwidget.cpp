@@ -301,8 +301,15 @@ QSize MapWidget::imageSize() const {
 void MapWidget::drawMapObject(QPainter &painter, MapObject::id_t objectId) {
 	const MapObject &object = _map->object(objectId);
 	if (object.unitType == MapObject::UnitType::None) { return; }
-	const QRect r = tileRect(object.pos());
 	
+	if (object.unitType == MapObject::UnitType::WaterRaft) {
+		const QRectF leftStop = tileRect(QPoint(object.b, object.y));
+		const QRectF rightStop = tileRect(QPoint(object.c, object.y));
+		painter.setPen(QPen(C::colorWaterRaft, 2));
+		painter.drawLine(leftStop.center(), rightStop.center());
+	}
+	
+	const QRect r = tileRect(object.pos());
 	painter.drawImage(r, _objectImages.at(object.unitType));
 	
 	if (objectId == _selectedObject) {
@@ -314,16 +321,14 @@ void MapWidget::drawMapObject(QPainter &painter, MapObject::id_t objectId) {
 
 
 void MapWidget::drawObject(QPainter &painter, const QRect &rect, MapObject::UnitType unitType) {
-	static const QColor playerColor(128, 255, 128);
-	static const QColor robotColor(255, 128, 128);
 	static const std::unordered_map<MapObject::UnitType, std::pair<uint8_t, QColor>> objectTiles = {
-	    { MapObject::UnitType::Player,         { 97, playerColor }},
-	    { MapObject::UnitType::HoverbotLR,     {  98, robotColor }},
-	    { MapObject::UnitType::HoverbotUD,     {  98, robotColor }},
-	    { MapObject::UnitType::HoverbotAttack, {  99, robotColor }},
-	    { MapObject::UnitType::Evilbot,        { 100, robotColor }},
-	    { MapObject::UnitType::RollerbotUD,    { 164, robotColor }},
-	    { MapObject::UnitType::RollerbotLR,    { 165, robotColor }},
+	    { MapObject::UnitType::Player,         {  97, C::colorPlayer }},
+	    { MapObject::UnitType::HoverbotLR,     {  98, C::colorRobot }},
+	    { MapObject::UnitType::HoverbotUD,     {  98, C::colorRobot }},
+	    { MapObject::UnitType::HoverbotAttack, {  99, C::colorRobot }},
+	    { MapObject::UnitType::Evilbot,        { 100, C::colorRobot }},
+	    { MapObject::UnitType::RollerbotUD,    { 164, C::colorRobot }},
+	    { MapObject::UnitType::RollerbotLR,    { 165, C::colorRobot }},
 	};
 	
 	std::pair<uint8_t, QColor> pair;
@@ -368,21 +373,19 @@ void MapWidget::drawObject(QPainter &painter, const QRect &rect, MapObject::Unit
 
 
 void MapWidget::drawSpecialObject(QPainter &painter, const QRect &rect, MapObject::UnitType unitType) {
-	static const QColor toolColor(255, 255, 100);
-	static const QColor weaponColor(255, 150, 0);
 	static const std::unordered_map<MapObject::UnitType, std::pair<QString, QColor>> textAndColor {
-		{ MapObject::UnitType::TransporterPad, { "Pad", { 150, 255, 255 }}},
-		{ MapObject::UnitType::Door, { "Door", { 140, 190, 255 }}},
-		{ MapObject::UnitType::TrashCompactor, { "TC", { 255, 64, 0 }}},
-		{ MapObject::UnitType::Elevator, { "Lift", { 150, 200, 255 }}},
-		{ MapObject::UnitType::WaterRaft, { "Raft", { 150, 200, 255 }}},
-		{ MapObject::UnitType::Key, { "Key", { 80, 130, 255 }}},
-		{ MapObject::UnitType::TimeBomb, { "Bom", weaponColor }},
-		{ MapObject::UnitType::EMP, { "EMP", toolColor }},
-		{ MapObject::UnitType::Pistol, { "Gun", weaponColor }},
-		{ MapObject::UnitType::PlasmaGun, { "Plas", weaponColor }},
-		{ MapObject::UnitType::Medkit, { "Med", { 100, 255, 100 }}},
-		{ MapObject::UnitType::Magnet, { "Mag", toolColor }},
+		{ MapObject::UnitType::TransporterPad, { "Pad", C::colorTransporterPad }},
+		{ MapObject::UnitType::Door, { "Door", C::colorDoor }},
+		{ MapObject::UnitType::TrashCompactor, { "TC", C::colorTC }},
+		{ MapObject::UnitType::Elevator, { "Lift", C::colorElevator }},
+		{ MapObject::UnitType::WaterRaft, { "Raft", C::colorWaterRaft }},
+		{ MapObject::UnitType::Key, { "Key", C::colorKey }},
+		{ MapObject::UnitType::TimeBomb, { "Bom", C::colorWeapon }},
+		{ MapObject::UnitType::EMP, { "EMP", C::colorTool }},
+		{ MapObject::UnitType::Pistol, { "Gun", C::colorWeapon }},
+		{ MapObject::UnitType::PlasmaGun, { "Plas", C::colorWeapon }},
+		{ MapObject::UnitType::Medkit, { "Med", C::colorMedkit }},
+		{ MapObject::UnitType::Magnet, { "Mag", C::colorTool }},
 	};
 	static const QColor objectBgColor(0, 0, 0, 180);
 	const std::pair<QString, QColor> textAndColorPair = textAndColor.at(unitType);

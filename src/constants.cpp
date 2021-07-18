@@ -15,4 +15,15 @@ const QColor colorDarken(128, 128, 128, 192);
 const QColor colorGrid(150, 170, 0);
 const QColor colorAreaSelection(66, 255, 0);
 const QColor colorTileSelection(66, 255, 0);
+const QColor colorPlayer(128, 255, 128);
+const QColor colorRobot(255, 128, 128);
+const QColor colorTransporterPad(150, 255, 255);
+const QColor colorDoor(140, 190, 255);
+const QColor colorTC(255, 64, 0);
+const QColor colorElevator(150, 200, 255);
+const QColor colorWaterRaft(150, 200, 255);
+const QColor colorKey(80, 130, 255);
+const QColor colorWeapon(255, 150, 0);
+const QColor colorTool(255, 255, 100);
+const QColor colorMedkit(100, 255, 100);
 }
