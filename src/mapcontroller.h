@@ -34,6 +34,7 @@ public:
 	void endUndoGroup();
 	void floodFill(const QPoint &position, uint8_t tileNo);
 	void setTile(const QPoint &position, uint8_t tileNo);
+	void drawWall(const QPoint &position);
 	
 public slots:
 	void randomizeDirt(const QRect &rect);

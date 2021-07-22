@@ -196,3 +196,27 @@ void MapCommands::FloodFill::redo() {
 void MapCommands::FloodFill::undo() {
 	_map.setTiles(_map.rect(), _previousTiles);
 }
+
+
+
+MapCommands::SetWall::SetWall(Map &map, const QPoint &pos, QUndoCommand *parent) 
+	: QUndoCommand("Draw Wall", parent), _map(map), _pos(pos) {}
+
+
+void MapCommands::SetWall::redo() {
+	_previousTileNo = _map.tileNo(_pos);
+	if (_pos.x() > 0) { _previousLTRB[0] = _map.tileNo(_pos - QPoint(1, 0)); }
+	if (_pos.y() > 0) { _previousLTRB[1] = _map.tileNo(_pos - QPoint(0, 1)); }
+	if (_pos.x() < _map.width() - 1) { _previousLTRB[2] = _map.tileNo(_pos + QPoint(1, 0)); }
+	if (_pos.y() > _map.height() - 1) { _previousLTRB[3] = _map.tileNo(_pos + QPoint(0, 1)); }
+	_map.setWall(_pos);
+}
+
+
+void MapCommands::SetWall::undo() {
+	_map.setTile(_pos, _previousTileNo);
+	if (_pos.x() > 0) { _map.setTile(_pos - QPoint(1, 0), _previousLTRB[0]); }
+	if (_pos.y() > 0) { _map.setTile(_pos - QPoint(0, 1), _previousLTRB[1]); }
+	if (_pos.x() < _map.width() - 1) { _map.setTile(_pos + QPoint(1, 0), _previousLTRB[2]); }
+	if (_pos.y() > _map.height() - 1) { _map.setTile(_pos + QPoint(0, 1), _previousLTRB[3]); }
+}

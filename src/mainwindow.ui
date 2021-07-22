@@ -211,6 +211,7 @@
     <addaction name="actionSelectArea"/>
     <addaction name="separator"/>
     <addaction name="actionDrawTiles"/>
+    <addaction name="actionDrawWalls"/>
     <addaction name="actionFloodFill"/>
     <addaction name="separator"/>
     <addaction name="actionPlacePlayer"/>
@@ -278,6 +279,7 @@
    <addaction name="actionSelect"/>
    <addaction name="actionSelectArea"/>
    <addaction name="actionDrawTiles"/>
+   <addaction name="actionDrawWalls"/>
    <addaction name="actionFloodFill"/>
    <addaction name="actionPlacePlayer"/>
    <addaction name="actionPlaceRobot"/>
@@ -828,6 +830,24 @@
    </property>
    <property name="shortcut">
     <string>F3</string>
+   </property>
+  </action>
+  <action name="actionDrawWalls">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/res.qrc">
+     <normaloff>:/wall.svg</normaloff>:/wall.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Draw Wa&amp;lls</string>
+   </property>
+   <property name="toolTip">
+    <string>Draw Walls</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
    </property>
   </action>
  </widget>

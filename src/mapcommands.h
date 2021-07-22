@@ -100,6 +100,21 @@ private:
 	const uint8_t _tileNo;
 	uint8_t _previousTileNo;
 };
+
+
+class SetWall : public QUndoCommand {
+public:
+	SetWall(Map &map, const QPoint &pos, QUndoCommand *parent = nullptr);
+	
+	void redo() override;
+	void undo() override;
+	
+private:
+	Map &_map;
+	const QPoint _pos;
+	uint8_t _previousTileNo;
+	uint8_t _previousLTRB[4];
+};
 } // namespace MapCommands
 
 #endif // MAPCOMMANDS_H

@@ -210,6 +210,11 @@ void MapController::setTile(const QPoint &position, uint8_t tileNo) {
 }
 
 
+void MapController::drawWall(const QPoint &position) {
+	_undoStack.push(new MapCommands::SetWall(*_map, position));
+}
+
+
 void MapController::randomizeDirt(const QRect &rect) {
 	beginUndoGroup("Randomize Dirt");
 	randomize(rect, { 0xce, 0xcf });

@@ -55,8 +55,8 @@ private slots:
 	void onShowObjectsToggled(bool checked);
 	
 	void onTileCopied(uint8_t tileNo);
-	void onTilePressed(const QPoint &tile);
-	void onTileDragged(const QPoint &tile);
+	void onTilePressed(const QPoint &position);
+	void onTileDragged(const QPoint &position);
 	void onReleased();
 	void onTileWidgetTileSelected(uint8_t tileNo);
 	void onToolActionTriggered();

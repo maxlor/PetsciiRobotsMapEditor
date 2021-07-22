@@ -6,6 +6,7 @@ Version 1.2.0
 Released: not released yet
 
 * New feature: support for color PETSCII tileset, with different palettes
+* New feature: "Draw Wall" tool, which makes drawing walls much easier
 
 Version 1.1.0
 -------------

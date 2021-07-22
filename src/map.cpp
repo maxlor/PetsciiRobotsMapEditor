@@ -249,6 +249,64 @@ void Map::setTiles(const QRect &rect, uint8_t *tiles) {
 }
 
 
+void Map::setWall(const QPoint &position, bool cascade) {
+	static constexpr uint8_t wallTileByAttribute[64] = {
+	    0x04, 0x11, 0x0b, 0x13, 0x10, 0x05, 0x10, 0x05, // connect to: 0, l, t, lt, r, lr, tr, lrt,
+	    0x0f, 0x0f, 0x08, 0x08, 0x04, 0x04, 0x04, 0x04, // connect to: b, lb, tb, ltb, rb, lrb, trb, lrtb,
+	    
+	    // same, but there is a wall going right below
+	    0x1a, 0x1a, 0x0c, 0x0c, 0x10, 0x05, 0x10, 0x05, // last 4 don't fit well
+	    0x1a, 0x1a, 0x0c, 0x0c, 0x04, 0x05, 0x0c, 0x04, // last 4 don't fit well
+	    
+	    // same, but there is a wall going to the bottom on the right
+	    0x12, 0x06, 0x12, 0x06, 0x12, 0x06, 0x12, 0x06, // tile 0x12 is missing the right border
+	    0x0f, 0x0f, 0x08, 0x08, 0x04, 0x04, 0x08, 0x04, // none of these fit well
+	    
+	    // same, but there is a wall going right below, and a wall going to the bottom on the right
+	    0x1a, 0x11, 0x0b, 0x13, 0x12, 0x06, 0x12, 0x06, // none of these fit well
+	    0x1a, 0x1a, 0x0c, 0x0c, 0x04, 0x06, 0x0c, 0x06, // none of these fit well
+	};
+	
+	const uint8_t tileL = position.x() > 0            ? tileNo(position - QPoint(1, 0)) : 0;
+	const uint8_t tileT = position.y() > 0            ? tileNo(position - QPoint(0, 1)) : 0;
+	const uint8_t tileR = position.x() < width() - 1  ? tileNo(position + QPoint(1, 0)) : 0;
+	const uint8_t tileB = position.y() < height() - 1 ? tileNo(position + QPoint(0, 1)) : 0;
+	const WallFlags flagsL = wallFlags(tileL);
+	const WallFlags flagsT = wallFlags(tileT);
+	const WallFlags flagsR = wallFlags(tileR);
+	const WallFlags flagsB = wallFlags(tileB);
+	
+	const int attribute =
+	        ((flagsL.testFlag(WallFlag::ConnRight) or flagsL.testFlag(WallFlag::Generic)) ? 1 : 0)
+	        + ((flagsT.testFlag(WallFlag::ConnBottom) or flagsT.testFlag(WallFlag::Generic)) ? 2 : 0)
+	        + ((flagsR.testFlag(WallFlag::ConnLeft) or flagsR.testFlag(WallFlag::Generic)) ? 4 : 0)
+	        + ((flagsB.testFlag(WallFlag::ConnTop) or flagsB.testFlag(WallFlag::Generic)) ? 8 : 0)
+	        + (flagsB.testFlag(WallFlag::ConnRight) ? 16 : 0)
+	        + (flagsR.testFlag(WallFlag::ConnBottom) ? 32 : 0);
+	
+	setTile(position, wallTileByAttribute[attribute]);
+	
+	if (cascade) {
+		if (flagsL.testFlag(WallFlag::Generic)) {
+			setWall(position - QPoint(1, 0), false);
+		}
+		if (flagsT.testFlag(WallFlag::Generic)) {
+			setWall(position - QPoint(0, 1), false);
+		}
+		if (flagsR.testFlag(WallFlag::Generic)) {
+			setWall(position + QPoint(1, 0), false);
+		}
+		if (flagsB.testFlag(WallFlag::Generic)) {
+			setWall(position + QPoint(0, 1), false);
+		}
+		if (position.x() > 0 and position.y() > 0
+		        and wallFlags(tileNo(position - QPoint(1, 1))).testFlag(WallFlag::Generic)) {
+			setWall(position - QPoint(1, 1), false);
+		}
+	}
+}
+
+
 void Map::floodFill(const QPoint &position, uint8_t tileNo) {
 	Q_ASSERT(0 <= position.x() and position.x() < width());
 	Q_ASSERT(0 <= position.y() and position.y() < height());
@@ -266,6 +324,43 @@ bool Map::isModified() const {
 
 const QString &Map::path() const {
 	return _path;
+}
+
+
+Map::WallFlags Map::wallFlags(uint8_t tileNo) {
+	static constexpr WallFlag g = WallFlag::Generic;
+	static constexpr WallFlag l = WallFlag::ConnLeft;
+	static constexpr WallFlag r = WallFlag::ConnRight;
+	static constexpr WallFlag t = WallFlag::ConnTop;
+	static constexpr WallFlag b = WallFlag::ConnBottom;
+	static constexpr WallFlags lr = { l, r };
+	static constexpr WallFlags rb = { r, b };
+	static constexpr WallFlags tb = { t, b };
+	static const WallFlags flags[256] = {
+	    0, 0, 0, 0,   {g,r,b}, {g,l,r}, {g,l,r}, {g,t,b}, // 0x00-0x07
+	    {g,t,b}, 0, b, {g,t},   {g,t,b}, r, 0, {g,b}, // 0x08-0x0F
+	    {g,r}, {g,l}, {g,r}, {g,l,t},   lr, lr, lr, 0,   0, b, {g,b}, t,   r, 0, 0, 0, // 0x10-0x1F
+	    0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0, // 0x20-0x2F
+	    rb, lr, lr, 0,   tb, 0, 0, 0,   tb, 0, 0, 0,   0, 0, 0, 0, // 0x30-0x3F
+	    lr, lr, 0, 0,   t, t, t, t,   0, 0, 0, t,   b, b, b, t, // 0x40-0x4F
+	    l, 0, r, 0,   l, 0, r, 0,   l, 0, lr, r,   r, r, r, 0, // 0x50-0x5F
+	    0, 0, 0, 0,   0, 0, 0, 0,   lr, lr, lr, 0,   0, 0, 0, 0, // 0x60-0x6F
+	    lr, lr, tb, 0,   0, 0, lr, lr,   0, 0, 0, 0,   0, 0, 0, 0, // 0x70-0x7F
+	    lr, tb, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,// 0x80-0x8F
+	    lr, lr, lr, lr,   0, 0, 0, 0,   lr, lr, 0, 0,   0, 0, 0, 0, // 0x90-0x9F
+	    0, 0, 0, 0,   0, 0, tb, 0,   0, 0, tb, 0,   r, r, r, 0, // 0xA0-0xAF
+	    lr, lr, lr, lr,   lr, l, l, 0,   0, 0, 0, l,   0, 0, 0, b, // 0xB0-0xBF
+	    0, 0, 0, r,   0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0, // 0xC0-0xCF
+	    0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0, // 0xD0-0xDF
+	    0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0, // 0xE0-0xEF
+	    0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0,   0, 0, 0, 0, // 0xF0-0xFF
+	};
+	return flags[tileNo];
+}
+
+
+void Map::setModifiedFlag() {
+	setModified(true);
 }
 
 
@@ -322,11 +417,6 @@ QByteArray Map::data() const {
 	memcpy(ba.data() + 0x302, _tiles, sizeof(_tiles[0]) * TILE_COUNT);
 	
 	return ba;
-}
-
-
-void Map::setModifiedFlag() {
-	setModified(true);
 }
 
 

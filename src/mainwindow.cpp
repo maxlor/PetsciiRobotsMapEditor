@@ -132,7 +132,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	                       _ui.actionHighlightShootThrough, _ui.actionHighlightPushOnto,
 	                       _ui.actionHighlightSearchable };
 	_toolActions = { _ui.actionSelect, _ui.actionSelectArea, _ui.actionDrawTiles,
-	                 _ui.actionFloodFill, _ui.actionDeleteObject,
+	                 _ui.actionDrawWalls, _ui.actionFloodFill, _ui.actionDeleteObject,
 	                 _ui.actionPlaceDoor, _ui.actionPlaceElevator, _ui.actionPlaceHiddenItem, 
 	                 _ui.actionPlaceKey, _ui.actionPlacePlayer, _ui.actionPlaceRobot,
                      _ui.actionPlaceTransporterPad, _ui.actionPlaceTrashCompactor,
@@ -481,48 +481,55 @@ void MainWindow::onTileCopied(uint8_t tileNo) {
 }
 
 
-void MainWindow::onTilePressed(const QPoint &tile) {
+void MainWindow::onTilePressed(const QPoint &position) {
 	if (_objectEditMapClickRequested) {
 		_ui.statusbar->clearMessage();
-		_ui.objectEditor->mapClick(tile.x(), tile.y());
+		_ui.objectEditor->mapClick(position.x(), position.y());
 		_objectEditMapClickRequested = false;
 	} else if (_ui.actionDrawTiles->isChecked()) {
 		_mapController->beginUndoGroup();
-		_mapController->setTile(tile, _ui.tileWidget->selectedTile());
+		_mapController->setTile(position, _ui.tileWidget->selectedTile());
+	} else if (_ui.actionDrawWalls->isChecked()) {
+		_mapController->beginUndoGroup();
+		_mapController->drawWall(position);
 	} else if (_ui.actionFloodFill->isChecked()) {
-		_mapController->floodFill(tile, _ui.tileWidget->selectedTile());
+		_mapController->floodFill(position, _ui.tileWidget->selectedTile());
 	} else if (_ui.actionPlaceDoor->isChecked()) {
-		placeObject(MapObject::UnitType::Door, tile);
+		placeObject(MapObject::UnitType::Door, position);
 	} else if (_ui.actionPlaceElevator->isChecked()) {
-		placeObject(MapObject::UnitType::Elevator, tile);
+		placeObject(MapObject::UnitType::Elevator, position);
 	} else if (_ui.actionPlaceHiddenItem->isChecked()) {
-		placeObject(MapObject::UnitType::TimeBomb, tile);
+		placeObject(MapObject::UnitType::TimeBomb, position);
 	} else if (_ui.actionPlaceKey->isChecked()) {
-		placeObject(MapObject::UnitType::Key, tile);
+		placeObject(MapObject::UnitType::Key, position);
 	} else if (_ui.actionPlacePlayer->isChecked()) {
-		placeObject(MapObject::UnitType::Player, tile);
+		placeObject(MapObject::UnitType::Player, position);
 	} else if (_ui.actionPlaceRobot->isChecked()) {
-		placeObject(MapObject::UnitType::HoverbotLR, tile);
+		placeObject(MapObject::UnitType::HoverbotLR, position);
 	} else if (_ui.actionPlaceTransporterPad->isChecked()) {
-		placeObject(MapObject::UnitType::TransporterPad, tile);
+		placeObject(MapObject::UnitType::TransporterPad, position);
 	} else if (_ui.actionPlaceTrashCompactor->isChecked()) {
-		placeObject(MapObject::UnitType::TrashCompactor, tile);
+		placeObject(MapObject::UnitType::TrashCompactor, position);
 	} else if (_ui.actionPlaceWaterRaft->isChecked()) {
-		placeObject(MapObject::UnitType::WaterRaft, tile);
+		placeObject(MapObject::UnitType::WaterRaft, position);
 	}
 }
 
 
-void MainWindow::onTileDragged(const QPoint &tile) {
+void MainWindow::onTileDragged(const QPoint &position) {
 	if (_ui.actionDrawTiles->isChecked()) {
 		const uint8_t tileNo = _ui.tileWidget->selectedTile();
-		_mapController->setTile(tile, tileNo);
+		_mapController->setTile(position, tileNo);
+	} else if (_ui.actionDrawWalls->isChecked()) {
+		_mapController->drawWall(position);
 	}
 }
 
 
 void MainWindow::onReleased() {
 	if (_ui.actionDrawTiles->isChecked()) {
+		_mapController->endUndoGroup();
+	} else if (_ui.actionDrawWalls->isChecked()) {
 		_mapController->endUndoGroup();
 	}
 	_mapController->incrementMergeCounter();

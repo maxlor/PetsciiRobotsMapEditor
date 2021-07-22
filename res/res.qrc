@@ -19,5 +19,6 @@
         <file>info.svg</file>
         <file>stop.svg</file>
         <file>help.html</file>
+        <file>wall.svg</file>
     </qresource>
 </RCC>

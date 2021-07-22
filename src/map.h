@@ -13,6 +13,9 @@ class Map : public QObject {
 	Q_PROPERTY(bool modified READ isModified NOTIFY modifiedChanged)
 	Q_PROPERTY(QString path READ path NOTIFY pathChanged)
 public:
+	enum class WallFlag { None, Generic = 1, ConnLeft = 2, ConnRight = 4, ConnTop = 8, ConnBottom = 16 };
+	typedef QFlags<WallFlag> WallFlags;
+	
 	Map(QObject *parent = nullptr);
 	virtual ~Map();
 	
@@ -40,15 +43,13 @@ public:
 	uint8_t *tiles();
 	void setTile(const QPoint &position, uint8_t tileNo);
 	void setTiles(const QRect &rect, uint8_t *tiles);
+	void setWall(const QPoint &position, bool cascade = true);
 	void floodFill(const QPoint &position, uint8_t tileNo);
 	
 	bool isModified() const;
-	
 	const QString &path() const;
 	
-	void compact();
-	
-	QByteArray data() const;
+	static WallFlags wallFlags(uint8_t tileNo);
 	
 signals:
 	void modifiedChanged();
@@ -60,6 +61,8 @@ private slots:
 	void setModifiedFlag();
 	
 private:
+	void compact();
+	QByteArray data() const;
 	MapObject &objectAt(MapObject::id_t no);
 	int recursiveFloodFill(const QPoint &position, uint8_t oldTile, uint8_t newTile);
 	void setModified(bool modified);
