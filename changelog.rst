@@ -7,6 +7,10 @@ Released: not released yet
 
 * New feature: support for color PETSCII tileset, with different palettes
 * New feature: "Draw Wall" tool, which makes drawing walls much easier
+* New feature: Water rafts have received some love. Their path is now shown
+  on the map, and there are more validation checks for them.
+* Bugfix: moving water rafts now adjusts their turnaround points too
+
 
 Version 1.1.0
 -------------
