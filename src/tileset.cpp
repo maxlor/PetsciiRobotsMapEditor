@@ -92,9 +92,10 @@ QString Tileset::load(const QString &path) {
 	}
 	
 	const size_t restBufferSize = tilesetSize - sizeof(TILESET_PET_MAGIC);
-	uint8_t restBuffer[restBufferSize];
+	uint8_t *restBuffer = new uint8_t[restBufferSize];
 	bytesRead = file.read(reinterpret_cast<char*>(restBuffer), restBufferSize);
 	if (bytesRead != qint64(restBufferSize)) {
+		delete[] restBuffer;
 		return QString("can't read rest of file \"%1\": got only %2 bytes but had requested %3")
 		        .arg(path).arg(bytesRead).arg(restBufferSize);
 	}
@@ -112,6 +113,7 @@ QString Tileset::load(const QString &path) {
 	}
 	
 	emit changed();
+	delete[] restBuffer;
 	return QString();
 }
 
